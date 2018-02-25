@@ -23,11 +23,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        core.cpp
+        core.cpp \
+    microwallet.cpp \
+    encapsulatedmicrowallet.cpp
 
 HEADERS += \
         core.h \
-        core_global.h 
+        core_global.h \ 
+    microwallet.h \
+    encapsulatedmicrowallet.h
 
 unix {
     target.path = /usr/lib
