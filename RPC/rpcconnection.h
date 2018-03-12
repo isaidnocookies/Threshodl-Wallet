@@ -11,6 +11,7 @@ class RPCConnection : public QObject
     Q_OBJECT
 public:
     explicit RPCConnection(QWebSocket * iSocket, QObject * iParent = nullptr);
+    explicit RPCConnection(QObject * iParent = nullptr); // only used from a client connection
 
     QWebSocket * socket() const;
     bool haveBinaryMessages() const;
@@ -21,6 +22,7 @@ public:
     QString nextTextMessage();
 
 signals:
+    void connected(); // Only emitted from a client connection
     void disconnected();
     void binaryMessageReceived();
     void textMessageReceived();
@@ -30,6 +32,8 @@ signals:
     void sentTextMessage();
 
 public slots:
+    void open(const QUrl &iUrl); // only used from a client connection
+    void close();
     void sendBinaryMessage(const QByteArray &iMessage);
     void sendTextMessage(const QString &iMessage);
 

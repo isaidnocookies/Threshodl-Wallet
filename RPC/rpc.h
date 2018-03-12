@@ -3,6 +3,5 @@
 
 class RPCConnection;
 class RPCServer;
-class RPCClient;
 
 #endif // RPC_H

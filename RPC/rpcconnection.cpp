@@ -11,6 +11,18 @@ RPCConnection::RPCConnection(QWebSocket *iSocket, QObject *iParent)
     }
 }
 
+RPCConnection::RPCConnection(QObject *iParent)
+    : QObject(iParent)
+{
+    mSocket = new QWebSocket;
+    mSocket->setParent(this);
+
+    connect( mSocket, &QWebSocket::binaryMessageReceived, this, &RPCConnection::_binaryMessageReceived );
+    connect( mSocket, &QWebSocket::textMessageReceived, this, &RPCConnection::_textMessageReceived );
+    connect( mSocket, &QWebSocket::disconnected, this, &RPCConnection::disconnected );
+    connect( mSocket, &QWebSocket::connected, this, &RPCConnection::connected );
+}
+
 QWebSocket *RPCConnection::socket() const
 { return mSocket; }
 
@@ -52,6 +64,26 @@ QString RPCConnection::nextTextMessage()
     if( ! mTextMessages.isEmpty() )
         return mTextMessages.takeFirst();
     return QString();
+}
+
+void RPCConnection::open(const QUrl &iUrl)
+{
+    if(mSocket) {
+        if( mSocket->thread() == thread() )
+            mSocket->open(iUrl);
+        else
+            QMetaObject::invokeMethod(mSocket,"open",Qt::QueuedConnection);
+    }
+}
+
+void RPCConnection::close()
+{
+    if(mSocket) {
+        if( mSocket->thread() == thread() )
+            mSocket->close();
+        else
+            QMetaObject::invokeMethod(mSocket,"close",Qt::QueuedConnection);
+    }
 }
 
 void RPCConnection::sendBinaryMessage(const QByteArray &iMessage)
