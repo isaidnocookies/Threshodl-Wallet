@@ -15,18 +15,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-linux {
-    LIBS += -lz -lssl -lcrypto
-}
+include(../CertLib/CertLib.pri)
+include(../RPC/RPC.pri)
 
 HEADERS += \
     main.h \
     downloader.h \
     recordsmanager.h \
     logsmanager.h \
-    sslbio.h \
-    encryptionkey.h \
-    certificate.h \
     app.h
 
 
@@ -35,7 +31,4 @@ SOURCES += \
     downloader.cpp \
     recordsmanager.cpp \
     logsmanager.cpp \
-    sslbio.cpp \
-    encryptionkey.cpp \
-    certificate.cpp \
     app.cpp
