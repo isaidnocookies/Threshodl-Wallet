@@ -5,12 +5,15 @@
 #include "downloader.h"
 #include "logsmanager.h"
 #include "recordsmanager.h"
+#include "httplistener.h"
+#include "resthandler.h"
 
 #include <QMutex>
 #include <QByteArray>
 #include <QString>
 #include <QObject>
 #include <QThread>
+#include <qsettings.h>
 
 #define     kSettingsFile                           "config.json"
 
@@ -75,6 +78,8 @@ public slots:
     void                eventLoopStarted();
 
 protected:
+    void                startHTTPS();
+
     int                 mArgC                       = 0;
     QStringList         mArgV;
 
@@ -108,6 +113,13 @@ protected:
     QString             mRecordsPath;
     QThread *           mRecordsManagerThread       = nullptr;
     RecordsManager *    mRecordsManager             = nullptr;
+
+    QThread *           mDownloaderThread           = nullptr;
+    Downloader *        mDownloader                 = nullptr;
+
+    QSettings *         mHttpsSettings              = nullptr;
+    HttpListener *      mHttpsListener              = nullptr;
+    RESTHandler *       mRESTHandler                = nullptr;
 };
 
 #endif // APP_H

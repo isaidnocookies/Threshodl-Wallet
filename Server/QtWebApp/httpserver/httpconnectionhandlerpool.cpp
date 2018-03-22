@@ -77,6 +77,7 @@ void HttpConnectionHandlerPool::loadSslConfig() {
     // If certificate and key files are configured, then load them
     QString sslKeyFileName=settings->value("sslKeyFile","").toString();
     QString sslCertFileName=settings->value("sslCertFile","").toString();
+    QString sslCACertFileName=settings->value("sslCACertFile","").toString();   // Optional
     if (!sslKeyFileName.isEmpty() && !sslCertFileName.isEmpty()) {
         #ifdef QT_NO_OPENSSL
             qWarning("HttpConnectionHandlerPool: SSL is not supported");
@@ -98,6 +99,14 @@ void HttpConnectionHandlerPool::loadSslConfig() {
             #endif
             {
                 sslCertFileName=QFileInfo(configFile.absolutePath(),sslCertFileName).absoluteFilePath();
+            }                
+            #ifdef Q_OS_WIN32
+                if (QDir::isRelativePath(sslCaCertFileName) && settings->format()!=QSettings::NativeFormat)
+            #else
+                if (! sslCACertFileName.isEmpty() && QDir::isRelativePath(sslCACertFileName))
+            #endif
+            {
+                sslCACertFileName=QFileInfo(configFile.absolutePath(),sslCACertFileName).absoluteFilePath();
             }
 
             // Load the SSL certificate
@@ -124,6 +133,19 @@ void HttpConnectionHandlerPool::loadSslConfig() {
             sslConfiguration->setPrivateKey(sslKey);
             sslConfiguration->setPeerVerifyMode(QSslSocket::VerifyNone);
             sslConfiguration->setProtocol(QSsl::TlsV1SslV3);
+
+            // Optionally load the CA file
+            if( ! sslCACertFileName.isEmpty() ) {
+                QFile caCertFile(sslCACertFileName);
+                if (!caCertFile.open(QIODevice::ReadOnly)) {
+                    qCritical("HttpConnectionHandlerPool: cannot open sslCACertFile %s", qPrintable(sslCACertFileName));
+                    return;
+                }
+                QSslCertificate caCertificate(&caCertFile, QSsl::Pem);
+                caCertFile.close();
+
+                sslConfiguration->setCaCertificates(QList<QSslCertificate>() << caCertificate);
+            }
 
             qDebug("HttpConnectionHandlerPool: SSL settings loaded");
          #endif

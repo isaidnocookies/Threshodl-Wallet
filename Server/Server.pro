@@ -27,7 +27,8 @@ HEADERS += \
     downloader.h \
     recordsmanager.h \
     logsmanager.h \
-    app.h
+    app.h \
+    resthandler.h
 
 
 SOURCES += \
@@ -35,4 +36,5 @@ SOURCES += \
     downloader.cpp \
     recordsmanager.cpp \
     logsmanager.cpp \
-    app.cpp
+    app.cpp \
+    resthandler.cpp

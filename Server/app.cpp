@@ -163,6 +163,9 @@ bool App::doInit()
     if( mRecordsPath.isEmpty() )
         mRecordsPath = QString("%1%2%3").arg(QDir::currentPath()).arg(QDir::separator()).arg(QStringLiteral("records"));
 
+    if( mRESTPort < 1 )
+        mRESTPort = 443;
+
     if( lFile.open(QIODevice::WriteOnly) ) {
         lSettings[kSettingsKey_RESTPort]            = mRESTPort;
         lSettings[kSettingsKey_CACertFile]          = mCACertificateFilename;
@@ -200,6 +203,8 @@ bool App::doInit()
             lCert->setServerDefaults();
             lCert->addServerName(mServerName);
             lCert->addServerName(mServerAddress);
+            lCert->setIssuerName( QStringList() << QString("CN=%1").arg(mServerAddress) );
+            lCert->setSerialNumber(QDateTime::currentSecsSinceEpoch());
             lCert->sign(lCAKey);
 
             if( ! _saveFile( lCert->toPEM(), mCertificateFilename ) || ! _saveFile( lCert->encryptionKey()->privateToPEM(), mPrivateKeyFilename ) )
@@ -283,8 +288,16 @@ void App::start()
     mRecordsManager->moveToThread(mRecordsManagerThread);
     connect( mRecordsManagerThread, &QThread::started, mRecordsManager, &RecordsManager::threadStarted );
 
+    mDownloaderThread = new QThread(this);
+    mDownloader = new Downloader;
+    mDownloader->moveToThread(mDownloaderThread);
+    connect( mDownloaderThread, &QThread::started, mDownloader, &Downloader::threadStarted );
+
     mLogsManagerThread->start();
     mRecordsManagerThread->start();
+    mDownloaderThread->start();
+
+    mRESTHandler = new RESTHandler(this);
 
     QMetaObject::invokeMethod( this, "eventLoopStarted", Qt::QueuedConnection );
 }
@@ -381,5 +394,24 @@ RecordsManager *App::recordsManager() const
 
 void App::eventLoopStarted()
 {
+    startHTTPS();
+}
 
+void App::startHTTPS()
+{
+    mHttpsSettings = new QSettings(this);
+    mHttpsSettings->beginGroup(QStringLiteral("https"));
+    mHttpsSettings->setValue("port",mRESTPort);
+    mHttpsSettings->setValue("minThreads",QThread::idealThreadCount() * 4);
+    mHttpsSettings->setValue("maxThreads",QThread::idealThreadCount() * 40);
+    mHttpsSettings->setValue("cleanupInterval",1000);
+    mHttpsSettings->setValue("readTimeout",20000);
+    mHttpsSettings->setValue("maxRequestSize",81920);
+    mHttpsSettings->setValue("maxMultipartSize",4194304);
+    mHttpsSettings->setValue("sslKeyFile",mPrivateKeyFilename);
+    mHttpsSettings->setValue("sslCertFile",mCertificateFilename);
+    mHttpsSettings->setValue("sslCACertFile",mCACertificateFilename);
+
+    mRESTHandler = new RESTHandler( this );
+    mHttpsListener = new HttpListener( mHttpsSettings, mRESTHandler, this );
 }
