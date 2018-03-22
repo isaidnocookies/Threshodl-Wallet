@@ -20,6 +20,16 @@ void RESTHandler::service(HttpRequest &iRequest, HttpResponse &iResponse)
 
     qWarning() << "Path:" << lPath.constData();
 
+    if( lPath.startsWith("/a/exchangerate/") ) {
+        if( lPath == "/a/exchangerate/btc/usd" ) {
+            lInvalidRequest = false;
+        } else if( lPath == "/a/exchangerate/eth/usd" ) {
+            lInvalidRequest = false;
+        } else if( lPath == "/a/exchangerate/eth/btc" ) {
+            lInvalidRequest = false;
+        }
+    }
+
     if( lInvalidRequest ) {
         iResponse.setHeader("Content-Type", "text/html; charset=ISO-8859-1");
         iResponse.write("<html><head>"

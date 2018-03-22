@@ -108,6 +108,8 @@ void Downloader::networkReplyFinished(const QString iUrl, QNetworkReply *iSource
     lDE->Reply = nullptr;
     mDownloadEventsLock.unlock();
 
+    qWarning() << iUrl << lData.constData();
+
     if( lData.isEmpty() ) {
         emit downloaded(iUrl, lData);
     }else{

@@ -144,7 +144,7 @@ Certificate::Certificate(EncryptionKey *iKey)
 
     mX509 = X509_new();
 
-    X509_set_version(mX509,3);
+    X509_set_version(mX509,2);
     X509_set_pubkey(mX509,mKey->toEVP());
 }
 
@@ -229,8 +229,8 @@ void Certificate::addSubjectName(const QString iSubjectName)
 
 void Certificate::addServerName(const QString iServerName)
 {
-    QByteArray  lUtf8 = iServerName.toUtf8();
-    _addExtension(NID_netscape_ssl_server_name,lUtf8.constData());
+     QByteArray  lUtf8 = iServerName.toUtf8();
+     _addExtension(NID_netscape_ssl_server_name,lUtf8.constData());
     addSubjectName(QString("CN=%1").arg(iServerName));
 }
 
