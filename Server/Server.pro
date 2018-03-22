@@ -17,6 +17,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += ENABLE_RPCSERVER
 
+include(QtWebApp/logging/logging.pri)
+include(QtWebApp/httpserver/httpserver.pri)
 include(../CertLib/CertLib.pri)
 include(../RPC/RPC.pri)
 
