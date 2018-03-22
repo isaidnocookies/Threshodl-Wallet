@@ -8,5 +8,10 @@ Downloader::Downloader(QObject * iParent)
 
 void Downloader::threadStarted()
 {
-    mNAM    = QNetworkAccessManager(this);
+    mNAM    = new QNetworkAccessManager(this);
+}
+
+void Downloader::timerEvent()
+{
+
 }
