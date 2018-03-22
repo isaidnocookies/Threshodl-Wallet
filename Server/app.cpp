@@ -293,6 +293,8 @@ void App::start()
     mDownloader->moveToThread(mDownloaderThread);
     connect( mDownloaderThread, &QThread::started, mDownloader, &Downloader::threadStarted );
 
+    connect( mDownloader, &Downloader::downloaded, mRecordsManager, &RecordsManager::handleDownloadedUrlData );
+
     mLogsManagerThread->start();
     mRecordsManagerThread->start();
     mDownloaderThread->start();
@@ -392,11 +394,6 @@ RecordsManager *App::recordsManager() const
     return mRecordsManager;
 }
 
-void App::eventLoopStarted()
-{
-    startHTTPS();
-}
-
 void App::startHTTPS()
 {
     mHttpsSettings = new QSettings(this);
@@ -414,4 +411,9 @@ void App::startHTTPS()
 
     mRESTHandler = new RESTHandler( this );
     mHttpsListener = new HttpListener( mHttpsSettings, mRESTHandler, this );
+}
+
+void App::eventLoopStarted()
+{
+    startHTTPS();
 }

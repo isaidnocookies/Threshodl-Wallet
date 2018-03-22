@@ -1,5 +1,7 @@
 #include "downloader.h"
 
+#include <QThread>
+
 Downloader::Downloader(QObject * iParent)
     : QObject(iParent)
 {
@@ -18,6 +20,16 @@ bool Downloader::isCurrentlyDownloading(const QString &iUrl) const
         return mDownloadEvents[iUrl]->Busy;
     }
     return false;
+}
+
+quint64 Downloader::timeout() const
+{
+    return mTimeOut;
+}
+
+int Downloader::timerInterval() const
+{
+    return mTimerInterval;
 }
 
 void Downloader::threadStarted()
@@ -40,7 +52,7 @@ void Downloader::threadStarted()
     mTimer  = new QTimer(this);
     connect( mTimer, &QTimer::timeout, this, &Downloader::timerEvent );
     mTimer->setSingleShot(false);
-    mTimer->setInterval(15000);
+    mTimer->setInterval(mTimerInterval);
     mTimer->start();
 }
 
@@ -97,6 +109,43 @@ void Downloader::timerEvent()
     }
 }
 
+void Downloader::setTimerInterval(int iTimerInterval)
+{
+    mTimerInterval = iTimerInterval;
+    if( mTimer ) {
+        mTimer->setInterval(mTimerInterval);
+        restartTimer();
+    }
+}
+
+void Downloader::addUrl(const QString iUrl)
+{
+    mDownloadEventsLock.lock();
+    QSharedPointer<DownloadEvent> lDE = QSharedPointer<DownloadEvent>(new DownloadEvent);
+    lDE->Timer.start();
+    lDE->UrlString          = iUrl;
+    lDE->Url                = QUrl::fromUserInput(iUrl);
+    lDE->Busy               = false;
+    lDE->Reply              = nullptr;
+    mDownloadEvents[iUrl]   = lDE;
+
+    // Now start an immediate download of it
+    lDE->Reply = mNAM->get(QNetworkRequest(lDE->Url));
+    lDE->Timer.restart();
+    lDE->Busy = true;
+
+    connect( lDE->Reply, QOverload<>::of(&QNetworkReply::finished),
+             [this,lDE](){
+        this->networkReplyFinished(lDE->UrlString,lDE->Reply);
+    });
+
+    connect( lDE->Reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+             [this,lDE](QNetworkReply::NetworkError iErroCode){
+        this->networkReplyError(lDE->UrlString,lDE->Reply,iErroCode);
+    });
+    mDownloadEventsLock.unlock();
+}
+
 void Downloader::networkReplyFinished(const QString iUrl, QNetworkReply *iSource)
 {
     QByteArray  lData = iSource->readAll();
@@ -108,9 +157,7 @@ void Downloader::networkReplyFinished(const QString iUrl, QNetworkReply *iSource
     lDE->Reply = nullptr;
     mDownloadEventsLock.unlock();
 
-    qWarning() << iUrl << lData.constData();
-
-    if( lData.isEmpty() ) {
+    if( ! lData.isEmpty() ) {
         emit downloaded(iUrl, lData);
     }else{
         emit failed(iUrl);
@@ -129,4 +176,17 @@ void Downloader::networkReplyError(const QString iUrl, QNetworkReply *iSource, Q
     mDownloadEventsLock.unlock();
 
     emit failed(iUrl);
+}
+
+void Downloader::restartTimer()
+{
+    if( mTimer ) {
+        if( mTimer->thread() != QThread::currentThread() ) {
+            QMetaObject::invokeMethod( mTimer, "stop", Qt::BlockingQueuedConnection );
+            QMetaObject::invokeMethod( mTimer, "start", Qt::BlockingQueuedConnection );
+        }else{
+            mTimer->stop();
+            mTimer->start();
+        }
+    }
 }
