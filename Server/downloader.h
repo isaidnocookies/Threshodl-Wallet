@@ -54,7 +54,7 @@ protected:
     void    restartTimer();
 
     QNetworkAccessManager *                         mNAM            = nullptr;
-    int                                             mTimerInterval  = 15000;
+    int                                             mTimerInterval  = 5000;
     QTimer *                                        mTimer          = nullptr;
     quint64                                         mTimeOut        = 60000;
     QStringList                                     mURLs;

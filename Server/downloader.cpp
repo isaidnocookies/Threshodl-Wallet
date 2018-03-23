@@ -1,6 +1,7 @@
 #include "downloader.h"
 
 #include <QThread>
+#include <QMessageAuthenticationCode>
 
 Downloader::Downloader(QObject * iParent)
     : QObject(iParent)
@@ -87,7 +88,14 @@ void Downloader::timerEvent()
                 lDE->Reply = nullptr;
             }
 
-            lDE->Reply = mNAM->get(QNetworkRequest(lDE->Url));
+            QNetworkRequest lRequest = QNetworkRequest(lDE->Url);
+            QString         lDigest = QStringLiteral("%1.%2").arg(QDateTime::currentSecsSinceEpoch()).arg(QStringLiteral("YTE2NzlkODZiZjhkNDMyY2FjNzRlYTMwNGUxZWFhMDU"));
+            QByteArray      lKey = "M2VjN2JmZDBiYTU1NDUwNzk4MzZiNWU2Y2NmYzNkNjRhMjAzMWM1NmNkODU0MTc0YWI5MGQ5OWUwNTY5NDg5MQ";
+            QByteArray      lDigestHMAC = QMessageAuthenticationCode::hash(lDigest.toUtf8(), lKey, QCryptographicHash::Sha256).toHex();
+            QByteArray      lHeaderValue = (QStringLiteral("%1.%2").arg(lDigest).arg(lDigestHMAC.constData())).toUtf8();
+            lRequest.setRawHeader("X-signature", lHeaderValue);
+
+            lDE->Reply = mNAM->get(QNetworkRequest(lRequest));
             lDE->Timer.restart();
             lDE->Busy = true;
 
@@ -148,6 +156,8 @@ void Downloader::addUrl(const QString iUrl)
 
 void Downloader::networkReplyFinished(const QString iUrl, QNetworkReply *iSource)
 {
+    if( iSource == nullptr ) return;
+
     QByteArray  lData = iSource->readAll();
 
     mDownloadEventsLock.lock();

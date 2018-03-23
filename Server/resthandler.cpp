@@ -21,7 +21,7 @@ void RESTHandler::service(HttpRequest &iRequest, HttpResponse &iResponse)
     if( lOffset > -1 ) {
         QByteArray  lStarts = lPath.left(lOffset);
         if( lStarts == "/a" )
-            lInvalidRequest = serviceVersionAlpha( lPath.mid(lOffset), iRequest, iResponse );
+            lInvalidRequest = ! serviceVersionAlpha( lPath.mid(lOffset), iRequest, iResponse );
     }
 
     if( lInvalidRequest ) {
@@ -46,7 +46,11 @@ bool RESTHandler::serviceVersionAlpha(const QByteArray &iPathBalance, HttpReques
 
         if( lCommand == "exchangerate" ) {
             return RESTAlphaExchangeRate::service(lPathBalance,iRequest,iResponse);
+        } else {
+            qWarning() << "Unknown command 'alpha'" << lCommand;
         }
+    } else {
+        qWarning() << "Failed to parse 'alpha' rest path" << iPathBalance;
     }
 
     return false;
