@@ -11,6 +11,10 @@ class RecordsManager : public QObject
 public:
     explicit RecordsManager(const QString &iRecordsPath, QObject *iParent = nullptr);
 
+    QByteArray lastDataBTCUSD() const;
+    QByteArray lastDataETHUSD() const;
+    QByteArray lastDataETHBTC() const;
+
 signals:
 
 public slots:
@@ -25,6 +29,9 @@ protected:
 
 private:
     QString         mRecordsPath;
+    QByteArray      mDataBTCUSD;
+    QByteArray      mDataETHUSD;
+    QByteArray      mDataETHBTC;
 };
 
 #endif // RECORDSMANAGER_H

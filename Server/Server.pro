@@ -28,7 +28,8 @@ HEADERS += \
     recordsmanager.h \
     logsmanager.h \
     app.h \
-    resthandler.h
+    resthandler.h \
+    restalphaexchangerate.h
 
 
 SOURCES += \
@@ -37,4 +38,5 @@ SOURCES += \
     recordsmanager.cpp \
     logsmanager.cpp \
     app.cpp \
-    resthandler.cpp
+    resthandler.cpp \
+    restalphaexchangerate.cpp

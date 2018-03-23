@@ -17,6 +17,21 @@ RecordsManager::RecordsManager(const QString &iRecordsPath, QObject * iParent)
     }
 }
 
+QByteArray RecordsManager::lastDataBTCUSD() const
+{
+    return mDataBTCUSD;
+}
+
+QByteArray RecordsManager::lastDataETHUSD() const
+{
+    return mDataETHUSD;
+}
+
+QByteArray RecordsManager::lastDataETHBTC() const
+{
+    return mDataETHBTC;
+}
+
 void RecordsManager::threadStarted()
 {
 
@@ -55,6 +70,8 @@ void RecordsManager::saveDataBTCUSD(const QString iSource, const QByteArray iDat
     if( lFile.open(QIODevice::WriteOnly) ) {
         if( lFile.write(iData) != iData.size() ) {
             qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
+        }else{
+            mDataBTCUSD = iData;
         }
         lFile.close();
     }else{
@@ -80,6 +97,8 @@ void RecordsManager::saveDataETHUSD(const QString iSource, const QByteArray iDat
     if( lFile.open(QIODevice::WriteOnly) ) {
         if( lFile.write(iData) != iData.size() ) {
             qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
+        }else{
+            mDataETHUSD = iData;
         }
         lFile.close();
     }else{
@@ -105,6 +124,8 @@ void RecordsManager::saveDataETHBTC(const QString iSource, const QByteArray iDat
     if( lFile.open(QIODevice::WriteOnly) ) {
         if( lFile.write(iData) != iData.size() ) {
             qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
+        }else{
+            mDataETHBTC = iData;
         }
         lFile.close();
     }else{
