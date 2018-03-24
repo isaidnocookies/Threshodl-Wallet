@@ -16,8 +16,6 @@ public:
         @param response Must be used to return the response
     */
     void service(HttpRequest& iRequest, HttpResponse& iResponse) override;
-
-    bool serviceVersionAlpha(const QByteArray & iPathBalance, HttpRequest& iRequest, HttpResponse& iResponse);
 };
 
 #endif // RESTHANDLER_H

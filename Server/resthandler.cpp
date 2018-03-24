@@ -1,5 +1,5 @@
 #include "resthandler.h"
-#include "restalphaexchangerate.h"
+#include "restalphahandler.h"
 
 RESTHandler::RESTHandler(QObject *iParent)
     : HttpRequestHandler(iParent)
@@ -21,7 +21,7 @@ void RESTHandler::service(HttpRequest &iRequest, HttpResponse &iResponse)
     if( lOffset > -1 ) {
         QByteArray  lStarts = lPath.left(lOffset);
         if( lStarts == "/a" )
-            lInvalidRequest = ! serviceVersionAlpha( lPath.mid(lOffset), iRequest, iResponse );
+            lInvalidRequest = ! RestAlphaHandler::service( lPath.mid(lOffset), iRequest, iResponse );
     }
 
     if( lInvalidRequest ) {
@@ -34,24 +34,3 @@ void RESTHandler::service(HttpRequest &iRequest, HttpResponse &iResponse)
     }
 }
 
-bool RESTHandler::serviceVersionAlpha(const QByteArray &iPathBalance, HttpRequest &iRequest, HttpResponse &iResponse)
-{
-    int         lOffset         = iPathBalance.indexOf('/',1);
-    QByteArray  lCommand;
-    QByteArray  lPathBalance    = iPathBalance;
-
-    if( lOffset > -1 ) {
-        lCommand = lPathBalance.mid(1,lOffset-1);
-        lPathBalance = lPathBalance.mid(lOffset);
-
-        if( lCommand == "exchangerate" ) {
-            return RESTAlphaExchangeRate::service(lPathBalance,iRequest,iResponse);
-        } else {
-            qWarning() << "Unknown command 'alpha'" << lCommand;
-        }
-    } else {
-        qWarning() << "Failed to parse 'alpha' rest path" << iPathBalance;
-    }
-
-    return false;
-}

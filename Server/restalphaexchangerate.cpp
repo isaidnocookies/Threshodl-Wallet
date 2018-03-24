@@ -6,8 +6,8 @@ bool RESTAlphaExchangeRate::service(const QByteArray &iRESTArguments, HttpReques
 {
     Q_UNUSED(iRequest)
 
-    QList<QByteArray>   lElements   = iRESTArguments.split('/');
     QByteArray          lReply;
+    QList<QByteArray>   lElements   = iRESTArguments.split('/');
 
     if( lElements.size() == 3 ) {
         QByteArray      lFrom       = lElements[1].toLower();
@@ -33,7 +33,7 @@ bool RESTAlphaExchangeRate::service(const QByteArray &iRESTArguments, HttpReques
     }
 
     if( ! lReply.isEmpty() ) {
-        iResponse.setHeader("Content-Type","application/json");
+        iResponse.setHeader("Content-Type", "application/json");
         iResponse.write(lReply);
         return true;
     } else {
