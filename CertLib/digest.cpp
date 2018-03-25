@@ -38,7 +38,7 @@ bool Digest::sign(EncryptionKey *iKey)
 
     if( (lMDCTX = EVP_MD_CTX_create()) ) {
 
-        if( 1 == EVP_DigestSignInit(lMDCTX, nullptr, EVP_sha512(), nullptr, iKey->toEVP()) ) {
+        if( 1 == EVP_DigestSignInit(lMDCTX, nullptr, _hashEngine(), nullptr, iKey->toEVP()) ) {
             if( 1 == EVP_DigestSignUpdate(lMDCTX, mData.constData(), mData.size()) ) {
                 if( 1 == EVP_DigestSignFinal(lMDCTX, nullptr, &lELen) ) {
                     QByteArray lEData{static_cast<int>(lELen), static_cast<char>(0)};
@@ -67,7 +67,7 @@ bool Digest::verify(EncryptionKey *iKey)
 
     if( (lMDCTX = EVP_MD_CTX_create()) ) {
 
-        if(1 == EVP_DigestVerifyInit(lMDCTX, NULL, EVP_sha512(), NULL, iKey->toEVP())) {
+        if(1 == EVP_DigestVerifyInit(lMDCTX, NULL, _hashEngine(), NULL, iKey->toEVP())) {
             if(1 == EVP_DigestVerifyUpdate(lMDCTX, mData.constData(), mData.size()) ) {
                 if(1 == EVP_DigestVerifyFinal(lMDCTX, nullptr, 0)) {
                     lRet = true;
@@ -98,6 +98,20 @@ bool Digest::verify(EncryptionKey *iKey, const QByteArray iData, enum Digest::Ha
     lDigest.setHashType(iHashType);
     lDigest.addData(iData);
     return lDigest.verify(iKey);
+}
+
+const EVP_MD *Digest::_hashEngine() const
+{
+    switch( mHashType ) {
+    case MD5:       return EVP_md5();
+    case SHA1:      return EVP_sha1();
+    case SHA224:    return EVP_sha224();
+    case SHA256:    return EVP_sha256();
+    case SHA384:    return EVP_sha384();
+    case SHA512:    return EVP_sha512();
+    }
+
+    return nullptr;
 }
 
 bool Digest::isEncrypted() const

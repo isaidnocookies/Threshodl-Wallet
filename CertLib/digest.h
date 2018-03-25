@@ -32,6 +32,8 @@ public:
     static bool         verify( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );
 
 private:
+    const EVP_MD * _hashEngine() const;
+
     enum HashTypes  mHashType           = SHA512;
     bool            mDataIsSigned       = false;
     QByteArray      mData;
