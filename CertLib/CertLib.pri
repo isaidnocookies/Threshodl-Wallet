@@ -14,10 +14,12 @@
     HEADERS += \
         $$PWD/sslbio.h \
         $$PWD/encryptionkey.h \
-        $$PWD/certificate.h
+        $$PWD/certificate.h \
+        $$PWD/digest.h
 
     SOURCES += \
         $$PWD/sslbio.cpp \
         $$PWD/encryptionkey.cpp \
-        $$PWD/certificate.cpp
+        $$PWD/certificate.cpp \
+        $$PWD/digest.cpp
 }

@@ -1,6 +1,9 @@
 #include "restalphahandler.h"
 #include "restalphaexchangerate.h"
 #include "restalphamodeatomodeb.h"
+#include "restalphamodebtomodea.h"
+#include "restalphamodebtomodeb.h"
+#include "restalphacreateaddress.h"
 
 #include <QDebug>
 
@@ -17,8 +20,17 @@ bool RestAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iR
         if( lCommand == "exchangerate" )
             return RESTAlphaExchangeRate::service( lRESTArguments, iRequest, iResponse );
 
+        if( lCommand == "btob" )
+            return RESTAlphaModeBToModeB::service( lRESTArguments, iRequest, iResponse );
+
         if( lCommand == "atob" )
             return RESTAlphaModeAToModeB::service( lRESTArguments, iRequest, iResponse );
+
+        if( lCommand == "btoa" )
+            return RESTAlphaModeBToModeA::service( lRESTArguments, iRequest, iResponse );
+
+        if( lCommand == "createAddress" )
+            return RESTAlphaCreateAddress::service( lRESTArguments, iRequest, iResponse );
 
         qWarning() << "Unknown command for 'alpha'" << lCommand;
     } else {

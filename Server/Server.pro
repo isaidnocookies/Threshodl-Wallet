@@ -33,7 +33,8 @@ HEADERS += \
     restalphahandler.h \
     restalphamodeatomodeb.h \
     restalphamodebtomodeb.h \
-    restalphamodebtomodea.h
+    restalphamodebtomodea.h \
+    restalphacreateaddress.h
 
 
 SOURCES += \
@@ -47,4 +48,5 @@ SOURCES += \
     restalphahandler.cpp \
     restalphamodeatomodeb.cpp \
     restalphamodebtomodeb.cpp \
-    restalphamodebtomodea.cpp
+    restalphamodebtomodea.cpp \
+    restalphacreateaddress.cpp
