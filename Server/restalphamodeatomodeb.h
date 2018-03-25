@@ -3,7 +3,7 @@
 
 #include "restalphahandler.h"
 
-class RestAlphaModeAToModeB
+class RESTAlphaModeAToModeB
 {
 public:
     static bool service(const QByteArray &iRESTArguments, HttpRequest &iRequest, HttpResponse &iResponse);

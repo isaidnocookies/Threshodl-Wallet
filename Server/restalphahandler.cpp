@@ -18,7 +18,7 @@ bool RestAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iR
             return RESTAlphaExchangeRate::service( lRESTArguments, iRequest, iResponse );
 
         if( lCommand == "atob" )
-            return RestAlphaModeAToModeB::service( lRESTArguments, iRequest, iResponse );
+            return RESTAlphaModeAToModeB::service( lRESTArguments, iRequest, iResponse );
 
         qWarning() << "Unknown command for 'alpha'" << lCommand;
     } else {
