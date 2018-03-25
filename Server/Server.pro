@@ -31,7 +31,9 @@ HEADERS += \
     resthandler.h \
     restalphaexchangerate.h \
     restalphahandler.h \
-    restalphamodeatomodeb.h
+    restalphamodeatomodeb.h \
+    restalphamodebtomodeb.h \
+    restalphamodebtomodea.h
 
 
 SOURCES += \
@@ -43,4 +45,6 @@ SOURCES += \
     resthandler.cpp \
     restalphaexchangerate.cpp \
     restalphahandler.cpp \
-    restalphamodeatomodeb.cpp
+    restalphamodeatomodeb.cpp \
+    restalphamodebtomodeb.cpp \
+    restalphamodebtomodea.cpp
