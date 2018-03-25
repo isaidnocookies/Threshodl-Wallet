@@ -133,6 +133,42 @@ void App::parseCommandLine()
                 mRecordsPath = mArgV[lIndex];
                 continue;
             }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBUserName ) {
+                lIndex++;
+                mDBUserName = mArgV[lIndex];
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBPassword ) {
+                lIndex++;
+                mDBPassword = mArgV[lIndex];
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBName ) {
+                lIndex++;
+                mDBName = mArgV[lIndex];
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBHostName ) {
+                lIndex++;
+                mDBHostName = mArgV[lIndex];
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBPort ) {
+                lIndex++;
+                mDBPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_DBType ) {
+                lIndex++;
+                mDBType = mArgV[lIndex].toUpper();
+                continue;
+            }
         }
     }
 }
@@ -173,6 +209,12 @@ bool App::doInit()
         lSettings[kSettingsKey_CertificateFile]     = mCertificateFilename;
         lSettings[kSettingsKey_LogsPath]            = mLogsPath;
         lSettings[kSettingsKey_RecordsPath]         = mRecordsPath;
+        lSettings[kSettingsKey_DBUserName]          = mDBUserName;
+        lSettings[kSettingsKey_DBPassword]          = mDBPassword;
+        lSettings[kSettingsKey_DBHostName]          = mDBHostName;
+        lSettings[kSettingsKey_DBPort]              = mDBPort;
+        lSettings[kSettingsKey_DBName]              = mDBName;
+        lSettings[kSettingsKey_DBType]              = mDBType;
         lFile.write( QJsonDocument::fromVariant(lSettings).toJson() );
 
         // Init the OpenSSL libraries
@@ -211,7 +253,9 @@ bool App::doInit()
                 return false;
         }
 
-        return true;
+        mDBInterface = new DBInterfaceAlpha(mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort);
+        mDBInterface->setSqlType(mDBType);
+        return mDBInterface->initDB();
     }
 
     return false;
@@ -245,6 +289,30 @@ void App::loadSettings()
 
         if( lSettings.contains(kSettingsKey_RecordsPath) ) {
             mRecordsPath = lSettings[kSettingsKey_RecordsPath].toString();
+        }
+
+        if( lSettings.contains(kSettingsKey_DBUserName) ) {
+            mDBUserName = lSettings[kSettingsKey_DBUserName].toString();
+        }
+
+        if( lSettings.contains(kSettingsKey_DBPassword) ) {
+            mDBPassword = lSettings[kSettingsKey_DBPassword].toString();
+        }
+
+        if( lSettings.contains(kSettingsKey_DBName) ) {
+            mDBName = lSettings[kSettingsKey_DBName].toString();
+        }
+
+        if( lSettings.contains(kSettingsKey_DBHostName) ) {
+            mDBHostName = lSettings[kSettingsKey_DBHostName].toString();
+        }
+
+        if( lSettings.contains(kSettingsKey_DBPort) ) {
+            mDBPort = static_cast<quint16>(lSettings[kSettingsKey_DBPort].toUInt() & 0xFFFF);
+        }
+
+        if( lSettings.contains(kSettingsKey_DBType) ) {
+            mDBType = lSettings[kSettingsKey_DBType].toString().toUpper();
         }
     }
 }

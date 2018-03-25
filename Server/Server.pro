@@ -1,4 +1,4 @@
-QT += core network
+QT += core network sql
 QT -= gui
 
 CONFIG += c++11 console
@@ -34,7 +34,9 @@ HEADERS += \
     restalphamodeatomodeb.h \
     restalphamodebtomodeb.h \
     restalphamodebtomodea.h \
-    restalphacreateaddress.h
+    restalphamanageaddress.h \
+    dbinterface.h \
+    dbinterfacealpha.h
 
 
 SOURCES += \
@@ -49,4 +51,6 @@ SOURCES += \
     restalphamodeatomodeb.cpp \
     restalphamodebtomodeb.cpp \
     restalphamodebtomodea.cpp \
-    restalphacreateaddress.cpp
+    restalphamanageaddress.cpp \
+    dbinterface.cpp \
+    dbinterfacealpha.cpp

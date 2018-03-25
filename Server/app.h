@@ -5,6 +5,7 @@
 #include "downloader.h"
 #include "logsmanager.h"
 #include "recordsmanager.h"
+#include "dbinterfacealpha.h"
 #include "httplistener.h"
 #include "resthandler.h"
 
@@ -28,6 +29,12 @@
 #define     kCommandLineOption_ServerAddress        "-serverAddress"
 #define     kCommandLineOption_LogsPath             "-logs"
 #define     kCommandLineOption_RecordsPath          "-records"
+#define     kCommandLineOption_DBUserName           "-dbusername"
+#define     kCommandLineOption_DBPassword           "-dbpassword"
+#define     kCommandLineOption_DBName               "-dbname"
+#define     kCommandLineOption_DBHostName           "-dbhostname"
+#define     kCommandLineOption_DBPort               "-dbport"
+#define     kCommandLineOption_DBType               "-dbtype"
 
 #define     kSettingsKey_RESTPort                   "RESTPort"
 #define     kSettingsKey_CACertFile                 "CACertFile"
@@ -35,6 +42,12 @@
 #define     kSettingsKey_CertificateFile            "CertificateFile"
 #define     kSettingsKey_LogsPath                   "LogsPath"
 #define     kSettingsKey_RecordsPath                "RecordsPath"
+#define     kSettingsKey_DBUserName                 "DBUserName"
+#define     kSettingsKey_DBPassword                 "DBPassword"
+#define     kSettingsKey_DBName                     "DBName"
+#define     kSettingsKey_DBHostName                 "DBHostName"
+#define     kSettingsKey_DBPort                     "DBPort"
+#define     kSettingsKey_DBType                     "DBType"
 
 class App : public QObject
 {
@@ -120,6 +133,15 @@ protected:
     QSettings *         mHttpsSettings              = nullptr;
     HttpListener *      mHttpsListener              = nullptr;
     RESTHandler *       mRESTHandler                = nullptr;
+
+    QString             mDBUserName;
+    QString             mDBPassword;
+    QString             mDBName;
+    QString             mDBHostName;
+    quint16             mDBPort                     = 5432;
+    QString             mDBType;
+
+    DBInterfaceAlpha *  mDBInterface                = nullptr;
 };
 
 #endif // APP_H

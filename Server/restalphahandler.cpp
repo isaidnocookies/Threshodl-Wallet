@@ -3,7 +3,7 @@
 #include "restalphamodeatomodeb.h"
 #include "restalphamodebtomodea.h"
 #include "restalphamodebtomodeb.h"
-#include "restalphacreateaddress.h"
+#include "restalphamanageaddress.h"
 
 #include <QDebug>
 
@@ -29,8 +29,11 @@ bool RestAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iR
         if( lCommand == "btoa" )
             return RESTAlphaModeBToModeA::service( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "createAddress" )
-            return RESTAlphaCreateAddress::service( lRESTArguments, iRequest, iResponse );
+        if( lCommand == "createaddress" )
+            return RESTAlphaManageAddress::serviceCreate( lRESTArguments, iRequest, iResponse );
+
+        if( lCommand == "deleteaddress" )
+            return RESTAlphaManageAddress::serviceDelete( lRESTArguments, iRequest, iResponse );
 
         qWarning() << "Unknown command for 'alpha'" << lCommand;
     } else {
