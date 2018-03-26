@@ -9,6 +9,12 @@
         !contains( LIBS, -lssl ): LIBS += -lssl
     }
 
+    macos {
+        !contains( LIBS, -lssl ) : LIBS += -L /usr/local/opt/openssl/lib -lssl
+        INCLUDEPATH += /usr/local/opt/openssl/include
+        !contains( LIBS, -lcrypto ) : LIBS += -L /usr/local/opt/openssl/lib -lcrypto
+    }
+
     INCLUDEPATH += $$PWD
 
     HEADERS += \
