@@ -11,8 +11,8 @@
 
     macos {
         !contains( LIBS, -lssl ) : LIBS += -L /usr/local/opt/openssl/lib -lssl
-        INCLUDEPATH += /usr/local/opt/openssl/include
         !contains( LIBS, -lcrypto ) : LIBS += -L /usr/local/opt/openssl/lib -lcrypto
+        INCLUDEPATH += /usr/local/opt/openssl/include
     }
 
     INCLUDEPATH += $$PWD
