@@ -1,6 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include "main.h"
 #include "certificate.h"
 #include "downloader.h"
 #include "logsmanager.h"
@@ -87,6 +88,8 @@ public:
     QString             recordsPath() const;                // Empty if not valid
     RecordsManager *    recordsManager() const;
 
+    DBInterface *       databaseInterface() const;
+
 public slots:
     void                eventLoopStarted();
 
@@ -141,7 +144,7 @@ protected:
     quint16             mDBPort                     = 5432;
     QString             mDBType;
 
-    DBInterfaceAlpha *  mDBInterface                = nullptr;
+    DBInterface *       mDBInterface                = nullptr;
 };
 
 #endif // APP_H

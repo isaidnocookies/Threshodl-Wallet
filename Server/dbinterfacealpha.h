@@ -41,12 +41,12 @@ protected:
 public:
     DBInterfaceAlpha( const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort = 5432 );
 
-    void setSqlType( const QString iSqlType = QStringLiteral("QPSQL") );
-    QString sqlType() const;
+    void setSqlType( const QString iSqlType = QStringLiteral("QPSQL") ) override;
+    QString sqlType() const override;
 
-    bool initDB();
-    bool addressExists( const QString iAddress );
-    bool addressCreate( const QString iAddress, const QByteArray iPublicKey );
+    bool initDB() override;
+    bool addressExists( const QString iAddress ) override;
+    bool addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;
 };
 
 #endif // DBALPHA_H

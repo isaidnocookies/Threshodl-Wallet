@@ -1,5 +1,5 @@
 #include "logsmanager.h"
-#include "main.h"
+#include "app.h"
 
 #include <QDir>
 #include <QFileInfo>

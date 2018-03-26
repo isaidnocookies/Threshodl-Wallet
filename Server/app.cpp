@@ -360,8 +360,9 @@ void App::start()
     mDownloader = new Downloader;
     mDownloader->moveToThread(mDownloaderThread);
     connect( mDownloaderThread, &QThread::started, mDownloader, &Downloader::threadStarted );
-
     connect( mDownloader, &Downloader::downloaded, mRecordsManager, &RecordsManager::handleDownloadedUrlData );
+
+    mDBInterface = new DBInterfaceAlpha{mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort};
 
     mLogsManagerThread->start();
     mRecordsManagerThread->start();
@@ -460,6 +461,11 @@ QString App::recordsPath() const
 RecordsManager *App::recordsManager() const
 {
     return mRecordsManager;
+}
+
+DBInterface *App::databaseInterface() const
+{
+    return mDBInterface;
 }
 
 void App::startHTTPS()

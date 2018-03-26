@@ -1,8 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "app.h"
-
+class App;
 extern App * gApp;
 
 //#include "downloader.h"
