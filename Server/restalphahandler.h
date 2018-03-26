@@ -3,7 +3,7 @@
 
 #include "resthandler.h"
 
-class RestAlphaHandler
+class RESTAlphaHandler
 {
 public:
     static bool service(const QByteArray &iRESTArguments, HttpRequest& iRequest, HttpResponse& iResponse);

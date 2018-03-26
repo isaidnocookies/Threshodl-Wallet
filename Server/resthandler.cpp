@@ -21,7 +21,7 @@ void RESTHandler::service(HttpRequest &iRequest, HttpResponse &iResponse)
     if( lOffset > -1 ) {
         QByteArray  lStarts = lPath.left(lOffset);
         if( lStarts == "/a" )
-            lInvalidRequest = ! RestAlphaHandler::service( lPath.mid(lOffset), iRequest, iResponse );
+            lInvalidRequest = ! RESTAlphaHandler::service( lPath.mid(lOffset), iRequest, iResponse );
     }
 
     if( lInvalidRequest ) {

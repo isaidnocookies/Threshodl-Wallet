@@ -7,7 +7,7 @@
 
 #include <QDebug>
 
-bool RestAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iRequest, HttpResponse &iResponse)
+bool RESTAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iRequest, HttpResponse &iResponse)
 {
     QByteArray  lCommand;
     int         lOffset         = iRESTArguments.indexOf('/',1);
