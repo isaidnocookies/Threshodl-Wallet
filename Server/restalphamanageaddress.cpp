@@ -11,7 +11,7 @@ bool RESTAlphaManageAddress::serviceCreate(const QByteArray &iRESTArguments, Htt
 
     if( gApp && gApp->databaseInterface() ) {
         QJsonParseError lJsonError;
-        QVariantMap     lMap = QJsonDocument::fromJson(iRequest.getBody(), &lJSonError).toVariant().toMap();
+        QVariantMap     lMap = QJsonDocument::fromJson(iRequest.getBody(), &lJsonError).toVariant().toMap();
         if( lJsonError.error == QJsonParseError::NoError ) {
             if( lMap.contains(QStringLiteral("address")) && lMap.contains("publicKey") ) {
 
