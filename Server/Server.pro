@@ -52,5 +52,4 @@ SOURCES += \
     restalphamodebtomodeb.cpp \
     restalphamodebtomodea.cpp \
     restalphamanageaddress.cpp \
-    dbinterface.cpp \
     dbinterfacealpha.cpp

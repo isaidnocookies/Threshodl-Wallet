@@ -7,6 +7,14 @@
 #include <QString>
 #include <QSqlDatabase>
 
+////////////////////////////////////////
+///
+///
+///  LOCKING IS MISSING, SEE: https://nordeus.com/blog/engineering/postgresql-locking-revealed/
+///
+///
+////////////////////////////////////////
+
 class DBInterfaceAlpha : public DBInterface
 {
 protected:
@@ -47,6 +55,8 @@ public:
     bool initDB() override;
     bool addressExists( const QString iAddress ) override;
     bool addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;
+    bool addressValidate( const QString iAddress, const QByteArray iPublicKey ) override;
+    bool addressDelete( const QString iAddress ) override;
 };
 
 #endif // DBALPHA_H
