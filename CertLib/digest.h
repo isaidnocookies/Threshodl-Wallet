@@ -26,7 +26,7 @@ public:
     void addData( const QByteArray iData );
 
     bool sign( EncryptionKey * iKey );
-    bool verify( EncryptionKey * iKey );
+    bool verify( EncryptionKey * iKey, const QByteArray iSignature );
 
     static QByteArray   sign( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );
     static bool         verify( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );

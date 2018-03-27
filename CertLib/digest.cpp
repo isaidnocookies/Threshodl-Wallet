@@ -56,7 +56,7 @@ bool Digest::sign(EncryptionKey *iKey)
     return lRet;
 }
 
-bool Digest::verify(EncryptionKey *iKey)
+bool Digest::verify(EncryptionKey *iKey, const QByteArray iSignature)
 {
     if( ! mDataIsSigned )    return false;
     if( ! iKey )                return false;
