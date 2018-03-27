@@ -5,7 +5,7 @@ TestEventManager::TestEventManager() {
 }
 
 void TestEventManager::addItem() {
-    CustomItem item = CustomItem::CustomItem();
+    CustomItem item;
     this->list.append(item);
 }
 
