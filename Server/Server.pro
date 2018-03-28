@@ -24,7 +24,7 @@ include(../RPC/RPC.pri)
 
 linux {
     LIBS += -L /usr/local/lib -lbtc -lsecp256k1
-    INCLUDEPATH += -I /usr/local/include
+    INCLUDEPATH += -I ../libbtc/include
 }
 
 HEADERS += \

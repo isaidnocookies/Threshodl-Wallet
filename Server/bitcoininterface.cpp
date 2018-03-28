@@ -2,14 +2,14 @@
 
 #include <QDebug>
 
-#include <bip32.h>
-#include <chainparams.h>
-#include <ecc.h>
-#include <protocol.h>
-#include <serialize.h>
-#include <tool.h>
-#include <tx.h>
-#include <utils.h>
+//#include <btc/bip32.h>
+#include <btc/chainparams.h>
+//#include <btc/ecc.h>
+//#include <btc/protocol.h>
+//#include <btc/serialize.h>
+#include <btc/tool.h>
+//#include <btc/tx.h>
+//#include <btc/utils.h>
 
 BitcoinInterface::BitcoinInterface(QObject *iParent) : QObject(iParent)
 {

@@ -9,6 +9,7 @@
 
 class BitcoinWallet
 {
+public:
     QByteArray                      Chain;
     QByteArray                      PrivateKey;
     QByteArray                      PublicKey;
