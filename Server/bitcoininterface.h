@@ -1,7 +1,22 @@
 #ifndef BITCOININTERFACE_H
 #define BITCOININTERFACE_H
 
+#include <QByteArray>
+#include <QString>
+#include <QMap>
+#include <QSharedPointer>
 #include <QObject>
+
+class BitcoinWallet
+{
+    QByteArray                      Chain;
+    QByteArray                      PrivateKey;
+    QByteArray                      PublicKey;
+    QByteArray                      Wif;
+    QMap< QString, QByteArray >     Addresses;
+};
+
+typedef QSharedPointer<BitcoinWallet> BitcoinWalletRef;
 
 class BitcoinInterface : public QObject
 {
@@ -12,7 +27,7 @@ public:
 signals:
 
 public slots:
-    void createWallet();
+    void createWallet(bool iTestNet = false);
 };
 
 #endif // BITCOININTERFACE_H

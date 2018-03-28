@@ -22,6 +22,11 @@ include(QtWebApp/httpserver/httpserver.pri)
 include(../CertLib/CertLib.pri)
 include(../RPC/RPC.pri)
 
+linux {
+    LIBS += -L /usr/local/lib -lbtc -lsecp256k1
+    INCLUDEPATH += -I /usr/local/include
+}
+
 HEADERS += \
     main.h \
     downloader.h \
