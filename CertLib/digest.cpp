@@ -3,9 +3,7 @@
 #include <openssl/evp.h>
 
 Digest::Digest()
-{
-
-}
+= default;
 
 Digest::Digest(const QByteArray iData, enum HashTypes iHashType, bool iIsSigned)
     : mHashType( iHashType )
@@ -66,9 +64,9 @@ bool Digest::verify(EncryptionKey *iKey, const QByteArray iSignature)
 
     if( (lMDCTX = EVP_MD_CTX_create()) ) {
 
-        if(1 == EVP_DigestVerifyInit(lMDCTX, NULL, _hashEngine(), NULL, iKey->toEVP())) {
+        if(1 == EVP_DigestVerifyInit(lMDCTX, nullptr, _hashEngine(), nullptr, iKey->toEVP())) {
             if(1 == EVP_DigestVerifyUpdate(lMDCTX, mData.constData(), mData.size()) ) {
-                if(1 == EVP_DigestVerifyFinal(lMDCTX, reinterpret_cast<const unsigned char *>(iSignature.constData()), iSignature.size())) {
+                if(1 == EVP_DigestVerifyFinal(lMDCTX, reinterpret_cast<const unsigned char *>(iSignature.constData()), static_cast<size_t>(iSignature.size()))) {
                     lRet = true;
                 }
             }

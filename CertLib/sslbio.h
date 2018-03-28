@@ -29,7 +29,7 @@ public:
     bool append( const QByteArray iData );
 
     int size() const
-    { return (int) BIO_ctrl_pending(mBIO); }
+    { return static_cast<int>(BIO_ctrl_pending(mBIO)); }
 
     BIO * getBIO() const;
     QByteArray readAll() const;

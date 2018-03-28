@@ -3,15 +3,15 @@
 
 #include "encryptionkey.h"
 
-#include <openssl/pem.h>
-#include <openssl/x509v3.h>
 #include <openssl/conf.h>
 #include <openssl/engine.h>
+#include <openssl/pem.h>
+#include <openssl/x509v3.h>
 
-#include <QString>
-#include <QList>
-#include <QStringList>
 #include <QDateTime>
+#include <QList>
+#include <QString>
+#include <QStringList>
 
 #define kSecondsInADay      86400
 #define kSecondsInAYear     31536000
@@ -33,7 +33,7 @@ public:
     ~Certificate();
     Certificate(const QByteArray iPEM, bool iCSRPEM = false);
     Certificate(X509 * iX509);
-    Certificate(EncryptionKey *iKey = NULL);
+    Certificate(EncryptionKey *iKey = nullptr);
 
     enum HashTypes {
         MD5,

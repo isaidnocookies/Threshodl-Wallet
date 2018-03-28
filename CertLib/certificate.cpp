@@ -30,11 +30,11 @@ QStringList Certificate::_stringListExtensions(int iNID) const
     int             lIndex = -1;
 
     for(;;) {
-        ASN1_IA5STRING * lASN1String = (ASN1_IA5STRING *) X509_get_ext_d2i(mX509,iNID,NULL,&lIndex);
+        auto * lASN1String = reinterpret_cast<ASN1_IA5STRING*>(X509_get_ext_d2i(mX509,iNID,nullptr,&lIndex));
         if( ! lASN1String ) break;
-        unsigned char * lUtf8 = NULL;
+        unsigned char * lUtf8 = nullptr;
         if( ASN1_STRING_to_UTF8(&lUtf8,lASN1String) ) {
-            lStringList << QString::fromUtf8( (const char *) lUtf8, ASN1_STRING_length(lASN1String) );
+            lStringList << QString::fromUtf8(reinterpret_cast<const char *>(lUtf8), ASN1_STRING_length(lASN1String) );
             OPENSSL_free(lUtf8);
         }
         ASN1_STRING_free(lASN1String);
@@ -53,8 +53,8 @@ bool Certificate::_addExtension(int iNID, const char *iValue)
     /* Issuer and subject certs: both the target since it is self signed,
      * no request and no CRL
      */
-    X509V3_set_ctx(&lX509Ctx, mX509, mX509, NULL, NULL, 0);
-    lX509Ext = X509V3_EXT_conf_nid(NULL, &lX509Ctx, iNID, (char *) iValue);
+    X509V3_set_ctx(&lX509Ctx, mX509, mX509, nullptr, nullptr, 0);
+    lX509Ext = X509V3_EXT_conf_nid(nullptr, &lX509Ctx, iNID, const_cast<char *>(iValue));
     if (!lX509Ext)
         return false;
 
@@ -85,8 +85,8 @@ Certificate::~Certificate()
 }
 
 Certificate::Certificate(const QByteArray iPEM, bool iCSRPEM)
-    : mKey(NULL)
-    , mX509(NULL)
+    : mKey(nullptr)
+    , mX509(nullptr)
     , mMutable(iCSRPEM)
 {
     _gInit();
@@ -94,7 +94,7 @@ Certificate::Certificate(const QByteArray iPEM, bool iCSRPEM)
     // First make the X509 Object
     SSLBIO  lBIO(iPEM);
 
-    if( ! PEM_read_bio_X509(lBIO.getBIO(),&mX509,NULL,NULL) )
+    if( ! PEM_read_bio_X509(lBIO.getBIO(),&mX509,nullptr,nullptr) )
         throw std::runtime_error(QString("%1[%2]").arg(__FILE__).arg(__LINE__).toStdString());
 
     // Now read the public key in
@@ -134,7 +134,7 @@ Certificate::Certificate(X509 *iX509)
 
 Certificate::Certificate(EncryptionKey *iKey)
     : mKey(iKey)
-    , mX509(NULL)
+    , mX509(nullptr)
     , mMutable(true)
 {
     _gInit();
@@ -176,7 +176,7 @@ void Certificate::setIssuerName(QStringList iIssuerNameEntries)
         lFieldNameBytes = lFieldName.toUtf8();
         lBytes          = lEntry.toUtf8();
 
-        X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, (const unsigned char *) lBytes.constData(), -1, -1, 0 );
+        X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, reinterpret_cast<const unsigned char *>(lBytes.constData()), -1, -1, 0 );
     }
 
     X509_set_issuer_name(mX509,lX509Name);
@@ -199,7 +199,7 @@ void Certificate::setSubjectNames(QStringList iSubjectNameEntries)
         lFieldNameBytes = lFieldName.toUtf8();
         lBytes          = lEntry.toUtf8();
 
-        X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, (const unsigned char *) lBytes.constData(), -1, -1, 0 );
+        X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, reinterpret_cast<const unsigned char *>(lBytes.constData()), -1, -1, 0 );
     }
 
     X509_set_subject_name(mX509,lX509Name);
@@ -222,7 +222,7 @@ void Certificate::addSubjectName(const QString iSubjectName)
     lFieldNameBytes = lFieldName.toUtf8();
     lBytes          = lSubjectName.toUtf8();
 
-    X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, (const unsigned char *) lBytes.constData(), -1, -1, 0 );
+    X509_NAME_add_entry_by_txt( lX509Name, lFieldNameBytes.constData(), MBSTRING_ASC, reinterpret_cast<const unsigned char *>(lBytes.constData()), -1, -1, 0 );
 
     X509_set_subject_name(mX509,lX509Name);
 }
@@ -295,7 +295,7 @@ bool Certificate::selfVerify()
 
 bool Certificate::sign(EncryptionKey *iSigningKey, enum HashTypes iHashType)
 {
-    const EVP_MD *  lHT = NULL;
+    const EVP_MD *  lHT = nullptr;
 
     switch( iHashType ) {
     case MD5:
@@ -320,10 +320,6 @@ bool Certificate::sign(EncryptionKey *iSigningKey, enum HashTypes iHashType)
 
     case SHA512:
         lHT = EVP_sha512();
-        break;
-
-    default:
-        return false;
         break;
     }
 
@@ -365,7 +361,7 @@ QStringList Certificate::subjectName() const
 
                 ASN1_OBJECT * lObject = X509_NAME_ENTRY_get_object(lEntry);
                 if( lObject ) {
-                    if( OBJ_obj2txt(lFieldNameC,((int) sizeof(lFieldNameC)-1),lObject,0) ) {
+                    if( OBJ_obj2txt(lFieldNameC,(static_cast<int>(sizeof(lFieldNameC)-1)),lObject,0) ) {
                         lFieldName = QString("%1=").arg(QString::fromUtf8(lFieldNameC));
                     }
                     // ASN1_OBJECT_free(lObject);
@@ -373,9 +369,9 @@ QStringList Certificate::subjectName() const
 
                 ASN1_STRING * lString = X509_NAME_ENTRY_get_data(lEntry);
                 if( lString ) {
-                    unsigned char * lUtf8 = NULL;
+                    unsigned char * lUtf8 = nullptr;
                     if( ASN1_STRING_to_UTF8(&lUtf8,lString) ) {
-                        lResult << QString("%1%2").arg(lFieldName).arg(QString::fromUtf8( (const char *) lUtf8, ASN1_STRING_length(lString) ));
+                        lResult << QString("%1%2").arg(lFieldName).arg(QString::fromUtf8(reinterpret_cast<const char *>(lUtf8), ASN1_STRING_length(lString) ));
                         OPENSSL_free(lUtf8);
                     }
                     // ASN1_STRING_free(lString);
@@ -404,16 +400,16 @@ QStringList Certificate::issuerName() const
 
                 ASN1_OBJECT * lObject = X509_NAME_ENTRY_get_object(lEntry);
                 if( lObject ) {
-                    if( OBJ_obj2txt(lFieldNameC,((int) sizeof(lFieldNameC)-1),lObject,0) ) {
+                    if( OBJ_obj2txt(lFieldNameC,(static_cast<int>(sizeof(lFieldNameC)-1)),lObject,0) ) {
                         lFieldName = QString("%1=").arg(QString::fromUtf8(lFieldNameC));
                     }
                 }
 
                 ASN1_STRING * lString = X509_NAME_ENTRY_get_data(lEntry);
                 if( lString ) {
-                    unsigned char * lUtf8 = NULL;
+                    unsigned char * lUtf8 = nullptr;
                     if( ASN1_STRING_to_UTF8(&lUtf8,lString) ) {
-                        lResult << QString("%1%2").arg(lFieldName).arg(QString::fromUtf8( (const char *) lUtf8, ASN1_STRING_length(lString) ));
+                        lResult << QString("%1%2").arg(lFieldName).arg(QString::fromUtf8(reinterpret_cast<const char *>(lUtf8), ASN1_STRING_length(lString) ));
                         OPENSSL_free(lUtf8);
                     }
                 }
@@ -429,7 +425,7 @@ bool Certificate::expired() const
     QDateTime   lDT     = QDateTime::currentDateTimeUtc();
 
     ASN1_TIME * lX509Time   = X509_get_notAfter(mX509);
-    ASN1_TIME * lNowTime    = ASN1_TIME_set(NULL,(time_t) lDT.toTime_t());
+    ASN1_TIME * lNowTime    = ASN1_TIME_set(nullptr, static_cast<time_t>(lDT.toTime_t()));
     int         lDays       = 0;
     int         lSeconds    = 0;
     bool        lResult     = true;
@@ -447,7 +443,7 @@ QDateTime Certificate::expiration() const
     QDateTime   lDT     = QDateTime::currentDateTimeUtc();
 
     ASN1_TIME * lX509Time   = X509_get_notAfter(mX509);
-    ASN1_TIME * lNowTime    = ASN1_TIME_set(NULL,(time_t) lDT.toTime_t());
+    ASN1_TIME * lNowTime    = ASN1_TIME_set(nullptr,static_cast<time_t>(lDT.toTime_t()));
     int         lDays       = 0;
     int         lSeconds    = 0;
 
