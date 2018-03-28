@@ -36,7 +36,8 @@ HEADERS += \
     restalphamodebtomodea.h \
     restalphamanageaddress.h \
     dbinterface.h \
-    dbinterfacealpha.h
+    dbinterfacealpha.h \
+    bitcoininterface.h
 
 
 SOURCES += \
@@ -52,4 +53,5 @@ SOURCES += \
     restalphamodebtomodeb.cpp \
     restalphamodebtomodea.cpp \
     restalphamanageaddress.cpp \
-    dbinterfacealpha.cpp
+    dbinterfacealpha.cpp \
+    bitcoininterface.cpp
