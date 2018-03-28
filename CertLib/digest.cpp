@@ -58,7 +58,6 @@ bool Digest::sign(EncryptionKey *iKey)
 
 bool Digest::verify(EncryptionKey *iKey, const QByteArray iSignature)
 {
-    if( ! mDataIsSigned )    return false;
     if( ! iKey )                return false;
     if( ! iKey->toEVP() )       return false;
 
@@ -69,7 +68,7 @@ bool Digest::verify(EncryptionKey *iKey, const QByteArray iSignature)
 
         if(1 == EVP_DigestVerifyInit(lMDCTX, NULL, _hashEngine(), NULL, iKey->toEVP())) {
             if(1 == EVP_DigestVerifyUpdate(lMDCTX, mData.constData(), mData.size()) ) {
-                if(1 == EVP_DigestVerifyFinal(lMDCTX, nullptr, 0)) {
+                if(1 == EVP_DigestVerifyFinal(lMDCTX, reinterpret_cast<const unsigned char *>(iSignature.constData()), iSignature.size())) {
                     lRet = true;
                 }
             }
@@ -92,12 +91,12 @@ QByteArray Digest::sign(EncryptionKey *iKey, const QByteArray iData, enum Digest
     return QByteArray();
 }
 
-bool Digest::verify(EncryptionKey *iKey, const QByteArray iData, enum Digest::HashTypes iHashType)
+bool Digest::verify(EncryptionKey *iKey, const QByteArray iData, const QByteArray iSignature, enum Digest::HashTypes iHashType)
 {
     Digest lDigest;
     lDigest.setHashType(iHashType);
     lDigest.addData(iData);
-    return lDigest.verify(iKey);
+    return lDigest.verify(iKey,iSignature);
 }
 
 const EVP_MD *Digest::_hashEngine() const

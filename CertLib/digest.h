@@ -29,7 +29,7 @@ public:
     bool verify( EncryptionKey * iKey, const QByteArray iSignature );
 
     static QByteArray   sign( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );
-    static bool         verify( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );
+    static bool         verify( EncryptionKey * iKey, const QByteArray iData, const QByteArray iSignature, enum HashTypes iHashType = SHA512 );
 
 private:
     const EVP_MD * _hashEngine() const;
