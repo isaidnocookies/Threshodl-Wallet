@@ -13,7 +13,7 @@ EncryptionKey::~EncryptionKey()
 }
 
 EncryptionKey::EncryptionKey(int iBits)
-    : mRSA(RSA_generate_key(iBits,RSA_F4,NULL,NULL))
+    : mRSA(RSA_generate_key(iBits,RSA_F4,nullptr,nullptr))
     , mEVP(EVP_PKEY_new())
     , mHavePublicKey(true), mHavePrivateKey(true)
 {
@@ -24,7 +24,7 @@ EncryptionKey::EncryptionKey(int iBits)
 }
 
 EncryptionKey::EncryptionKey(EVP_PKEY *iEVP)
-    : mRSA(NULL), mEVP(iEVP)
+    : mRSA(nullptr), mEVP(iEVP)
     , mHavePublicKey(true), mHavePrivateKey(true)
 {
     if( mEVP ) {
@@ -36,16 +36,16 @@ EncryptionKey::EncryptionKey(EVP_PKEY *iEVP)
 }
 
 EncryptionKey::EncryptionKey(const QByteArray iPEM, bool iIsPrivateKey)
-    : mRSA(NULL), mEVP(NULL)
+    : mRSA(nullptr), mEVP(nullptr)
     , mHavePublicKey(false), mHavePrivateKey(false)
 {
     SSLBIO  lBIO(iPEM);
 
     if( iIsPrivateKey ) {
-        mEVP = PEM_read_bio_PrivateKey(lBIO.getBIO(),NULL,NULL,NULL);
+        mEVP = PEM_read_bio_PrivateKey(lBIO.getBIO(),nullptr,nullptr,nullptr);
         if( mEVP ) mHavePrivateKey = true;
     }else{
-        mEVP = PEM_read_bio_PUBKEY(lBIO.getBIO(),NULL,NULL,NULL);
+        mEVP = PEM_read_bio_PUBKEY(lBIO.getBIO(),nullptr,nullptr,nullptr);
         if( mEVP ) mHavePublicKey = true;
     }
 }
@@ -56,7 +56,7 @@ QByteArray EncryptionKey::privateToPEM() const
     QByteArray  lPEM;
 
     if( mEVP && mHavePrivateKey ) {
-        if( PEM_write_bio_PrivateKey(lBIO.getBIO(),mEVP,NULL,NULL,0,NULL,NULL) ) {
+        if( PEM_write_bio_PrivateKey(lBIO.getBIO(),mEVP,nullptr,nullptr,0,nullptr,nullptr) ) {
             lPEM = lBIO.readAll();
         }
     }
@@ -83,7 +83,7 @@ QByteArray EncryptionKey::privateToPEM(EVP_PKEY *iKey)
     QByteArray  lPEM;
     if( iKey ) {
         SSLBIO      lBIO;
-        if( PEM_write_bio_PrivateKey(lBIO.getBIO(),iKey,NULL,NULL,0,NULL,NULL) ) {
+        if( PEM_write_bio_PrivateKey(lBIO.getBIO(),iKey,nullptr,nullptr,0,nullptr,nullptr) ) {
             lPEM = lBIO.readAll();
         }
     }

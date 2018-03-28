@@ -38,7 +38,7 @@ public:
     EVP_PKEY * takeEVP()
     {
         EVP_PKEY * lEVP = mEVP;
-        mEVP = NULL;
+        mEVP = nullptr;
         return lEVP;
     }
 
