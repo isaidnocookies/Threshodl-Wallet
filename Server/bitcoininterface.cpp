@@ -33,7 +33,7 @@ void BitcoinInterface::createWallet(bool iTestNet)
         lChain = &btc_chainparams_test;
         lWallet->Chain = "TestNet";
     }else{
-        lWallet->Chain = "Real";
+        lWallet->Chain = "Main";
     }
 
     if( gen_privatekey(lChain, lWallet->Wif.data(), 128, lWallet->PrivateKey.data() ) ) {

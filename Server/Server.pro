@@ -19,12 +19,12 @@ DEFINES += ENABLE_RPCSERVER
 
 include(QtWebApp/logging/logging.pri)
 include(QtWebApp/httpserver/httpserver.pri)
-include(../CertLib/CertLib.pri)
-include(../RPC/RPC.pri)
+include($$PWD/../CertLib/CertLib.pri)
+include($$PWD/../RPC/RPC.pri)
 
-linux {
-    LIBS += -L /usr/local/lib -lbtc -lsecp256k1
-    INCLUDEPATH += -I ../libbtc/include
+linux | macos {
+    LIBS += $$PWD/../libbtc/.libs/libbtc.a $$PWD/../libbtc/src/secp256k1/.libs/libsecp256k1.a
+    INCLUDEPATH += -I $$PWD/../libbtc/include
 }
 
 HEADERS += \
