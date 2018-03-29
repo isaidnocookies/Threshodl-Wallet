@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QCoreApplication>
+#include <QSslKey>
 
 static QByteArray _loadFile(const QString &iFilename)
 {
@@ -83,6 +84,12 @@ void App::parseCommandLine()
             if( mArgV[lIndex] == kCommandLineOption_RESTPort ) {
                 lIndex++;
                 mRESTPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
+                continue;
+            }
+
+            if( mArgV[lIndex] == kCommandLineOption_RPCPort ) {
+                lIndex++;
+                mRPCPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
                 continue;
             }
 
@@ -204,6 +211,8 @@ bool App::doInit()
 
     if( lFile.open(QIODevice::WriteOnly) ) {
         lSettings[kSettingsKey_RESTPort]            = mRESTPort;
+        lSettings[kSettingsKey_RPCPort]             = mRPCPort;
+        lSettings[kSettingsKey_ServerName]          = mServerName;
         lSettings[kSettingsKey_CACertFile]          = mCACertificateFilename;
         lSettings[kSettingsKey_PrivateKeyFile]      = mPrivateKeyFilename;
         lSettings[kSettingsKey_CertificateFile]     = mCertificateFilename;
@@ -269,6 +278,14 @@ void App::loadSettings()
     if( lJsonError.error == QJsonParseError::NoError ) {
         if( lSettings.contains(kSettingsKey_RESTPort) ) {
             mRESTPort = static_cast<quint16>(lSettings[kSettingsKey_RESTPort].toUInt() & 0xFFFF);
+        }
+
+        if( lSettings.contains(kSettingsKey_RPCPort) ) {
+            mRPCPort = static_cast<quint16>(lSettings[kSettingsKey_RPCPort].toUInt() & 0xFFFF);
+        }
+
+        if( lSettings.contains(kSettingsKey_ServerName) ) {
+            mServerName = lSettings[kSettingsKey_ServerName].toString();
         }
 
         if( lSettings.contains(kSettingsKey_CACertFile) ) {
@@ -368,7 +385,18 @@ void App::start()
     mRecordsManagerThread->start();
     mDownloaderThread->start();
 
-    mRESTHandler = new RESTHandler(this);
+    mRESTHandler = new RESTHandler{this};
+
+    mRPCServerThread = new QThread{this};
+    mRPCServer = new RPCServer;
+    mRPCServer->moveToThread(mRPCServerThread);
+    connect(mRPCServerThread, &QThread::started, [this]() {
+        QSslConfiguration   lSslConf;
+        lSslConf.setCaCertificates(QList<QSslCertificate>() << QSslCertificate{mCACertificatePEM, QSsl::Pem} );
+        lSslConf.setPrivateKey(QSslKey{mPrivateKeyPEM,QSsl::Rsa,QSsl::Pem,QSsl::PrivateKey,QByteArray()});
+        lSslConf.setLocalCertificate(QSslCertificate{mCertificatePEM, QSsl::Pem});
+        mRPCServer->startListening(mRPCPort,mServerName,lSslConf);
+    });
 
     QMetaObject::invokeMethod( this, "eventLoopStarted", Qt::QueuedConnection );
 }
@@ -466,6 +494,11 @@ RecordsManager *App::recordsManager() const
 DBInterface *App::databaseInterface() const
 {
     return mDBInterface;
+}
+
+RPCServer *App::rpcServer() const
+{
+    return mRPCServer;
 }
 
 void App::startHTTPS()

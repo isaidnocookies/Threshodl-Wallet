@@ -9,6 +9,7 @@
 #include "dbinterfacealpha.h"
 #include "httplistener.h"
 #include "resthandler.h"
+#include "rpcserver.h"
 
 #include <QMutex>
 #include <QByteArray>
@@ -22,6 +23,7 @@
 #define     kCommandLineOption_Init                 "-init"
 #define     kCommandLineOption_SettingsFile         "-conf"
 #define     kCommandLineOption_RESTPort             "-port"
+#define     kCommandLineOption_RPCPort              "-rpcPort"
 #define     kCommandLineOption_CACertFile           "-caCert"
 #define     kCommandLineOption_CAKeyFile            "-caKey"
 #define     kCommandLineOption_CertificateFile      "-cert"
@@ -38,6 +40,8 @@
 #define     kCommandLineOption_DBType               "-dbtype"
 
 #define     kSettingsKey_RESTPort                   "RESTPort"
+#define     kSettingsKey_RPCPort                    "RPCPort"
+#define     kSettingsKey_ServerName                 "ServerName"
 #define     kSettingsKey_CACertFile                 "CACertFile"
 #define     kSettingsKey_PrivateKeyFile             "PrivateKeyFile"
 #define     kSettingsKey_CertificateFile            "CertificateFile"
@@ -90,6 +94,8 @@ public:
 
     DBInterface *       databaseInterface() const;
 
+    RPCServer *         rpcServer() const;
+
 public slots:
     void                eventLoopStarted();
 
@@ -103,7 +109,8 @@ protected:
     QString             mConfigFile                 = kSettingsFile;
 
     quint16             mRESTPort                   = 0;
-    QString             mServerName;                // Only used for init
+    quint16             mRPCPort                    = 0;
+    QString             mServerName;
     QString             mServerAddress;             // Only used for init
 
     QString             mCACertificateFilename;
@@ -145,6 +152,9 @@ protected:
     QString             mDBType;
 
     DBInterface *       mDBInterface                = nullptr;
+
+    QThread *           mRPCServerThread            = nullptr;
+    RPCServer *         mRPCServer                  = nullptr;
 };
 
 #endif // APP_H

@@ -43,10 +43,6 @@ HEADERS += \
     resthandler.h \
     restalphaexchangerate.h \
     restalphahandler.h \
-    restalphamodeatomodeb.h \
-    restalphamodebtomodeb.h \
-    restalphamodebtomodea.h \
-    restalphamanageaddress.h \
     dbinterface.h \
     dbinterfacealpha.h \
     bitcoininterface.h
@@ -61,9 +57,16 @@ SOURCES += \
     resthandler.cpp \
     restalphaexchangerate.cpp \
     restalphahandler.cpp \
+    dbinterfacealpha.cpp \
+    bitcoininterface.cpp
+
+OTHER_FILES += \
+    restalphamodeatomodeb.h \
+    restalphamodebtomodeb.h \
+    restalphamodebtomodea.h \
+    restalphamanageaddress.h \
     restalphamodeatomodeb.cpp \
     restalphamodebtomodeb.cpp \
     restalphamodebtomodea.cpp \
-    restalphamanageaddress.cpp \
-    dbinterfacealpha.cpp \
-    bitcoininterface.cpp
+    restalphamanageaddress.cpp
+

@@ -20,20 +20,20 @@ bool RESTAlphaHandler::service(const QByteArray &iRESTArguments, HttpRequest &iR
         if( lCommand == "exchangerate" )
             return RESTAlphaExchangeRate::service( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "btob" )
-            return RESTAlphaModeBToModeB::service( lRESTArguments, iRequest, iResponse );
+//        if( lCommand == "btob" )
+//            return RESTAlphaModeBToModeB::service( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "atob" )
-            return RESTAlphaModeAToModeB::service( lRESTArguments, iRequest, iResponse );
+//        if( lCommand == "atob" )
+//            return RESTAlphaModeAToModeB::service( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "btoa" )
-            return RESTAlphaModeBToModeA::service( lRESTArguments, iRequest, iResponse );
+//        if( lCommand == "btoa" )
+//            return RESTAlphaModeBToModeA::service( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "createaddress" )
-            return RESTAlphaManageAddress::serviceCreate( lRESTArguments, iRequest, iResponse );
+//        if( lCommand == "createaddress" )
+//            return RESTAlphaManageAddress::serviceCreate( lRESTArguments, iRequest, iResponse );
 
-        if( lCommand == "deleteaddress" )
-            return RESTAlphaManageAddress::serviceDelete( lRESTArguments, iRequest, iResponse );
+//        if( lCommand == "deleteaddress" )
+//            return RESTAlphaManageAddress::serviceDelete( lRESTArguments, iRequest, iResponse );
 
         qWarning() << "Unknown command for 'alpha'" << lCommand;
     } else {
