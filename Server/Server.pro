@@ -23,8 +23,15 @@ include($$PWD/../CertLib/CertLib.pri)
 include($$PWD/../RPC/RPC.pri)
 
 linux | macos {
-    LIBS += $$PWD/../libbtc/.libs/libbtc.a $$PWD/../libbtc/src/secp256k1/.libs/libsecp256k1.a
     INCLUDEPATH += -I $$PWD/../libbtc/include
+}
+
+linux {
+    LIBS += $$PWD/../libbtc/.libs/libbtc.a $$PWD/../libbtc/src/secp256k1/.libs/libsecp256k1.a
+}
+
+macos {
+    LIBS += $$PWD/../MacDeps/libbtc.a $$PWD/../MacDeps/libsecp256k1.a
 }
 
 HEADERS += \
