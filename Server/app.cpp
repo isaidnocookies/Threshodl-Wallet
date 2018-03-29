@@ -240,7 +240,9 @@ bool App::doInit()
         // If the CA files are not valid then create new CA files and save them
         if( lCACert == nullptr || ( lCAKey == nullptr && (lCert == nullptr || lKey == nullptr) ) ) {
             lCACert = new Certificate;
+            lCACert->setIssuerName( QStringList() << QStringLiteral("CN=Threshodl") );
             lCACert->setCADefaults();
+            lCACert->setSubjectNames(QStringList() << QStringLiteral("CN=Threshodl"));
             lCACert->selfSign();
             lCAKey = lCACert->encryptionKey();
 
@@ -254,9 +256,10 @@ bool App::doInit()
             lCert->setServerDefaults();
             lCert->addServerName(mServerName);
             lCert->addServerName(mServerAddress);
-            lCert->setIssuerName( QStringList() << QString("CN=%1").arg(mServerAddress) );
+            lCert->setIssuerName( QStringList() << QString("CN=Threshodl") );
             lCert->setSerialNumber(QDateTime::currentSecsSinceEpoch());
-            lCert->sign(lCAKey);
+            EncryptionKey * lCAPriKey = new EncryptionKey{lCAKey->privateToPEM()};
+            lCert->sign(lCAPriKey);
 
             if( ! _saveFile( lCert->toPEM(), mCertificateFilename ) || ! _saveFile( lCert->encryptionKey()->privateToPEM(), mPrivateKeyFilename ) )
                 return false;
@@ -389,14 +392,31 @@ void App::start()
 
     mRPCServerThread = new QThread{this};
     mRPCServer = new RPCServer;
+    mRPCServerHandler = new RPCServerHandler;
     mRPCServer->moveToThread(mRPCServerThread);
+    mRPCServerHandler->moveToThread(mRPCServerThread);
     connect(mRPCServerThread, &QThread::started, [this]() {
-        QSslConfiguration   lSslConf;
-        lSslConf.setCaCertificates(QList<QSslCertificate>() << QSslCertificate{mCACertificatePEM, QSsl::Pem} );
+        connect( mRPCServer, &RPCServer::startedListening, mRPCServerHandler, &RPCServerHandler::serverStarted );
+        connect( mRPCServer, &RPCServer::failedToStartListening, mRPCServerHandler, &RPCServerHandler::serverFailedToStart );
+        connect( mRPCServer, &RPCServer::newConnection, mRPCServerHandler, &RPCServerHandler::newConnectionArrived );
+
+        QSslConfiguration   lSslConf = QSslConfiguration::defaultConfiguration();
+        lSslConf.setCaCertificates(lSslConf.caCertificates() << QSslCertificate{mCACertificatePEM, QSsl::Pem} );
         lSslConf.setPrivateKey(QSslKey{mPrivateKeyPEM,QSsl::Rsa,QSsl::Pem,QSsl::PrivateKey,QByteArray()});
         lSslConf.setLocalCertificate(QSslCertificate{mCertificatePEM, QSsl::Pem});
+
+        qWarning() << "mCACertificatePEM:" << mCACertificatePEM.constData();
+        qWarning() << "mCertificatePEM:" << mCertificatePEM.constData();
+        qWarning() << "mPrivateKeyPEM:" << mPrivateKeyPEM.constData();
+
+//        lSslConf.setLocalCertificateChain(QList<QSslCertificate>() << QSslCertificate{mCertificatePEM, QSsl::Pem});
+//        lSslConf.setPeerVerifyMode(QSslSocket::AutoVerifyPeer);
+        QSslConfiguration::setDefaultConfiguration(lSslConf);
         mRPCServer->startListening(mRPCPort,mServerName,lSslConf);
     });
+
+#warning left off here
+    mRPCServerThread->start();
 
     QMetaObject::invokeMethod( this, "eventLoopStarted", Qt::QueuedConnection );
 }

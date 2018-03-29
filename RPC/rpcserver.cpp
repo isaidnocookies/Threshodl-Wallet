@@ -46,7 +46,10 @@ void RPCServer::startListening(quint16 iPort, const QString &iServerName, const 
 
         if( mPort < 1 ) throw __LINE__;
 
-        connect( mSocketServer, &QWebSocketServer::newConnection, this, &RPCServer::newConnection );
+        // connect( mSocketServer, &QWebSocketServer::newConnection, this, &RPCServer::newConnection );
+        connect( mSocketServer, &QWebSocketServer::newConnection, [this](){
+            emit newConnection();
+        });
 
         mSocketServer->setMaxPendingConnections(100);
         mSocketServer->setSslConfiguration(mSslConfiguration);

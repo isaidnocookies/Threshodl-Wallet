@@ -30,12 +30,15 @@ signals:
     void sentBinaryMessage();
     void failedToSendTextMessage();
     void sentTextMessage();
+    void socketError(QAbstractSocket::SocketError iError);
+    void sslErrors(const QList<QSslError> iErrors);
 
 public slots:
     void open(const QUrl &iUrl); // only used from a client connection
     void close();
     void sendBinaryMessage(const QByteArray &iMessage);
     void sendTextMessage(const QString &iMessage);
+    void setSslConfiguration(const QSslConfiguration iConfiguration);
 
 protected slots:
     void _binaryMessageReceived(const QByteArray &iMessage);

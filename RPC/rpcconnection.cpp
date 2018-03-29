@@ -21,6 +21,8 @@ RPCConnection::RPCConnection(QObject *iParent)
     connect( mSocket, &QWebSocket::textMessageReceived, this, &RPCConnection::_textMessageReceived );
     connect( mSocket, &QWebSocket::disconnected, this, &RPCConnection::disconnected );
     connect( mSocket, &QWebSocket::connected, this, &RPCConnection::connected );
+    connect( mSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &RPCConnection::socketError );
+    connect( mSocket, &QWebSocket::sslErrors, this, &RPCConnection::sslErrors );
 }
 
 QWebSocket *RPCConnection::socket() const
@@ -110,6 +112,11 @@ void RPCConnection::sendTextMessage(const QString &iMessage)
         emit sentTextMessage();
     else
         emit failedToSendTextMessage();
+}
+
+void RPCConnection::setSslConfiguration(const QSslConfiguration iConfiguration)
+{
+    mSocket->setSslConfiguration(iConfiguration);
 }
 
 void RPCConnection::_binaryMessageReceived(const QByteArray &iMessage)

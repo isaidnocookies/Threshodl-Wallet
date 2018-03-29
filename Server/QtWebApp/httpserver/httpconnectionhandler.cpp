@@ -46,7 +46,7 @@ HttpConnectionHandler::~HttpConnectionHandler() {
 
 void HttpConnectionHandler::createSocket() {
     // If SSL is supported and configured, then create an instance of QSslSocket
-    #ifndef QT_NO_OPENSSL
+    #ifndef QT_NO_SSL
         if (sslConfiguration) {
             QSslSocket* sslSocket=new QSslSocket();
             sslSocket->setSslConfiguration(*sslConfiguration);
@@ -88,7 +88,7 @@ void HttpConnectionHandler::handleConnection(tSocketDescriptor socketDescriptor)
         return;
     }
 
-    #ifndef QT_NO_OPENSSL
+    #ifndef QT_NO_SSL
         // Switch on encryption, if SSL is configured
         if (sslConfiguration) {
             // qDebug("HttpConnectionHandler (%p): Starting encryption", this);

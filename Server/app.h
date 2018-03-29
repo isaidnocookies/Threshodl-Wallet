@@ -10,6 +10,7 @@
 #include "httplistener.h"
 #include "resthandler.h"
 #include "rpcserver.h"
+#include "rpcserverhandler.h"
 
 #include <QMutex>
 #include <QByteArray>
@@ -155,6 +156,7 @@ protected:
 
     QThread *           mRPCServerThread            = nullptr;
     RPCServer *         mRPCServer                  = nullptr;
+    RPCServerHandler *  mRPCServerHandler           = nullptr;
 };
 
 #endif // APP_H
