@@ -1,6 +1,7 @@
 !contains( WALLETMODULES, WALLET_RPC ) {
     WALLETMODULES += WALLET_RPC
 
+    !contains( QT, core ):          QT += core
     !contains( QT, network ):       QT += network
     !contains( QT, websockets ):    QT += websockets
 

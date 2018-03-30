@@ -6,7 +6,7 @@
 class Digest
 {
 public:
-    enum HashTypes {
+    typedef enum HashTypes {
         MD5,
         SHA1,
         SHA224,
@@ -16,25 +16,25 @@ public:
     } HashTypes;
 
     explicit Digest();
-    explicit Digest( const QByteArray iData, enum HashTypes iHashType = SHA512, bool iIsSigned = false );
+    explicit Digest( const QByteArray iData, HashTypes iHashType = SHA512, bool iIsSigned = false );
 
-    enum HashTypes  hashType() const;
+    HashTypes       hashType() const;
     bool            isEncrypted() const;
     QByteArray      data() const;       // Returns the signature after its signed or the raw data before the signing
 
-    void setHashType( enum HashTypes iHashType = SHA512 );
+    void setHashType( HashTypes iHashType = SHA512 );
     void addData( const QByteArray iData );
 
     bool sign( EncryptionKey * iKey );
     bool verify( EncryptionKey * iKey, const QByteArray iSignature );
 
-    static QByteArray   sign( EncryptionKey * iKey, const QByteArray iData, enum HashTypes iHashType = SHA512 );
-    static bool         verify( EncryptionKey * iKey, const QByteArray iData, const QByteArray iSignature, enum HashTypes iHashType = SHA512 );
+    static QByteArray   sign( EncryptionKey * iKey, const QByteArray iData, HashTypes iHashType = SHA512 );
+    static bool         verify( EncryptionKey * iKey, const QByteArray iData, const QByteArray iSignature, HashTypes iHashType = SHA512 );
 
 private:
     const EVP_MD * _hashEngine() const;
 
-    enum HashTypes  mHashType           = SHA512;
+    HashTypes       mHashType           = SHA512;
     bool            mDataIsSigned       = false;
     QByteArray      mData;
 };
