@@ -405,7 +405,7 @@ void App::start()
         lSslConf.setPrivateKey(QSslKey{mPrivateKeyPEM,QSsl::Rsa,QSsl::Pem,QSsl::PrivateKey,QByteArray()});
         lSslConf.setLocalCertificate(QSslCertificate{mCertificatePEM, QSsl::Pem});
 
-        QSslConfiguration::setDefaultConfiguration(lSslConf);
+//        QSslConfiguration::setDefaultConfiguration(lSslConf);
         mRPCServer->startListening(mRPCPort,mServerName,lSslConf);
     });
 
