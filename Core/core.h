@@ -1,12 +1,10 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include "core_global.h"
-
 #include <QSharedPointer>
 #include <QSettings>
 
-class CORESHARED_EXPORT Core
+class Core
 {
 private:
     QString         mStoragePath;

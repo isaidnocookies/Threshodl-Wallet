@@ -405,13 +405,7 @@ void App::start()
         lSslConf.setPrivateKey(QSslKey{mPrivateKeyPEM,QSsl::Rsa,QSsl::Pem,QSsl::PrivateKey,QByteArray()});
         lSslConf.setLocalCertificate(QSslCertificate{mCertificatePEM, QSsl::Pem});
 
-        qWarning() << "mCACertificatePEM:" << mCACertificatePEM.constData();
-        qWarning() << "mCertificatePEM:" << mCertificatePEM.constData();
-        qWarning() << "mPrivateKeyPEM:" << mPrivateKeyPEM.constData();
-
-//        lSslConf.setLocalCertificateChain(QList<QSslCertificate>() << QSslCertificate{mCertificatePEM, QSsl::Pem});
-//        lSslConf.setPeerVerifyMode(QSslSocket::AutoVerifyPeer);
-        QSslConfiguration::setDefaultConfiguration(lSslConf);
+//        QSslConfiguration::setDefaultConfiguration(lSslConf);
         mRPCServer->startListening(mRPCPort,mServerName,lSslConf);
     });
 

@@ -2,10 +2,9 @@
 
 #include <openssl/evp.h>
 
-Digest::Digest()
-= default;
+Digest::Digest() = default;
 
-Digest::Digest(const QByteArray iData, enum HashTypes iHashType, bool iIsSigned)
+Digest::Digest(const QByteArray iData, HashTypes iHashType, bool iIsSigned)
     : mHashType( iHashType )
     , mDataIsSigned( iIsSigned )
     , mData( iData )

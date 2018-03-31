@@ -19,8 +19,9 @@ DEFINES += ENABLE_RPCSERVER
 
 include(QtWebApp/logging/logging.pri)
 include(QtWebApp/httpserver/httpserver.pri)
-include($$PWD/../CertLib/CertLib.pri)
-include($$PWD/../RPC/RPC.pri)
+#include($$PWD/../CertLib/CertLib.pri)
+#include($$PWD/../RPC/RPC.pri)
+include($$PWD/../Core/Core.pri)
 
 linux | macos {
     INCLUDEPATH += -I $$PWD/../libbtc/include
