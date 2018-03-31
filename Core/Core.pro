@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       -= gui
+QT       += sql
 
 TARGET = Core
 TEMPLATE = lib
@@ -25,13 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         core.cpp \
     microwallet.cpp \
-    encapsulatedmicrowallet.cpp
+    encapsulatedmicrowallet.cpp \
+    wallet.cpp \
+    bill.cpp
 
 HEADERS += \
         core.h \
         core_global.h \ 
     microwallet.h \
-    encapsulatedmicrowallet.h
+    encapsulatedmicrowallet.h \
+    wallet.h \
+    bill.h
 
 unix {
     target.path = /usr/lib
