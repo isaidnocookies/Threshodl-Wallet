@@ -3,8 +3,11 @@
 
 #include <QString>
 #include <QObject>
-#include <QSet>
+#include <QList>
 #include "bill.h"
+
+// Forward declaration to deal with class interdependency
+class Bill;
 
 class Wallet : public QObject
 {
@@ -13,14 +16,15 @@ class Wallet : public QObject
     Q_PROPERTY(QString currency READ getCurrency)
     Q_PROPERTY(QString owner READ getOwner)
     Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)
-    Q_PROPERTY(QSet<Bill> bills READ getBills NOTIFY billsChanged)
+    Q_PROPERTY(int count READ getCount NOTIFY countChanged)
+    Q_PROPERTY(QList<QObject*> bills READ listBills NOTIFY billsChanged)
 
 private:
     int mType;
     QString mCurrency;
     QString mOwner;
     QString mAmount;
-    QSet<Bill> mBills;
+    QList<Bill*> mBills;
     // Internal usage methods
     // ...
 
@@ -30,11 +34,14 @@ public:
     QString getCurrency();
     QString getOwner();
     QString getAmount();
-    QSet<Bill> getBills();
-    void addBill(Bill bill);
+    int getCount();
+    QList<Bill*> getBills();
+    QList<QObject*> listBills();
+    void addBill(Bill* bill);
 
 signals:
     void amountChanged();
+    void countChanged();
     void billsChanged();
 };
 

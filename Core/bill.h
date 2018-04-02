@@ -5,10 +5,12 @@
 #include <QString>
 #include "wallet.h"
 
+// Forward declaration to deal with class interdependency
+class Wallet;
+
 class Bill : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Wallet* wallet READ getWallet)
     Q_PROPERTY(QString address READ getAddress)
     Q_PROPERTY(QString publicKey READ getPublicKey)
     Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)

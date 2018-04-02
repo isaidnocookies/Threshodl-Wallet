@@ -1,6 +1,6 @@
 #include "bill.h"
 
-Bill::Bill(Wallet wallet)
+Bill::Bill(Wallet* wallet)
 {
     this->mWallet = wallet;
     // Generate The wallet data accordingly to the requested coin
@@ -10,7 +10,7 @@ Bill::Bill(Wallet wallet)
     this->mPrivateKey = "private-----k5g2k3j45g2k3atoref";
 }
 
-Wallet Bill::getWallet() {
+Wallet* Bill::getWallet() {
     return this->mWallet;
 }
 

@@ -8,7 +8,7 @@ Wallet::Wallet(int type, QString currency, QString owner)
     this->mAmount = "0";
 }
 
-QString Wallet::getType() {
+int Wallet::getType() {
     return this->mType;
 }
 
@@ -24,10 +24,24 @@ QString Wallet::getAmount() {
     return this->mAmount;
 }
 
-QSet<Bill> Wallet::getBills() {
+int Wallet::getCount() {
+    return this->mBills.length();
+}
+
+QList<Bill*> Wallet::getBills() {
     return this->mBills;
 }
 
-void Wallet::addBill(Bill bill) {
-    this->mBills.insert(bill);
+QList<QObject*> Wallet::listBills() {
+    QList<QObject*> list;
+    foreach(Bill* bill, this->mBills) {
+        list.append(bill);
+    }
+    return list;
+}
+
+void Wallet::addBill(Bill* bill) {
+    if (!this->mBills.contains(bill)) {
+        this->mBills.append(bill);
+    }
 }
