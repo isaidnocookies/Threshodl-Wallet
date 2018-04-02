@@ -60,7 +60,7 @@ Window {
     }
 
     function updateTitle(title) {
-        console.log(walletApp.wallets[0].bills[0].address)
+        console.log(walletApp.wallets[0].bills[0].address, walletApp.wallets[0].bills[0].publicKey, walletApp.wallets[0].bills[0].amount, walletApp.wallets[0].bills[0].currency)
         walletApp.title = title;
     }
 }

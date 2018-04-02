@@ -17,7 +17,6 @@ Bill::Bill(Wallet* wallet)
     this->mCurrency = wallet->getCurrency();
     // Just BTC at this time
     if (QString::compare(this->getCurrency(), "BTC", Qt::CaseInsensitive) == 0) {
-        qDebug() << "sdfg sdfgsdfg";
         BitcoinInterface btcInterface;
         QList<BitcoinWalletRef> wallets = btcInterface.createWallets(1, true);
         BitcoinWalletRef localWallet = wallets.at(0);
