@@ -37,7 +37,8 @@
 
 HEADERS += \
     $$PWD/rpcmessages.h \
-    $$PWD/bitcoininterface.h
+    $$PWD/bitcoininterface.h \
+    $$PWD/utils.h
 
 SOURCES += \
     $$PWD/rpcmessages.cpp \

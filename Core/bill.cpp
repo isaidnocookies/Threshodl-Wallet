@@ -1,5 +1,6 @@
 #include "bill.h"
 #include "bitcoininterface.h"
+#include "utils.h"
 
 #include <QDebug>
 
@@ -16,13 +17,21 @@ Bill::Bill(Wallet* wallet)
     this->mAmount = "0";
     this->mCurrency = wallet->getCurrency();
     // Just BTC at this time
-    if (QString::compare(this->getCurrency(), "BTC", Qt::CaseInsensitive) == 0) {
-        BitcoinInterface btcInterface;
-        QList<BitcoinWalletRef> wallets = btcInterface.createWallets(1, true);
-        BitcoinWalletRef localWallet = wallets.at(0);
-        this->mAddress = localWallet->Addresses["P2PKH"];
-        this->mPublicKey = localWallet->PublicKey;
-        this->mPrivateKey = localWallet->PrivateKey;
+    switch(this->mWallet->getType()) {
+        case WalletMode::WALLET_MODE_DARK:
+            // Generate the Bill at server side
+            // ...
+        break;
+        default:
+            if (QString::compare(this->getCurrency(), "BTC", Qt::CaseInsensitive) == 0) {
+                BitcoinInterface btcInterface;
+                QList<BitcoinWalletRef> wallets = btcInterface.createWallets(1, true);
+                BitcoinWalletRef localWallet = wallets.at(0);
+                // Using the classic address this time
+                this->mAddress = localWallet->Addresses["P2PKH"];
+                this->mPublicKey = localWallet->PublicKey;
+                this->mPrivateKey = localWallet->PrivateKey;
+            }
     }
 }
 

@@ -1,12 +1,13 @@
 #include "walletapp.h"
+#include "utils.h"
 
 #include <QDebug>
 
 WalletApp::WalletApp()
 {
     this->mTitle = "threeBX Magic Wallet";
-    Wallet* wallet1 = new Wallet(1,"BTC","john");
-    Wallet* wallet2 = new Wallet(2,"BTC","Bob");
+    Wallet* wallet1 = new Wallet(WalletMode::WALLET_MODE_LIGHT,"BTC","john");
+    Wallet* wallet2 = new Wallet(WalletMode::WALLET_MODE_DARK,"BTC","Bob");
     wallet1->addBill(new Bill(wallet1));
     this->mWallets.append(wallet1);
     this->mWallets.append(wallet2);
