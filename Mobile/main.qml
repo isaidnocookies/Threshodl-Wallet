@@ -8,8 +8,8 @@ import com.threebx.walletapp 1.0
 Window {
     id: mainWindow
     visible: true
-    width: 400
-    height: 600
+    width: 800
+    height: 400
     title: walletApp.title
 
     WalletApp {
@@ -18,8 +18,8 @@ Window {
 
     GridLayout {
         id: mainLayout
+        columns: 1
         anchors.fill: parent
-        anchors.margins: margin
         Button {
             id: button1
             text: "Click to change title"
@@ -31,10 +31,23 @@ Window {
             text: "Click to send a parammeter"
             onClicked: walletApp.listener("Parameter1", 234)
         }
+
+        ListView {
+            id: walletList
+            width: 200
+            height: 100
+            model: walletApp.wallets
+            delegate: Rectangle {
+                width: 200
+                height: 25
+                Text {
+                    text: "Owner: " + model.modelData.owner + ", " + model.modelData.amount + " " + model.modelData.currency + ". Bills: " + model.modelData.count
+                }
+            }
+        }
     }
 
     function updateTitle(title) {
         walletApp.title = title;
-        mainWindow.title = walletApp.title;
     }
 }
