@@ -18,6 +18,8 @@ SOURCES += \
 
 RESOURCES += qml.qrc
 
+include($$PWD/../Core/Core.pri)
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
@@ -29,11 +31,5 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-SOURCES += \
-    wallet.cpp \
-    bill.cpp
-
 HEADERS += \
-    wallet.h \
-    bill.h \
     walletapp.h

@@ -43,11 +43,24 @@ Window {
                 Text {
                     text: "Owner: " + model.modelData.owner + ", " + model.modelData.amount + " " + model.modelData.currency + ". Bills: " + model.modelData.count
                 }
+                ListView {
+                    width: 200
+                    height: 100
+                    model: model.modelData.bills
+                    delegate: Rectangle {
+                        width: 200
+                        height: 25
+                        Text {
+                            text: "Address: " + model
+                        }
+                    }
+                }
             }
         }
     }
 
     function updateTitle(title) {
+        console.log(walletApp.wallets[0].bills[0].address)
         walletApp.title = title;
     }
 }

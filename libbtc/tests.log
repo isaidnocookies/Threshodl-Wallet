@@ -1,0 +1,1011 @@
+PASSED - test_sha_256()
+PASSED - test_sha_512()
+PASSED - test_sha_hmac()
+PASSED - test_utils()
+PASSED - test_cstr()
+PASSED - test_buffer()
+PASSED - test_serialize()
+PASSED - test_memory()
+PASSED - test_random()
+PASSED - test_bitcoin_hash()
+PASSED - test_base58check()
+PASSED - test_aes()
+PASSED - test_bip32()
+PASSED - test_ecc()
+PASSED - test_vector()
+PASSED - test_tx_serialization()
+PASSED - test_invalid_tx_deser()
+PASSED - test_tx_sign()
+PASSED - test_tx_sighash()
+PASSED - test_tx_sighash_ext()
+PASSED - test_tx_negative_version()
+PASSED - test_block_header()
+PASSED - test_script_parse()
+PASSED - test_script_op_codeseperator()
+PASSED - test_eckey()
+ext key: xprv9s21ZrQH143K3ZjKKRd2BGUDnc1UwM9yUWSajuhGPzw8M1icminAFifU2wcRRuDEEZn6aozMaQm7akGkFQTy8HNJubek9hYEEyctiydQcdW
+privatekey WIF: L3pCAb8RGzF3LYDv6CxZ4ebHNEkLdKNhfbdcVYL4Pmmx6yGJrkxD
+depth: 0
+child index: 0
+p2pkh address: 13g5A53fLA6yfoE1UsbVJhfE9hewApBwns
+p2wpkh address: 13g5A53fLA6yfoE1UsbVJhfE9hewApBwns
+pubkey hex: 034efd2d93c47981691e84698cb47dbbb127644fbef1e64ae80cec9d0f0c75a8c7
+extended pubkey: xpub661MyMwAqRbcG3onRTA2YQQxLdqyLospqjNBYJ6sxLU7Dp3mKG6QoWywtDh4f6cwNahECBTFRpm4QqDKdf5tsQ21wjHJkBq648h3zPg2ZBb
+PASSED - test_tool()
+Connected 0 headers, now at height: 0
+Discover peers...done
+Start interacting with the p2p network...
+DEBUG :Trying to connect to 1...
+DEBUG :Trying to connect to 2...
+DEBUG :Trying to connect to 3...
+DEBUG :Trying to connect to 4...
+DEBUG :Trying to connect to 5...
+DEBUG :Trying to connect to 6...
+DEBUG :Trying to connect to 7...
+DEBUG :Trying to connect to 8...
+DEBUG :Trying to connect to 9...
+DEBUG :Event callback on node 8
+DEBUG :Successfull connected to node 8.
+DEBUG :sending message to node 8: version
+DEBUG :Connected nodes: 1
+DEBUG :Event callback on node 6
+DEBUG :Successfull connected to node 6.
+DEBUG :sending message to node 6: version
+DEBUG :Connected nodes: 2
+DEBUG :Event callback on node 5
+DEBUG :Successfull connected to node 5.
+DEBUG :sending message to node 5: version
+DEBUG :Connected nodes: 3
+DEBUG :Event callback on node 1
+DEBUG :Successfull connected to node 1.
+DEBUG :sending message to node 1: version
+DEBUG :Connected nodes: 4
+DEBUG :Event callback on node 4
+DEBUG :Successfull connected to node 4.
+DEBUG :sending message to node 4: version
+DEBUG :Connected nodes: 5
+DEBUG :Event callback on node 3
+DEBUG :Successfull connected to node 3.
+DEBUG :sending message to node 3: version
+DEBUG :Connected nodes: 6
+DEBUG :Event callback on node 7
+DEBUG :Successfull connected to node 7.
+DEBUG :sending message to node 7: version
+DEBUG :Connected nodes: 7
+DEBUG :received command from node 8: version
+DEBUG :Connected to node 8: /Satoshi:0.15.1/ (516346)
+DEBUG :sending message to node 8: verack
+DEBUG :received command from node 8: verack
+DEBUG :sending message to node 8: getheaders
+DEBUG :Event callback on node 2
+DEBUG :Successfull connected to node 2.
+DEBUG :sending message to node 2: version
+DEBUG :Connected nodes: 8
+DEBUG :received command from node 8: sendheaders
+DEBUG :received command from node 8: sendcmpct
+DEBUG :received command from node 8: sendcmpct
+DEBUG :received command from node 8: ping
+DEBUG :sending message to node 8: pong
+DEBUG :received command from node 8: addr
+DEBUG :received command from node 6: version
+DEBUG :Connected to node 6: /Satoshi:0.15.1/ (516346)
+DEBUG :sending message to node 6: verack
+DEBUG :received command from node 6: verack
+DEBUG :received command from node 5: version
+DEBUG :Connected to node 5: /Satoshi:0.16.0/ (516346)
+DEBUG :sending message to node 5: verack
+DEBUG :received command from node 5: verack
+DEBUG :received command from node 1: version
+DEBUG :Connected to node 1: /Satoshi:0.16.0/ (516346)
+DEBUG :sending message to node 1: verack
+DEBUG :received command from node 1: verack
+DEBUG :received command from node 4: version
+DEBUG :Connected to node 4: /Bitcoin ABC:0.16.0(EB8.0)/ (524148)
+DEBUG :sending message to node 4: verack
+DEBUG :received command from node 4: verack
+DEBUG :received command from node 8: feefilter
+DEBUG :received command from node 3: version
+DEBUG :Connected to node 3: /Satoshi:0.16.0/ (516346)
+DEBUG :sending message to node 3: verack
+DEBUG :received command from node 3: verack
+DEBUG :received command from node 7: version
+DEBUG :Connected to node 7: /Satoshi:0.16.0/ (516346)
+DEBUG :sending message to node 7: verack
+DEBUG :received command from node 7: verack
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 405200
+New headers tip height 405200
+DEBUG :chain size: 405200, last time Thu Mar 31 21:25:56 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: version
+DEBUG :Connected to node 2: /Satoshi:0.15.1/ (516346)
+DEBUG :sending message to node 2: verack
+DEBUG :received command from node 2: verack
+DEBUG :received command from node 6: sendheaders
+DEBUG :received command from node 6: sendcmpct
+DEBUG :received command from node 6: sendcmpct
+DEBUG :received command from node 6: ping
+DEBUG :sending message to node 6: pong
+DEBUG :received command from node 6: addr
+DEBUG :received command from node 6: feefilter
+DEBUG :received command from node 5: sendheaders
+DEBUG :received command from node 5: sendcmpct
+DEBUG :received command from node 5: sendcmpct
+DEBUG :received command from node 5: ping
+DEBUG :sending message to node 5: pong
+DEBUG :received command from node 5: addr
+DEBUG :received command from node 5: feefilter
+DEBUG :received command from node 1: sendheaders
+DEBUG :received command from node 1: sendcmpct
+DEBUG :received command from node 1: sendcmpct
+DEBUG :received command from node 1: ping
+DEBUG :sending message to node 1: pong
+DEBUG :received command from node 1: addr
+DEBUG :received command from node 1: feefilter
+DEBUG :received command from node 4: sendheaders
+DEBUG :received command from node 4: sendcmpct
+DEBUG :received command from node 4: ping
+DEBUG :sending message to node 4: pong
+DEBUG :received command from node 4: addr
+DEBUG :received command from node 4: feefilter
+DEBUG :received command from node 3: sendheaders
+DEBUG :received command from node 3: sendcmpct
+DEBUG :received command from node 3: sendcmpct
+DEBUG :received command from node 3: ping
+DEBUG :sending message to node 3: pong
+DEBUG :received command from node 3: addr
+DEBUG :received command from node 3: feefilter
+DEBUG :received command from node 7: sendheaders
+DEBUG :received command from node 7: sendcmpct
+DEBUG :received command from node 7: sendcmpct
+DEBUG :received command from node 7: ping
+DEBUG :sending message to node 7: pong
+DEBUG :received command from node 7: addr
+DEBUG :received command from node 7: feefilter
+DEBUG :received command from node 7: inv
+DEBUG :Event callback on node 9
+DEBUG :Successfull connected to node 9.
+DEBUG :sending message to node 9: version
+DEBUG :Connected nodes: 9
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :sending message to node 1: ping
+DEBUG :sending message to node 2: ping
+DEBUG :sending message to node 3: ping
+DEBUG :sending message to node 4: ping
+DEBUG :sending message to node 5: ping
+DEBUG :sending message to node 6: ping
+DEBUG :sending message to node 7: ping
+DEBUG :sending message to node 8: ping
+DEBUG :sending message to node 9: ping
+DEBUG :received command from node 6: pong
+DEBUG :received command from node 1: pong
+DEBUG :received command from node 5: pong
+DEBUG :received command from node 3: pong
+DEBUG :received command from node 4: pong
+DEBUG :received command from node 7: pong
+DEBUG :received command from node 2: sendheaders
+DEBUG :received command from node 2: sendcmpct
+DEBUG :received command from node 2: sendcmpct
+DEBUG :received command from node 2: ping
+DEBUG :sending message to node 2: pong
+DEBUG :received command from node 2: addr
+DEBUG :received command from node 2: feefilter
+DEBUG :received command from node 2: pong
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 407200
+New headers tip height 407200
+DEBUG :chain size: 407200, last time Wed Apr 13 21:35:58 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: pong
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 9: version
+DEBUG :Connected to node 9: /Satoshi:0.15.1/ (516346)
+DEBUG :sending message to node 9: verack
+DEBUG :received command from node 9: verack
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 409200
+New headers tip height 409200
+DEBUG :chain size: 409200, last time Wed Apr 27 17:40:33 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 9: sendheaders
+DEBUG :received command from node 9: sendcmpct
+DEBUG :received command from node 9: sendcmpct
+DEBUG :received command from node 9: ping
+DEBUG :sending message to node 9: pong
+DEBUG :received command from node 9: addr
+DEBUG :received command from node 9: feefilter
+DEBUG :received command from node 9: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 411200
+New headers tip height 411200
+DEBUG :chain size: 411200, last time Tue May 10 12:27:05 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 413200
+New headers tip height 413200
+DEBUG :chain size: 413200, last time Tue May 24 01:10:15 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 9: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 415200
+New headers tip height 415200
+DEBUG :chain size: 415200, last time Tue Jun  7 04:41:12 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 417200
+New headers tip height 417200
+DEBUG :chain size: 417200, last time Mon Jun 20 04:19:01 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 4: addr
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 419200
+New headers tip height 419200
+DEBUG :chain size: 419200, last time Sun Jul  3 20:20:09 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 9: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 421200
+New headers tip height 421200
+DEBUG :chain size: 421200, last time Sun Jul 17 16:33:37 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: addr
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 423200
+New headers tip height 423200
+DEBUG :chain size: 423200, last time Mon Aug  1 11:24:39 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 425200
+New headers tip height 425200
+DEBUG :chain size: 425200, last time Sun Aug 14 09:54:39 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 9: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 7: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 427200
+New headers tip height 427200
+DEBUG :chain size: 427200, last time Sun Aug 28 03:53:26 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 429200
+New headers tip height 429200
+DEBUG :chain size: 429200, last time Sat Sep 10 16:40:31 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 3: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 431200
+New headers tip height 431200
+DEBUG :chain size: 431200, last time Fri Sep 23 23:10:18 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 433200
+New headers tip height 433200
+DEBUG :chain size: 433200, last time Thu Oct  6 14:55:22 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 435200
+New headers tip height 435200
+DEBUG :chain size: 435200, last time Thu Oct 20 21:31:14 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: addr
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 437200
+New headers tip height 437200
+DEBUG :chain size: 437200, last time Thu Nov  3 07:08:38 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 7: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 439200
+New headers tip height 439200
+DEBUG :chain size: 439200, last time Wed Nov 16 05:21:04 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 441200
+New headers tip height 441200
+DEBUG :chain size: 441200, last time Tue Nov 29 16:23:05 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 3: addr
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 443200
+New headers tip height 443200
+DEBUG :chain size: 443200, last time Mon Dec 12 16:44:44 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 445200
+New headers tip height 445200
+DEBUG :chain size: 445200, last time Mon Dec 26 05:54:40 2016
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 447200
+New headers tip height 447200
+DEBUG :chain size: 447200, last time Sun Jan  8 06:41:19 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 7: addr
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 449200
+New headers tip height 449200
+DEBUG :chain size: 449200, last time Fri Jan 20 13:27:51 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 6: addr
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 451200
+New headers tip height 451200
+DEBUG :chain size: 451200, last time Thu Feb  2 00:06:26 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 453200
+New headers tip height 453200
+DEBUG :chain size: 453200, last time Wed Feb 15 10:04:37 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: addr
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 7: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 455200
+New headers tip height 455200
+DEBUG :chain size: 455200, last time Tue Feb 28 16:00:11 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 3: addr
+DEBUG :received command from node 7: addr
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 457200
+New headers tip height 457200
+DEBUG :chain size: 457200, last time Tue Mar 14 05:26:15 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 4: addr
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 459200
+New headers tip height 459200
+DEBUG :chain size: 459200, last time Mon Mar 27 09:36:54 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 461200
+New headers tip height 461200
+DEBUG :chain size: 461200, last time Sun Apr  9 19:01:47 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 3: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 463200
+New headers tip height 463200
+DEBUG :chain size: 463200, last time Sun Apr 23 11:41:14 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 465200
+New headers tip height 465200
+DEBUG :chain size: 465200, last time Sat May  6 21:18:17 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 6: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 467200
+New headers tip height 467200
+DEBUG :chain size: 467200, last time Fri May 19 17:14:26 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 2: addr
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 469200
+New headers tip height 469200
+DEBUG :chain size: 469200, last time Thu Jun  1 04:46:08 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 471200
+New headers tip height 471200
+DEBUG :chain size: 471200, last time Wed Jun 14 00:10:49 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 473200
+New headers tip height 473200
+DEBUG :chain size: 473200, last time Tue Jun 27 23:10:59 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 475200
+New headers tip height 475200
+DEBUG :chain size: 475200, last time Mon Jul 10 16:08:17 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 6: ping
+DEBUG :sending message to node 6: pong
+DEBUG :received command from node 1: ping
+DEBUG :sending message to node 1: pong
+DEBUG :received command from node 5: ping
+DEBUG :sending message to node 5: pong
+DEBUG :received command from node 4: ping
+DEBUG :sending message to node 4: pong
+DEBUG :received command from node 3: ping
+DEBUG :sending message to node 3: pong
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 477200
+New headers tip height 477200
+DEBUG :chain size: 477200, last time Sun Jul 23 08:48:20 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: ping
+DEBUG :sending message to node 8: pong
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 6: addr
+DEBUG :received command from node 7: ping
+DEBUG :sending message to node 7: pong
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 2: ping
+DEBUG :sending message to node 2: pong
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 479200
+New headers tip height 479200
+DEBUG :chain size: 479200, last time Sat Aug  5 06:24:59 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 481200
+New headers tip height 481200
+DEBUG :chain size: 481200, last time Fri Aug 18 22:21:11 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 6: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 483200
+New headers tip height 483200
+DEBUG :chain size: 483200, last time Sat Sep  2 14:06:14 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 485200
+New headers tip height 485200
+DEBUG :chain size: 485200, last time Thu Sep 14 03:26:28 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 1: addr
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 487200
+New headers tip height 487200
+DEBUG :chain size: 487200, last time Wed Sep 27 08:26:38 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 489200
+New headers tip height 489200
+DEBUG :chain size: 489200, last time Tue Oct 10 03:29:41 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 1: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 491200
+New headers tip height 491200
+DEBUG :chain size: 491200, last time Sun Oct 22 12:55:48 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 493200
+New headers tip height 493200
+DEBUG :chain size: 493200, last time Sun Nov  5 06:54:42 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 495200
+New headers tip height 495200
+DEBUG :chain size: 495200, last time Sun Nov 19 23:48:18 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 497200
+New headers tip height 497200
+DEBUG :chain size: 497200, last time Sat Dec  2 05:14:41 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 499200
+New headers tip height 499200
+DEBUG :chain size: 499200, last time Wed Dec 13 21:30:54 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 4: addr
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 501200
+New headers tip height 501200
+DEBUG :chain size: 501200, last time Tue Dec 26 18:47:10 2017
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 5: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 503200
+New headers tip height 503200
+DEBUG :chain size: 503200, last time Mon Jan  8 09:07:11 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 505200
+New headers tip height 505200
+DEBUG :chain size: 505200, last time Sat Jan 20 08:28:03 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 3: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 507200
+New headers tip height 507200
+DEBUG :chain size: 507200, last time Thu Feb  1 19:19:57 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 509200
+New headers tip height 509200
+DEBUG :chain size: 509200, last time Wed Feb 14 11:17:18 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 2: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 1 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 511200
+New headers tip height 511200
+DEBUG :chain size: 511200, last time Tue Feb 27 11:55:05 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 513200
+New headers tip height 513200
+DEBUG :chain size: 513200, last time Mon Mar 12 08:07:57 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 8: inv
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 3: inv
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 7: inv
+DEBUG :received command from node 8: headers
+DEBUG :Got 2000 headers (took 0 s) from node 8
+DEBUG :Connected 2000 headers
+DEBUG :Chaintip at height 515200
+New headers tip height 515200
+DEBUG :chain size: 515200, last time Sun Mar 25 22:36:27 2018
+DEBUG :sending message to node 8: getheaders
+DEBUG :received command from node 6: inv
+DEBUG :received command from node 3: inv
+DEBUG :sending message to node 1: ping
+DEBUG :sending message to node 2: ping
+DEBUG :sending message to node 3: ping
+DEBUG :sending message to node 4: ping
+DEBUG :sending message to node 5: ping
+DEBUG :sending message to node 6: ping
+DEBUG :sending message to node 7: ping
+DEBUG :sending message to node 8: ping
+DEBUG :sending message to node 9: ping
+DEBUG :received command from node 5: pong
+DEBUG :received command from node 1: pong
+DEBUG :received command from node 6: pong
+DEBUG :received command from node 4: pong
+DEBUG :received command from node 3: pong
+DEBUG :received command from node 7: pong
+DEBUG :received command from node 2: pong
+DEBUG :received command from node 8: headers
+DEBUG :Got 1146 headers (took 0 s) from node 8
+DEBUG :start loading block from node 8 at height 516341 at time: 1522702050
+DEBUG :sending message to node 8: getblocks
+DEBUG :Connected 1141 headers
+DEBUG :Chaintip at height 516341
+New headers tip height 516341
+DEBUG :received command from node 8: pong
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 3: inv
+DEBUG :received command from node 8: inv
+DEBUG :Get inv request with 5 items
+DEBUG :Requesting 5 blocks
+DEBUG :sending message to node 8: getdata
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 2: inv
+DEBUG :received command from node 8: block
+Downloaded new block with size 561315 at height 516342 (Mon Apr  2 13:48:32 2018
+)
+Start parsing 1618 transactions...done (took 0 secs)
+DEBUG :Statecheck: amount of connected nodes: 9
+DEBUG :received command from node 8: block
+Downloaded new block with size 351855 at height 516343 (Mon Apr  2 13:53:06 2018
+)
+Start parsing 691 transactions...done (took 0 secs)
+DEBUG :received command from node 4: inv
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: block
+Downloaded new block with size 816320 at height 516344 (Mon Apr  2 14:07:13 2018
+)
+Start parsing 1836 transactions...done (took 0 secs)
+DEBUG :received command from node 5: inv
+DEBUG :received command from node 8: block
+Downloaded new block with size 965001 at height 516345 (Mon Apr  2 14:35:59 2018
+)
+Start parsing 2091 transactions...done (took 0 secs)
+DEBUG :received command from node 1: inv
+DEBUG :received command from node 8: block
+Downloaded new block with size 431940 at height 516346 (Mon Apr  2 14:36:40 2018
+)
+Start parsing 1483 transactions...done (took 0 secs)
+Sync completed, at height 516346
+DEBUG :Disconnect node 1
+DEBUG :Disconnect node 2
+DEBUG :Disconnect node 3
+DEBUG :Disconnect node 4
+DEBUG :Disconnect node 5
+DEBUG :Disconnect node 6
+DEBUG :Disconnect node 7
+DEBUG :Disconnect node 8
+DEBUG :Disconnect node 9
+PASSED - test_netspv()
+PASSED - test_protocol()
+dns seed ip 0: 107.155.113.17:8333
+dns seed ip 1: 59.110.218.88:8333
+dns seed ip 2: 149.202.84.91:8333
+dns seed ip 3: 94.254.21.81:8333
+dns seed ip 4: 139.59.151.16:8333
+dns seed ip 5: 82.25.55.71:8333
+dns seed ip 6: 118.31.166.94:8333
+dns seed ip 7: 47.94.57.155:8333
+dns seed ip 8: 37.45.138.222:8333
+dns seed ip 9: 139.59.208.101:8333
+dns seed ip 10: 47.94.39.87:8333
+dns seed ip 11: 101.37.160.142:8333
+dns seed ip 12: 180.106.178.14:8333
+dns seed ip 13: 54.255.160.87:8333
+dns seed ip 14: 173.249.11.200:8333
+dns seed ip 15: 188.40.71.200:8333
+dns seed ip 16: 52.76.154.206:8333
+dns seed ip 17: 87.66.1.116:8333
+dns seed ip 18: 88.99.70.242:8333
+dns seed ip 19: 85.195.215.138:8333
+dns seed ip 20: 115.50.81.191:8333
+dns seed ip 21: 5.9.106.197:8333
+dns seed ip 22: 187.10.135.25:8333
+dns seed ip 23: 49.73.174.89:8333
+DEBUG :Event callback on node 1
+DEBUG :Error connecting to node 1.
+DEBUG :Trying to connect to 2...
+DEBUG :Trying to connect to 3...
+DEBUG :Trying to connect to 4...
+DEBUG :Connected nodes: 0
+DEBUG :Event callback on node 2
+DEBUG :Error connecting to node 2.
+DEBUG :Connected nodes: 0
+DEBUG :Event callback on node 4
+DEBUG :Successfull connected to node 4.
+DEBUG :sending message to node 4: version
+DEBUG :Connected nodes: 1
+DEBUG :received command from node 4: version
+DEBUG :Disconnect node 4
+DEBUG :Connected to node 4: /Satoshi:0.16.99/ (516346)
+PASSED - test_net_basics_plus_download_block()
+PASS tests (exit status: 0)

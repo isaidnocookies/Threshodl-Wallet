@@ -13,6 +13,7 @@ class Bill : public QObject
     Q_OBJECT
     Q_PROPERTY(QString address READ getAddress)
     Q_PROPERTY(QString publicKey READ getPublicKey)
+    Q_PROPERTY(QString currency READ getCurrency)
     Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)
 
 private:
@@ -20,6 +21,7 @@ private:
     QString mAddress;
     QString mPublicKey;
     QString mPrivateKey;
+    QString mCurrency;
     QString mAmount;
     // Internal usage methods
     QString getPrivateKey();
@@ -27,9 +29,11 @@ private:
 
 public:
     Bill(Wallet* wallet);
+    Bill(Wallet* wallet, QString address, QString publickey, QString privateKey, QString currency, QString amount);
     Wallet* getWallet();
     QString getAddress();
     QString getPublicKey();
+    QString getCurrency();
     QString getAmount();
 
 signals:

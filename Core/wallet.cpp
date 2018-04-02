@@ -1,5 +1,15 @@
 #include "wallet.h"
 
+/**
+ * Create a new user wallet.
+ * User wallets are the higher abstraction object to deal with amounts of any currency
+ * Each user wallet holds a list of bills(wallets or microwallets), the
+ *
+ * @brief Wallet::Wallet
+ * @param type
+ * @param currency
+ * @param owner
+ */
 Wallet::Wallet(int type, QString currency, QString owner)
 {
     this->mType = type;
