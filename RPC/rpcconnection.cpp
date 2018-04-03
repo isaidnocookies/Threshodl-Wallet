@@ -68,6 +68,12 @@ QString RPCConnection::nextTextMessage()
     return QString();
 }
 
+bool RPCConnection::isConnected() const
+{
+    if( mSocket && QAbstractSocket::ConnectedState == mSocket->state() ) return true;
+    return false;
+}
+
 void RPCConnection::open(const QUrl &iUrl)
 {
     if(mSocket) {

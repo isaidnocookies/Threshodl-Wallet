@@ -20,6 +20,7 @@ public:
     int textMessageCount() const;
     QByteArray nextBinaryMessage();
     QString nextTextMessage();
+    bool isConnected() const;
 
 signals:
     void connected(); // Only emitted from a client connection

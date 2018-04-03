@@ -1,6 +1,9 @@
 #ifndef RPCSERVERHANDLER_H
 #define RPCSERVERHANDLER_H
 
+#include "clientconnection.h"
+
+#include <QList>
 #include <QObject>
 
 class RPCServerHandler : public QObject
@@ -15,6 +18,9 @@ public slots:
     void serverStarted();
     void serverFailedToStart();
     void newConnectionArrived();
+
+private:
+    QList< QSharedPointer<ClientConnection> >   mActiveClientConnections;
 };
 
 #endif // RPCSERVERHANDLER_H

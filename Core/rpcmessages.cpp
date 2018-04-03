@@ -5,6 +5,11 @@
 #include <QVariantMap>
 #include <QJsonDocument>
 
+#define     kStringElement_HasSignature     0
+#define     kStringElement_Signature        1
+#define     kStringElement_Data             2
+#define     kStringElementCount             3
+
 #define     kRPCVersion     "a"
 #define     kRPCVersionKey  "v"
 #define     kUsernameKey    "u"
@@ -35,15 +40,38 @@ static QByteArray _sign(const QByteArray iData, const QByteArray iPublicKey, Key
 static QString _createUnauthenticatedMessage(const QByteArray iData, const QByteArray iSign) {
     if( iData.isEmpty() || iSign.isEmpty() ) return QString();
     QByteArray lSign = iSign.toBase64();
-    return QStringLiteral("%1\n%2").arg(lSign.constData()).arg(iData.constData());
+    return QStringLiteral("1\n%1\n%2").arg(lSign.constData()).arg(iData.constData());
 }
 
 static QString _createAuthenticatedMessage(const QByteArray iData) {
     if( iData.isEmpty() ) return QString();
-    return QStringLiteral("%1").arg(iData.constData());
+    return QStringLiteral("0\n0\n%1").arg(iData.constData());
 }
 
-QString CreateMessage::CreateUsername(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding)
+static QVariantMap _createMapFromData(const QByteArray iData)
+{
+    QJsonParseError lJsonError;
+    QVariantMap     lMap        = QJsonDocument::fromJson(iData, &lJsonError).toVariant().toMap();
+    if( lJsonError.error == QJsonParseError::NoError )
+        return lMap;
+    return QVariantMap();
+}
+
+static QVariantMap _createMapFromData(const QString iData)
+{
+    return _createMapFromData(iData.toUtf8());
+}
+
+QString MessagePayloadKey::ProtocolVersion() const
+{ return QStringLiteral(kRPCVersionKey); }
+
+QString MessagePayloadKey::Username() const
+{ return QStringLiteral(kUsernameKey); }
+
+QString MessagePayloadKey::PublicKey() const
+{ return QStringLiteral(kPublicKeyKey); }
+
+QString OnClient::CreateUsername(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding)
 {
     QVariantMap lJsonMap;
     QByteArray  lJson;
@@ -57,7 +85,7 @@ QString CreateMessage::CreateUsername(const QString iUsername, const QByteArray 
     return _createUnauthenticatedMessage( lJson, _sign(lJson,iPublicKey,iKeyEncoding) );
 }
 
-QString CreateMessage::LoginUsername(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding)
+QString OnClient::LoginUsername(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding)
 {
     QVariantMap lJsonMap;
     QByteArray  lJson;
@@ -71,7 +99,7 @@ QString CreateMessage::LoginUsername(const QString iUsername, const QByteArray i
     return _createUnauthenticatedMessage( lJson, _sign(lJson,iPublicKey,iKeyEncoding) );
 }
 
-QString CreateMessage::LogoutUsername()
+QString OnClient::LogoutUsername()
 {
     QVariantMap lJsonMap;
     QByteArray  lJson;
@@ -83,7 +111,7 @@ QString CreateMessage::LogoutUsername()
     return _createAuthenticatedMessage(lJson);
 }
 
-QString CreateMessage::DeleteUsername()
+QString OnClient::DeleteUsername()
 {
     QVariantMap lJsonMap;
     QByteArray  lJson;
@@ -95,7 +123,7 @@ QString CreateMessage::DeleteUsername()
     return _createAuthenticatedMessage(lJson);
 }
 
-QString CreateMessage::GeneralReply(qint32 iReplyCode)
+QString OnClient::GeneralReply(qint32 iReplyCode)
 {
     QVariantMap lJsonMap;
     QByteArray  lJson;
@@ -105,4 +133,36 @@ QString CreateMessage::GeneralReply(qint32 iReplyCode)
 
     lJson = QJsonDocument::fromVariant(lJsonMap).toJson(QJsonDocument::Compact);
     return _createAuthenticatedMessage(lJson);
+}
+
+bool OnServer::MessageHasSignature(const QString iMessage)
+{
+    if( ! iMessage.isEmpty() || iMessage.at[0] == '1' ) return true;
+    return false;
+}
+
+QByteArray OnServer::GetSignature(const QString iMessage)
+{
+    QStringList lElements = iMessage.split("\n");
+    if( lElements.size() == kStringElementCount ) {
+        return lElements[kStringElement_Signature].toUtf8();
+    }
+    return QByteArray();
+}
+
+QVariantMap OnServer::GetMessagePayload(const QString iMessage)
+{
+    QStringList lElements = iMessage.split("\n");
+    if( lElements.size() == kStringElementCount ) {
+        return _createMapFromData(lElements[kStringElement_Data]);
+    }
+    return QVariantMap();
+}
+
+QByteArray OnServer::GetCommandFromPayload(const QVariantMap iPayload)
+{
+    if( iPayload.contains(kCommandKey) ) {
+        return iPayload[kCommandKey].toByteArray();
+    }
+    return QByteArray();
 }
