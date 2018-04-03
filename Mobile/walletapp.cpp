@@ -9,6 +9,7 @@ WalletApp::WalletApp()
     Wallet* wallet1 = new Wallet(WalletMode::WALLET_MODE_LIGHT,"BTC","john");
     Wallet* wallet2 = new Wallet(WalletMode::WALLET_MODE_DARK,"BTC","Bob");
     wallet1->addBill(new Bill(wallet1));
+    wallet1->addBill(new Bill(wallet1));
     this->mWallets.append(wallet1);
     this->mWallets.append(wallet2);
 
