@@ -11,16 +11,18 @@ class RPCServerHandler : public QObject
     Q_OBJECT
 public:
     explicit RPCServerHandler(QObject *iParent = nullptr);
+    ~RPCServerHandler();
 
 signals:
 
 public slots:
+    void clientDisconnected();
     void serverStarted();
     void serverFailedToStart();
     void newConnectionArrived();
 
 private:
-    QList< QSharedPointer<ClientConnection> >   mActiveClientConnections;
+    QList<ClientConnection *>   mActiveClientConnections;
 };
 
 #endif // RPCSERVERHANDLER_H

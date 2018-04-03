@@ -42,7 +42,7 @@ signals:
 
 public slots:
     void    threadStarted();
-    void    timerEvent();
+    void    timerEventFired();
     void    setTimerInterval(int iTimerInterval);
     void    addUrl(const QString iUrl);
 

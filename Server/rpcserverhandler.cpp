@@ -9,6 +9,25 @@ RPCServerHandler::RPCServerHandler(QObject *iParent)
 
 }
 
+RPCServerHandler::~RPCServerHandler()
+{
+
+}
+
+void RPCServerHandler::clientDisconnected()
+{
+    auto lSender = sender();
+    if( lSender ) {
+        auto lClient = dynamic_cast<ClientConnection *>(lSender);
+
+        if( lClient ) {
+            mActiveClientConnections.removeAll( lClient );
+        }
+
+        lSender->deleteLater();
+    }
+}
+
 void RPCServerHandler::serverStarted()
 {
     qInfo() << "RPC Websocket server started.";
@@ -27,7 +46,7 @@ void RPCServerHandler::newConnectionArrived()
         auto lConnection = lServer->nextConnection();
         if( lConnection ) {
             qInfo() << "Activating new client connection.";
-            mActiveClientConnections << QSharedPointer<ClientConnection>(new ClientConnection(lConnection,this));
+            mActiveClientConnections << new ClientConnection(lConnection,this);
         }else{
             qInfo() << "Recieved stale new client connection notification, ignoring.";
         }

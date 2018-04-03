@@ -50,6 +50,19 @@ RPCMessage &RPCMessage::operator=(const RPCMessage &iOther)
 RPCMessage &RPCMessage::operator<<(const RPCField &iField)
 { mFields << iField; return *this; }
 
+QVariant RPCMessage::operator[](const QString iKey) const
+{ return fieldValue(iKey); }
+
+QVariant RPCMessage::fieldValue(const QString iKey) const
+{
+    for( auto lField : mFields ) {
+        if( lField.Key == iKey )
+            return lField.Value;
+    }
+
+    return QVariant();
+}
+
 QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     mUsername = iUsername;
@@ -59,16 +72,21 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicK
     QByteArray  lData           = QJsonDocument::fromVariant(lInnerMap).toJson();
     QVariantMap lOutterMap;
 
-    enum Digest::HashTypes lHashType;
-    switch( iKeyEncoding ) {
 
-    case RPCMessage::KeyEncoding::SHA512:
-    default:
-        lHashType = Digest::HashTypes::SHA512;
-        break;
+    if( iKeyEncoding == RPCMessage::KeyEncoding::None ) {
+        mSignature = QByteArray();
+    }else{
+        enum Digest::HashTypes lHashType;
+        switch( iKeyEncoding ) {
+
+        case RPCMessage::KeyEncoding::SHA512:
+        default:
+            lHashType = Digest::HashTypes::SHA512;
+            break;
+        }
+
+        mSignature = Digest::sign(iPublicKey,lData,lHashType);
     }
-
-    mSignature = Digest::sign(iPublicKey,lData,lHashType);
 
     lOutterMap[kUsernameKey]            = mUsername;
     lOutterMap[kSignatureKey]           = mSignature;
@@ -88,6 +106,13 @@ RPCMessage::KeyEncoding RPCMessage::signatureKeyEncoding() const
 
 QList<RPCField> RPCMessage::fields() const
 { return mFields; }
+
+QString RPCMessage::toMessage(QList<RPCField> iFields, const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
+{
+    RPCMessage  lMessage;
+    lMessage.mFields = iFields;
+    return lMessage.toMessage(iUsername, iPublicKey, iKeyEncoding);
+}
 
 void RPCMessage::_copy(const RPCMessage &iOther)
 {
