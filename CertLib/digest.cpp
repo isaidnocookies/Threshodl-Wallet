@@ -77,6 +77,14 @@ bool Digest::verify(EncryptionKey *iKey, const QByteArray iSignature)
     return lRet;
 }
 
+QByteArray Digest::sign(const QByteArray iKey, const QByteArray iData, Digest::HashTypes iHashType, bool iPrivateKey)
+{
+    EncryptionKey * lKey = new EncryptionKey{iKey, iPrivateKey};
+    QByteArray lSign = Digest::sign(lKey,iData,iHashType);
+    delete lKey;
+    return lSign;
+}
+
 QByteArray Digest::sign(EncryptionKey *iKey, const QByteArray iData, enum Digest::HashTypes iHashType)
 {
     Digest  lDigest;
@@ -86,6 +94,14 @@ QByteArray Digest::sign(EncryptionKey *iKey, const QByteArray iData, enum Digest
         return lDigest.data();
     }
     return QByteArray();
+}
+
+bool Digest::verify(const QByteArray iKey, const QByteArray iData, const QByteArray iSignature, Digest::HashTypes iHashType, bool iPrivateKey)
+{
+    EncryptionKey * lKey = new EncryptionKey{iKey, iPrivateKey};
+    bool lVerify = Digest::verify(lKey,iData,iSignature,iHashType);
+    delete lKey;
+    return lVerify;
 }
 
 bool Digest::verify(EncryptionKey *iKey, const QByteArray iData, const QByteArray iSignature, enum Digest::HashTypes iHashType)

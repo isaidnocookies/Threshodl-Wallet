@@ -2,10 +2,10 @@
 #define CLIENTCONNECTION_H
 
 #include "rpcconnection.h"
-#include "rpcserverhandler.h"
 
 #include <QTimer>
 
+class RPCServerHandler;
 class ClientConnection : public QObject
 {
     Q_OBJECT
