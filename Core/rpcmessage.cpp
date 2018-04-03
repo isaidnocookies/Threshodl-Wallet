@@ -9,7 +9,7 @@
 #define     kSignatureEncodingKey   "sige"
 #define     kInnerMapKey            "data"
 
-inline static QVariantMap __fieldsToMap(QList<RPCField> &iFields)
+inline static QVariantMap __fieldsToMap(QList<RPCField> iFields)
 {
     QVariantMap lMap;
 
@@ -45,14 +45,15 @@ RPCMessage::RPCMessage(const QString iMessage)
 }
 
 RPCMessage &RPCMessage::operator=(const RPCMessage &iOther)
-{ _copy(iOther); }
+{ _copy(iOther); return *this; }
 
 RPCMessage &RPCMessage::operator<<(const RPCField &iField)
-{ mFields << iField; }
+{ mFields << iField; return *this; }
 
 QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     mUsername = iUsername;
+    mSignatureEncoding = static_cast<int>(iKeyEncoding);
 
     QVariantMap lInnerMap       = __fieldsToMap(fields());
     QByteArray  lData           = QJsonDocument::fromVariant(lInnerMap).toJson();
@@ -71,6 +72,9 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicK
 
     lOutterMap[kUsernameKey]            = mUsername;
     lOutterMap[kSignatureKey]           = mSignature;
+    lOutterMap[kSignatureEncodingKey]   = mSignatureEncoding;
+
+    return QString::fromUtf8( QJsonDocument::fromVariant(lOutterMap).toJson() );
 }
 
 QString RPCMessage::username() const
@@ -84,3 +88,13 @@ RPCMessage::KeyEncoding RPCMessage::signatureKeyEncoding() const
 
 QList<RPCField> RPCMessage::fields() const
 { return mFields; }
+
+void RPCMessage::_copy(const RPCMessage &iOther)
+{
+    if( &iOther != this ) {
+        mUsername           = iOther.mUsername;
+        mSignature          = iOther.mSignature;
+        mSignatureEncoding  = iOther.mSignatureEncoding;
+        mFields             = iOther.mFields;
+    }
+}

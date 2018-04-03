@@ -16,7 +16,7 @@ void RPCServerHandler::serverStarted()
 
 void RPCServerHandler::serverFailedToStart()
 {
-    qFatal() << "Unable to start RPC Websocket server!";
+    qFatal("Unable to start RPC Websocket server!");
 }
 
 void RPCServerHandler::newConnectionArrived()

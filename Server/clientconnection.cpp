@@ -1,4 +1,5 @@
 #include "clientconnection.h"
+#include "rpcserverhandler.h"
 
 ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler *iServer)
     : QObject(iServer)

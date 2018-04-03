@@ -28,7 +28,10 @@ public:
     bool sign( EncryptionKey * iKey );
     bool verify( EncryptionKey * iKey, const QByteArray iSignature );
 
+    static QByteArray   sign( const QByteArray iKey, const QByteArray iData, HashTypes iHashType = SHA512, bool iPrivateKey = true );
     static QByteArray   sign( EncryptionKey * iKey, const QByteArray iData, HashTypes iHashType = SHA512 );
+
+    static bool         verify( const QByteArray iKey, const QByteArray iData, const QByteArray iSignature, HashTypes iHashType = SHA512, bool iPrivateKey = false );
     static bool         verify( EncryptionKey * iKey, const QByteArray iData, const QByteArray iSignature, HashTypes iHashType = SHA512 );
 
 private:
