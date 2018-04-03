@@ -46,7 +46,6 @@ HEADERS += \
     restalphahandler.h \
     dbinterface.h \
     dbinterfacealpha.h \
-    bitcoininterface.h \
     rpcserverhandler.h \
     clientconnection.h
 
@@ -61,11 +60,12 @@ SOURCES += \
     restalphaexchangerate.cpp \
     restalphahandler.cpp \
     dbinterfacealpha.cpp \
-    bitcoininterface.cpp \
     rpcserverhandler.cpp \
     clientconnection.cpp
 
 OTHER_FILES += \
+    bitcoininterface.cpp \
+    bitcoininterface.h \
     restalphamodeatomodeb.h \
     restalphamodebtomodeb.h \
     restalphamodebtomodea.h \

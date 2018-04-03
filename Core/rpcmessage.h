@@ -10,7 +10,7 @@ class RPCMessage
 public:
     enum class KeyEncoding {
         None    = 0x0,
-        Sha512  = 0x1
+        SHA512  = 0x1
     };
 
     typedef enum KeyEncoding KeyEncoding;
@@ -22,7 +22,7 @@ public:
     RPCMessage &operator=(const RPCMessage &iOther);
     RPCMessage &operator<<(const RPCField &iField);
 
-    QString toMessage(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::Sha512);
+    QString toMessage(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
     QString     username() const;
     QByteArray  signature() const;               // Only valid if constructed from a message or signed
@@ -30,7 +30,7 @@ public:
 
     QList< RPCField > fields() const;
 
-    static QString toMessage(QList< RPCField > iFields, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::Sha512);
+    static QString toMessage(QList< RPCField > iFields, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
 protected:
     void _copy(const RPCMessage &iOther);

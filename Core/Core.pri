@@ -25,21 +25,20 @@
         $$PWD/microwallet.h \
         $$PWD/encapsulatedmicrowallet.h \
         $$PWD/bill.h \
-        $$PWD/wallet.h
+        $$PWD/wallet.h \
+        $$PWD/rpcmessages.h \
+        $$PWD/rpcmessage.h \
+        $$PWD/bitcoininterface.h \
+        $$PWD/rpcfield.h \
+        $$PWD/utils.h
 
     SOURCES += \
         $$PWD/core.cpp \
         $$PWD/microwallet.cpp \
         $$PWD/encapsulatedmicrowallet.cpp \
         $$PWD/bill.cpp \
-        $$PWD/wallet.cpp
+        $$PWD/wallet.cpp \
+        $$PWD/rpcmessages.cpp \
+        $$PWD/rpcmessage.cpp \
+        $$PWD/bitcoininterface.cpp
 }
-
-HEADERS += \
-    $$PWD/rpcmessages.h \
-    $$PWD/bitcoininterface.h \
-    $$PWD/utils.h
-
-SOURCES += \
-    $$PWD/rpcmessages.cpp \
-    $$PWD/bitcoininterface.cpp
