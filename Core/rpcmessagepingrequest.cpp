@@ -1,21 +1,15 @@
 #include "rpcmessagepingrequest.h"
 
 RPCMessagePingRequest::RPCMessagePingRequest() : RPCMessage()
-{
-
-}
+{ }
 
 RPCMessagePingRequest::RPCMessagePingRequest(const RPCMessage &iOther)
     : RPCMessage(iOther)
-{
-
-}
+{ }
 
 RPCMessagePingRequest::RPCMessagePingRequest(const QString iMessage)
     : RPCMessage(iMessage)
-{
-
-}
+{ }
 
 QString RPCMessagePingRequest::commandValue()
 { return QStringLiteral("ping"); }

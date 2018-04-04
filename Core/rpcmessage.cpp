@@ -34,13 +34,19 @@ RPCMessage::RPCMessage(const QString iMessage)
         mUsername           = lOutterMap[kUsernameKey].toString();
         mSignature          = lOutterMap[kSignatureKey].toByteArray();
         mSignatureEncoding  = lOutterMap[kSignatureEncodingKey].toInt();
+        mDataForSignature   = lOutterMap[kInnerMapKey].toByteArray();
 
-        QVariantMap lInnerMap   = lOutterMap[kInnerMapKey].toMap();
-        for( auto lKey : lInnerMap.keys() ) {
-            mFields << RPCField{lKey, lInnerMap[lKey]};
+        // QVariantMap lInnerMap   = lOutterMap[kInnerMapKey].toMap();
+        QVariantMap lInnerMap = QJsonDocument::fromJson(mDataForSignature,&lJsonParseError).toVariant().toMap();
+        if( lJsonParseError.error == QJsonParseError::NoError ) {
+            for( auto lKey : lInnerMap.keys() ) {
+                mFields << RPCField{lKey, lInnerMap[lKey]};
+            }
+        }else{
+            qWarning() << "RPCMessage Json parse error (inner), message balance" << lJsonParseError.offset << ":" << mDataForSignature.mid(lJsonParseError.offset);
         }
     }else{
-        qWarning() << "RPCMessage Json parse error, message balance" << lJsonParseError.offset << ":" << lUtf8Message.mid(lJsonParseError.offset);
+        qWarning() << "RPCMessage Json parse error (outter), message balance" << lJsonParseError.offset << ":" << lUtf8Message.mid(lJsonParseError.offset);
     }
 }
 
@@ -69,7 +75,7 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicK
     mSignatureEncoding = static_cast<int>(iKeyEncoding);
 
     QVariantMap lInnerMap       = __fieldsToMap(fields());
-    QByteArray  lData           = QJsonDocument::fromVariant(lInnerMap).toJson(QJsonDocument::Compact);
+    mDataForSignature           = QJsonDocument::fromVariant(lInnerMap).toJson(QJsonDocument::Compact);
     QVariantMap lOutterMap;
 
 
@@ -85,13 +91,13 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicK
             break;
         }
 
-        mSignature = Digest::sign(iPublicKey,lData,lHashType);
+        mSignature = Digest::sign(iPublicKey,mDataForSignature,lHashType);
     }
 
     lOutterMap[kUsernameKey]            = mUsername;
     lOutterMap[kSignatureKey]           = mSignature;
     lOutterMap[kSignatureEncodingKey]   = mSignatureEncoding;
-    lOutterMap[kInnerMapKey]            = lInnerMap;
+    lOutterMap[kInnerMapKey]            = mDataForSignature;
 
     return QString::fromUtf8( QJsonDocument::fromVariant(lOutterMap).toJson(QJsonDocument::Compact) );
 }
@@ -104,6 +110,9 @@ QByteArray RPCMessage::signature() const
 
 RPCMessage::KeyEncoding RPCMessage::signatureKeyEncoding() const
 { return static_cast<RPCMessage::KeyEncoding>(mSignatureEncoding); }
+
+QByteArray RPCMessage::dataForSignature() const
+{ return mDataForSignature; }
 
 void RPCMessage::setFields(QList<RPCField> iFields)
 { mFields = iFields; }
@@ -124,6 +133,7 @@ void RPCMessage::_copy(const RPCMessage &iOther)
         mUsername           = iOther.mUsername;
         mSignature          = iOther.mSignature;
         mSignatureEncoding  = iOther.mSignatureEncoding;
+        mDataForSignature   = iOther.mDataForSignature;
         mFields             = iOther.mFields;
     }
 }

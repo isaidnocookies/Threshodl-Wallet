@@ -29,8 +29,9 @@ public:
     QString toMessage(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
     QString     username() const;
-    QByteArray  signature() const;               // Only valid if constructed from a message or signed
+    QByteArray  signature() const;              // Only valid if constructed from a message or signed
     KeyEncoding signatureKeyEncoding() const;   // Only valid if constructed from a message or signed
+    QByteArray  dataForSignature() const;       // Only valid if constructed from a message or signed
 
     void setFields(QList<RPCField> iFields);
     QList< RPCField > fields() const;
@@ -42,6 +43,7 @@ protected:
 
     QString             mUsername;                  // Only valid if constructed from a message
     QByteArray          mSignature;                 // Only valid if constructed from a message
+    QByteArray          mDataForSignature;          // Only valid if constructed from a message
     int                 mSignatureEncoding = 0x0;   // Only valid if constructed from a message or signed
     QList< RPCField >   mFields;
 };

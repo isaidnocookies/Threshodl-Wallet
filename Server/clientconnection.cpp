@@ -2,6 +2,7 @@
 #include "rpcserverhandler.h"
 #include "rpcmessage.h"
 #include "rpcmessagepingrequest.h"
+#include "rpcmessagepingreply.h"
 
 ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler *iServer)
     : QObject(iServer)
@@ -36,14 +37,11 @@ void ClientConnection::processIncomingMessage()
         QString lRawMessage = mConnection->nextTextMessage();
         if( ! lRawMessage.isEmpty() ) {
             RPCMessage  lMessage{lRawMessage};
-            if( lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString() == RPCMessagePingRequest::commandValue() ) {
-                RPCMessagePingRequest   lPingReq{lMessage};
-                QString lReply = RPCMessage::toMessage(
-                            QList<RPCField>()
-                            << RPCField(RPCMessagePingRequest::pingPayloadKey(),lPingReq.payload())
-                            << RPCField(QStringLiteral(kFieldKey_Command),RPCMessagePingRequest::commandValue()),
-                            QStringLiteral("Threshodl"), QByteArray(), RPCMessage::KeyEncoding::None);
+            QString     lCommand = lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
+            if( lCommand == RPCMessagePingRequest::commandValue() ) {
+                RPCMessagePingRequest   lPingReq{lMessage};
+                QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"),"",RPCMessage::KeyEncoding::None);
                 if( ! lReply.isEmpty() ) {
                     mConnection->sendTextMessage(lReply);
                 }else{
@@ -58,12 +56,12 @@ void ClientConnection::processIncomingMessage()
 
 void ClientConnection::outgoingMessageSent()
 {
-
+    // Nothing to do for now?
 }
 
 void ClientConnection::outgoingMessageFailedToSend()
 {
-
+    mConnection->close();
 }
 
 QString ClientConnection::username() const
