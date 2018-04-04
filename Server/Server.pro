@@ -47,8 +47,7 @@ HEADERS += \
     dbinterface.h \
     dbinterfacealpha.h \
     rpcserverhandler.h \
-    clientconnection.h \
-    rpcmessagepingrequest.h
+    clientconnection.h
 
 
 SOURCES += \
@@ -62,8 +61,7 @@ SOURCES += \
     restalphahandler.cpp \
     dbinterfacealpha.cpp \
     rpcserverhandler.cpp \
-    clientconnection.cpp \
-    rpcmessagepingrequest.cpp
+    clientconnection.cpp
 
 OTHER_FILES += \
     bitcoininterface.cpp \

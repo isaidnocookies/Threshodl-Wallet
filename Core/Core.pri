@@ -28,6 +28,7 @@
         $$PWD/wallet.h \
         $$PWD/rpcfield.h \
         $$PWD/rpcmessage.h \
+    	$$PWD/rpcmessagepingrequest.h \
         $$PWD/bitcoininterface.h \
         $$PWD/utils.h
 
@@ -38,6 +39,7 @@
         $$PWD/bill.cpp \
         $$PWD/wallet.cpp \
         $$PWD/rpcmessage.cpp \
+	$$PWD/rpcmessagepingrequest.cpp \
         $$PWD/bitcoininterface.cpp
 
     OTHER_FILES += \
