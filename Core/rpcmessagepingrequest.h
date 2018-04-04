@@ -14,6 +14,8 @@ public:
     static QString pingPayloadKey();
 
     QByteArray payload() const;
+
+    static QString create(const QByteArray iPayload, const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 };
 
 #endif // RPCMESSAGEPINGREQUEST_H

@@ -50,7 +50,7 @@ void ClientConnection::processIncomingMessage()
                     qWarning() << "Failed to generate a reply message, this is a coding issue!";
                 }
             }else{
-                qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!";
+                qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
             }
         }
     }

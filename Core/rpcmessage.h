@@ -32,6 +32,7 @@ public:
     QByteArray  signature() const;               // Only valid if constructed from a message or signed
     KeyEncoding signatureKeyEncoding() const;   // Only valid if constructed from a message or signed
 
+    void setFields(QList<RPCField> iFields);
     QList< RPCField > fields() const;
 
     static QString toMessage(QList< RPCField > iFields, const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);

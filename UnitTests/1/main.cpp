@@ -19,9 +19,12 @@ int main(int argc, char *argv[])
 
         lFile.close();
         lRPC->setSslConfiguration(lSslConf);
+    }else{
+        qFatal("Failed to open CA cert.");
     }
 
     new Test{lRPC};
+    lRPC->open(QUrl{"wss://127.0.0.1:4431"});
 
 //    if( lConnection ) {
 //        // /tmp/ca.pem
