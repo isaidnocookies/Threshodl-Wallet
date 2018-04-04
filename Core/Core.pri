@@ -48,3 +48,9 @@
         $$PWD/rpcmessages.h \
         $$PWD/rpcmessages.cpp
 }
+
+HEADERS += \
+    $$PWD/rawtransaction.h
+
+SOURCES += \
+    $$PWD/rawtransaction.cpp
