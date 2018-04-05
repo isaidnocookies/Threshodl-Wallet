@@ -1,13 +1,15 @@
-#include "walletapp.h"
-#include "utils.h"
+#include <QCoreApplication>
 
+#include "walletentity.h"
+#include "billentity.h"
+#include "sqliteinterface.h"
 #include <QDebug>
 
-WalletApp::WalletApp() {
-    this->mTitle = "threeBX Magic Wallet";
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
 
-    // An empty database file and its sql structure are available at folder `Local store` inside `Core` project
-    SQLiteInterface* dataBase = new SQLiteInterface("wallets.store");
+    SQLiteInterface* sqlite = new SQLiteInterface("wallets.store");
 
     qDebug() << "Creating a single wallet with no bills...";
     WalletEntity *wallet1 = new WalletEntity();
@@ -15,13 +17,16 @@ WalletApp::WalletApp() {
     wallet1->setCurrency("BTC");
     wallet1->setType(WalletType::WALLET_TYPE_LIGHT);
 
-    if(dataBase->persist(wallet1)) {
+    if(sqlite->persist(wallet1)) {
         qDebug() << "Wallet1 id: " << wallet1->getId();
     }
 
     qDebug() << "Adding a bill after created...";
     BillEntity *bill = new BillEntity(wallet1);
-    if(dataBase->persist(bill)) {
+    bill->setAddress("skdfjho2347yp23p9523ghsdf5lk673l4562ggksdfgsdfgsdfg");
+    bill->setPublicKey("94837523ot25go3r6w9erqtwefqwh4p72y34rqwerfqwrew56");
+    bill->setPrivateKey("923487tlqfjreogqw47trqlagef468wtroqpfaqwffdgdyw45");
+    if(sqlite->persist(bill)) {
         qDebug() << "Bill Id: " << bill->getId();
     }
 
@@ -33,47 +38,31 @@ WalletApp::WalletApp() {
 
     BillEntity *bill1 = new BillEntity(wallet2);
     BillEntity *bill2 = new BillEntity(wallet2);
+    bill1->setAddress("skdfjho2347yp23p9523ghsdf5lk673l4562ggksdfgsdfgsdfg");
+    bill1->setPublicKey("94837523ot25go3r6w9erqtwefqwh4p72y34rqwerfqwrew56");
+    bill1->setPrivateKey("923487tlqfjreogqw47trqlagef468wtroqpfaqwffdgdyw45");
+    bill2->setAddress("sjdgfwi6u4trwqft9w4trfwo840w38rertyer6yeyrtsdfklgsdg");
+    bill2->setPublicKey("923847vbterwfyteirfytwqv9386v0qbppsdse5bsengs569ys");
+    bill2->setPrivateKey("lsdkfhgsoe7ty5sigfrhsdoirghsoedritsw73eo0tywpaerg");
     wallet2->addBill(bill1);
     wallet2->addBill(bill2);
-    if(dataBase->persist(wallet2)) {
+    if(sqlite->persist(wallet2)) {
         qDebug() << "Wallet2 Id: " << wallet2->getId() << ", Bills: " << bill1->getId() << " & " << bill2->getId();
     }
 
     qDebug() << "Listing all available wallets...";
-    QList<Entity*> WalletList = dataBase->findAll(PersistenceType::PERSISTENCE_TYPE_WALLET);
+    QList<Entity*> WalletList = sqlite->findAll(PersistenceType::PERSISTENCE_TYPE_WALLET);
     foreach(Entity* entity, WalletList) {
         WalletEntity* wallet = (WalletEntity*)entity;
-        this->mWallets.append(wallet);
         qDebug() << "Id " << wallet->getId() << "Owner " << wallet->getOwner() << " amount " << wallet->getAmount() << wallet->getCurrency();
     }
 
     qDebug() << "Listing all available bills...";
-    QList<Entity*> billList = dataBase->findAll(PersistenceType::PERSISTENCE_TYPE_BILL);
+    QList<Entity*> billList = sqlite->findAll(PersistenceType::PERSISTENCE_TYPE_BILL);
     foreach(Entity* entity, billList) {
         BillEntity* bill = (BillEntity*)entity;
         qDebug() << "Id:" << bill->getId() << " Owner:" << bill->getWallet()->getOwner() << " Wallet:" << bill->getWallet()->getId() << " Address:" << bill->getAddress() << " amount:" << bill->getAmount() << bill->getCurrency();
     }
 
-    qDebug() << this->mWallets.length();
-}
-
-void WalletApp::setTitle(const QString &title) {
-    this->mTitle = title;
-    emit titleChanged();
-}
-
-QString WalletApp::getTitle() const {
-    return this->mTitle;
-}
-
-QList<QObject*> WalletApp::listWallets() {
-    QList<QObject*> list;
-    foreach(WalletEntity* wallet, this->mWallets) {
-        list.append(wallet);
-    }
-    return list;
-}
-
-void WalletApp::listener(const QString &param1, int param2) {
-    qDebug() << param1 << " & " << param2;
+    return a.exec();
 }
