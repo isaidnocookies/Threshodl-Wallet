@@ -73,6 +73,15 @@ BitcoinWalletRef BitcoinInterface::_createOneWallet(bool iTest)
     if( gen_privatekey(lChain, lWallet->Wif.data(), lWallet->Wif.size(), lWallet->PrivateKey.data() ) ) {
         if( pubkey_from_privatekey(lChain, lWallet->Wif.data(), lWallet->PublicKey.data(), &lPubSize) ) {
             if( addresses_from_pubkey(lChain, lWallet->PublicKey.data(), lP2PKH.data(), lP2SH_P2WPKH.data(), lP2WPKH.data()) ) {
+
+                // Cleanup the sizes of the buffer
+                lWallet->Wif.resize(qstrlen(lWallet->Wif.constData()) + 1);
+                lWallet->PrivateKey.resize(qstrlen(lWallet->PrivateKey.constData()) + 1);
+                lWallet->PublicKey.resize(qstrlen(lWallet->PublicKey.constData()) + 1);
+                lP2PKH.resize(qstrlen(lP2PKH.constData()) + 1);
+                lP2WPKH.resize(qstrlen(lP2WPKH.constData()) + 1);
+                lP2SH_P2WPKH.resize(qstrlen(lP2SH_P2WPKH.constData()) + 1);
+
                 lWallet->Addresses[kBTCAddressKey_P2PKH]        = lP2PKH;
                 lWallet->Addresses[kBTCAddressKey_P2WPKH]       = lP2WPKH;
                 lWallet->Addresses[kBTCAddressKey_P2SH_P2WPKH]  = lP2SH_P2WPKH;
