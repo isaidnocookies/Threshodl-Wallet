@@ -3,46 +3,37 @@
 #include <QVariant>
 
 WalletEntity::WalletEntity() : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET) {
-    this->currency = currency;
-    this->amount = "0";
-}
-
-WalletEntity::WalletEntity(RepositoryType repositoryType) : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET, repositoryType) {
-    this->currency = currency;
-    this->amount = "0";
+    this->mAmount = "0";
 }
 
 WalletEntity::WalletEntity(WalletType type, QString owner, QString currency) : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET) {
-    this->type = type;
-    this->owner = owner;
-    this->currency = currency;
-    this->amount = "0";
+    this->mType = type;
+    this->mOwner = owner;
+    this->mCurrency = currency;
+    this->mAmount = "0";
 }
 
-WalletEntity::WalletEntity(WalletType type, QString owner, QString currency, RepositoryType repositoryType) : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET, repositoryType) {
-    this->type = type;
-    this->owner = owner;
-    this->currency = currency;
-    this->amount = "0";
-}
-
-WalletEntity::WalletEntity(QSqlRecord sqlrecord) : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET, RepositoryType::REPOSITORY_TYPE_SQLITE)  {
+WalletEntity::WalletEntity(QSqlRecord sqlrecord) : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET)  {
     if(sqlrecord.contains("walletId")) {
-        this->id = sqlrecord.value(sqlrecord.indexOf("walletId")).toInt();
+        this->mId = sqlrecord.value(sqlrecord.indexOf("walletId")).toInt();
     }
     if(sqlrecord.contains("walletType")) {
         int type = sqlrecord.value(sqlrecord.indexOf("walletType")).toInt();
-        this->type = (WalletType)type;
+        this->mType = (WalletType)type;
     }
     if(sqlrecord.contains("walletOwner")) {
-        this->owner = sqlrecord.value(sqlrecord.indexOf("walletOwner")).toString();
+        this->mOwner = sqlrecord.value(sqlrecord.indexOf("walletOwner")).toString();
     }
     if(sqlrecord.contains("walletCurrency")) {
-        this->currency = sqlrecord.value(sqlrecord.indexOf("walletCurrency")).toString();
+        this->mCurrency = sqlrecord.value(sqlrecord.indexOf("walletCurrency")).toString();
     }
     if(sqlrecord.contains("walletAmount")) {
-        this->amount = sqlrecord.value(sqlrecord.indexOf("walletAmount")).toString();
+        this->mAmount = sqlrecord.value(sqlrecord.indexOf("walletAmount")).toString();
     }
+}
+
+WalletEntity::~WalletEntity() {
+
 }
 
 /**
@@ -52,63 +43,63 @@ WalletEntity::WalletEntity(QSqlRecord sqlrecord) : Entity(PersistenceType::PERSI
  * @return
  */
 int WalletEntity::getId() {
-    return this->id;
+    return this->mId;
 }
 
 WalletType WalletEntity::getType() {
-    return this->type;
+    return this->mType;
 }
 
 QString WalletEntity::getOwner() {
-    return this->owner;
+    return this->mOwner;
 }
 
 QString WalletEntity::getCurrency() {
-    return this->currency;
+    return this->mCurrency;
 }
 
 QString WalletEntity::getAmount() {
-    return this->amount;
+    return this->mAmount;
 }
 
 QList<BillEntity*> WalletEntity::getBills() {
-    return this->bills;
+    return this->mBills;
 }
 
 void WalletEntity::setType(WalletType type) {
-    this->type = type;
+    this->mType = type;
 }
 
 void WalletEntity::setOwner(QString owner) {
-    this->owner = owner;
+    this->mOwner = owner;
 }
 
 void WalletEntity::setCurrency(QString currency) {
-    this->currency = currency;
+    this->mCurrency = currency;
 }
 
 void WalletEntity::setAmount(QString amount) {
-    this->amount = amount;
+    this->mAmount = amount;
 }
 
 void WalletEntity::addBill(BillEntity *bill) {
-    if (!this->bills.contains(bill)) {
-        bill->setOwner(this->owner);
+    if (!this->mBills.contains(bill)) {
+        bill->setOwner(this->mOwner);
         bill->setWallet(this);
-        this->bills.append(bill);
+        this->mBills.append(bill);
     }
 }
 
 void WalletEntity::removeBill(BillEntity *bill) {
-    if (this->bills.contains(bill)) {
-        this->bills.removeOne(bill);
+    if (this->mBills.contains(bill)) {
+        this->mBills.removeOne(bill);
     }
 }
 
 void WalletEntity::addBillWad(QList<BillEntity *> wad) {
     foreach (BillEntity* bill, wad) {
-        if (!this->bills.contains(bill)) {
-            this->bills.append(bill);
+        if (!this->mBills.contains(bill)) {
+            this->mBills.append(bill);
         }
     }
 }
@@ -120,7 +111,7 @@ void WalletEntity::addBillWad(QList<BillEntity *> wad) {
  * @param id
  */
 void WalletEntity::updateAfterPersist(int id) {
-    this->id = id;
+    this->mId = id;
 }
 
 /**
@@ -166,12 +157,12 @@ QString WalletEntity::getSQLSelect(FetchMode fetchMode) {
 
 QString WalletEntity::getSQLInsert() {
     QString query = "INSERT INTO wallets (type,owner,currency,amount) VALUES ";
-    query += "(" + QString::number(this->getType(), 10) + ",'" + this->getOwner() + "','" + this->getCurrency() + "','" + this->getAmount() + "');";
+    query += "(" + QString::number(this->mType, 10) + ",'" + this->mOwner + "','" + this->mCurrency + "','" + this->mAmount + "');";
     return query;
 }
 
 QString WalletEntity::getSQLUpdate(QString amount) {
     QString query;
-    query = "UPDATE wallets set amount = " + amount + "  where id = " + QString::number(this->getId());
+    query = "UPDATE wallets set amount = " + amount + "  where id = " + QString::number(this->mId);
     return query;
 }

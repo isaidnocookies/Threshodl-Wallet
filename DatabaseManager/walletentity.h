@@ -3,6 +3,7 @@
 
 #include "walletentity.h"
 #include "entity.h"
+#include <QObject>
 #include <QString>
 #include <QSqlRecord>
 #include <QList>
@@ -10,22 +11,28 @@
 
 class BillEntity;
 
-class WalletEntity : public Entity
+class WalletEntity : public Entity, public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(WalletMode type READ getType)
+    Q_PROPERTY(QString currency READ getCurrency)
+    Q_PROPERTY(QString owner READ getOwner)
+    Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)
+    Q_PROPERTY(QList<QObject*> bills READ listBills NOTIFY billsChanged)
+
 private:
-    int id;
-    WalletType type;
-    QString owner;
-    QString currency;
-    QString amount;
-    QList<BillEntity*> bills;
+    int mId;
+    WalletType mType;
+    QString mOwner;
+    QString mCurrency;
+    QString mAmount;
+    QList<BillEntity*> mBills;
 
 public:
     WalletEntity();
-    WalletEntity(RepositoryType repositoryType);
     WalletEntity(WalletType type, QString owner, QString currency);
-    WalletEntity(WalletType type, QString owner, QString currency, RepositoryType repositoryType);
     WalletEntity(QSqlRecord sqlRecord);
+    ~WalletEntity();
     // Getters
     int getId();
     WalletType getType();
@@ -46,6 +53,9 @@ public:
     QString getSQLSelect(FetchMode fetchMode);
     QString getSQLInsert();
     QString getSQLUpdate(QString amount);
+signals:
+    void amountChanged();
+    void billsChanged();
 };
 
 #endif // WALLETENTITY_H

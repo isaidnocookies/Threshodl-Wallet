@@ -1,6 +1,7 @@
 #ifndef BILLENTITY_H
 #define BILLENTITY_H
 
+#include <QObject>
 #include <QString>
 #include <QSqlRecord>
 #include "walletentity.h"
@@ -8,22 +9,28 @@
 
 class WalletEntity;
 
-class BillEntity : public Entity
+class BillEntity : public Entity, public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(QString address READ getAddress)
+    Q_PROPERTY(QString publicKey READ getPublicKey)
+    Q_PROPERTY(QString currency READ getCurrency)
+    Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)
+
 private:
-    int id;
-    WalletEntity* wallet;
-    QString owner;
-    QString address;
-    QString publicKey;
-    QString privateKey;
-    QString currency;
-    QString amount;
+    int mId;
+    WalletEntity* mWallet;
+    QString mOwner;
+    QString mAddress;
+    QString mPublicKey;
+    QString mPrivateKey;
+    QString mCurrency;
+    QString mAmount;
 
 public:
     BillEntity(WalletEntity* wallet);
-    BillEntity(WalletEntity* wallet, RepositoryType repositoryType);
     BillEntity(QSqlRecord sqlrecord, WalletEntity* wallet);
+    ~BillEntity();
     // Getters
     int getId();
     WalletEntity* getWallet();
@@ -46,6 +53,8 @@ public:
     QString getSQLSelect(FetchMode fetchMode);
     QString getSQLInsert();
     QString getSQLUpdate(QString amount);
+signals:
+    void amountChanged();
 };
 
 #endif // BILLENTITY_H

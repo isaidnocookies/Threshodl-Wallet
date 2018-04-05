@@ -2,41 +2,41 @@
 
 #include <QDebug>
 
-BillEntity::BillEntity(WalletEntity* wallet) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL){
-    this->wallet = wallet;
-    this->currency = wallet->getCurrency();
-    this->amount = "0";
+BillEntity::BillEntity(WalletEntity* wallet) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL), QObject(NULL) {
+    this->mAmount = "0";
+    this->mWallet = wallet;
+    if (wallet != NULL) {
+        this->mCurrency = wallet->getCurrency();
+    }
 }
 
-BillEntity::BillEntity(WalletEntity* wallet, RepositoryType repositoryType) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL, repositoryType){
-    this->wallet = wallet;
-    this->currency = wallet->getCurrency();
-    this->amount = "0";
-}
-
-BillEntity::BillEntity(QSqlRecord sqlrecord, WalletEntity* wallet) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL, RepositoryType::REPOSITORY_TYPE_SQLITE) {
+BillEntity::BillEntity(QSqlRecord sqlrecord, WalletEntity* wallet) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL), QObject(NULL) {
     if(sqlrecord.contains("billId")) {
-        this->id = sqlrecord.value(sqlrecord.indexOf("billId")).toInt();
+        this->mId = sqlrecord.value(sqlrecord.indexOf("billId")).toInt();
     }
     if(sqlrecord.contains("billOwner")) {
-        this->owner = sqlrecord.value(sqlrecord.indexOf("billOwner")).toString();
+        this->mOwner = sqlrecord.value(sqlrecord.indexOf("billOwner")).toString();
     }
     if(sqlrecord.contains("billAddress")) {
-        this->address = sqlrecord.value(sqlrecord.indexOf("billAddress")).toString();
+        this->mAddress = sqlrecord.value(sqlrecord.indexOf("billAddress")).toString();
     }
     if(sqlrecord.contains("billPublicKey")) {
-        this->publicKey = sqlrecord.value(sqlrecord.indexOf("billPublicKey")).toString();
+        this->mPublicKey = sqlrecord.value(sqlrecord.indexOf("billPublicKey")).toString();
     }
     if(sqlrecord.contains("billPrivateKey")) {
-        this->privateKey = sqlrecord.value(sqlrecord.indexOf("billPrivateKey")).toString();
+        this->mPrivateKey = sqlrecord.value(sqlrecord.indexOf("billPrivateKey")).toString();
     }
     if(sqlrecord.contains("billCurrency")) {
-        this->currency = sqlrecord.value(sqlrecord.indexOf("billCurrency")).toString();
+        this->mCurrency = sqlrecord.value(sqlrecord.indexOf("billCurrency")).toString();
     }
     if(sqlrecord.contains("billAmount")) {
-        this->amount = sqlrecord.value(sqlrecord.indexOf("billAmount")).toString();
+        this->mAmount = sqlrecord.value(sqlrecord.indexOf("billAmount")).toString();
     }
-    this->wallet = wallet;
+    this->mWallet = wallet;
+}
+
+BillEntity::~BillEntity() {
+
 }
 
 /**
@@ -46,63 +46,63 @@ BillEntity::BillEntity(QSqlRecord sqlrecord, WalletEntity* wallet) : Entity(Pers
  * @return
  */
 int BillEntity::getId() {
-    return this->id;
+    return this->mId;
 }
 
 WalletEntity* BillEntity::getWallet() {
-    return this->wallet;
+    return this->mWallet;
 }
 
 QString BillEntity::getOwner() {
-    return this->owner;
+    return this->mOwner;
 }
 
 QString BillEntity::getAddress() {
-    return this->address;
+    return this->mAddress;
 }
 
 QString BillEntity::getPublicKey() {
-    return this->publicKey;
+    return this->mPublicKey;
 }
 
 QString BillEntity::getPrivateKey() {
-    return this->privateKey;
+    return this->mPrivateKey;
 }
 
 QString BillEntity::getCurrency() {
-    return this->currency;
+    return this->mCurrency;
 }
 
 QString BillEntity::getAmount() {
-    return this->amount;
+    return this->mAmount;
 }
 
 void BillEntity::setWallet(WalletEntity* wallet) {
-    this->wallet = wallet;
+    this->mWallet = wallet;
 }
 
 void BillEntity::setOwner(QString owner) {
-    this->owner = owner;
+    this->mOwner = owner;
 }
 
 void BillEntity::setAddress(QString address) {
-    this->address = address;
+    this->mAddress = address;
 }
 
 void BillEntity::setPublicKey(QString publicKey) {
-    this->publicKey = publicKey;
+    this->mPublicKey = publicKey;
 }
 
 void BillEntity::setPrivateKey(QString privateKey) {
-    this->privateKey = privateKey;
+    this->mPrivateKey = privateKey;
 }
 
 void BillEntity::setCurrency(QString currency) {
-    this->currency = currency;
+    this->mCurrency = currency;
 }
 
 void BillEntity::setAmount(QString amount) {
-    this->amount = amount;
+    this->mAmount = amount;
 }
 
 /**
@@ -112,7 +112,7 @@ void BillEntity::setAmount(QString amount) {
  * @param id
  */
 void BillEntity::updateAfterPersist(int id) {
-    this->id = id;
+    this->mId = id;
 }
 
 /**
@@ -161,12 +161,12 @@ QString BillEntity::getSQLSelect(FetchMode fetchMode) {
 
 QString BillEntity::getSQLInsert() {
     QString query = "INSERT INTO bills (owner,wallet,address,publicKey,privateKey,currency,amount) VALUES ";
-    query += "('" + this->getOwner() + "'," + QString::number(this->wallet->getId()) + ",'" + this->getAddress() + "','" + this->getPublicKey() + "','" + this->getPrivateKey() + "','" + this->getCurrency() + "','" + this->getAmount() + "');";
+    query += "('" + this->mOwner + "'," + QString::number(this->mWallet->getId()) + ",'" + this->mAddress + "','" + this->mPublicKey + "','" + this->mPrivateKey + "','" + this->mCurrency + "','" + this->mAmount + "');";
     return query;
 }
 
 QString BillEntity::getSQLUpdate(QString amount) {
     QString query;
-    query = "UPDATE bills set amount = " + amount + "  where id = " + QString::number(this->getId());
+    query = "UPDATE bills set amount = " + amount + "  where id = " + QString::number(this->mId);
     return query;
 }

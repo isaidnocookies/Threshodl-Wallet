@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     SQLiteInterface* sqlite = new SQLiteInterface("wallets.store");
 
     qDebug() << "Creating a single wallet with no bills...";
-    WalletEntity *wallet1 = new WalletEntity(RepositoryType::REPOSITORY_TYPE_SQLITE);
+    WalletEntity *wallet1 = new WalletEntity();
     wallet1->setOwner("guy1");
     wallet1->setCurrency("BTC");
     wallet1->setType(WalletType::WALLET_TYPE_LIGHT);
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     }
 
     qDebug() << "Adding a bill after created...";
-    BillEntity *bill = new BillEntity(wallet1, RepositoryType::REPOSITORY_TYPE_SQLITE);
+    BillEntity *bill = new BillEntity(wallet1);
     bill->setAddress("skdfjho2347yp23p9523ghsdf5lk673l4562ggksdfgsdfgsdfg");
     bill->setPublicKey("94837523ot25go3r6w9erqtwefqwh4p72y34rqwerfqwrew56");
     bill->setPrivateKey("923487tlqfjreogqw47trqlagef468wtroqpfaqwffdgdyw45");
@@ -31,13 +31,13 @@ int main(int argc, char *argv[])
     }
 
     qDebug() << "Creating a single wallet with two bills at once...";
-    WalletEntity *wallet2 = new WalletEntity(RepositoryType::REPOSITORY_TYPE_SQLITE);
+    WalletEntity *wallet2 = new WalletEntity();
     wallet2->setOwner("guy2");
     wallet2->setCurrency("THDL");
     wallet2->setType(WalletType::WALLET_TYPE_LIGHT);
 
-    BillEntity *bill1 = new BillEntity(wallet2, RepositoryType::REPOSITORY_TYPE_SQLITE);
-    BillEntity *bill2 = new BillEntity(wallet2, RepositoryType::REPOSITORY_TYPE_SQLITE);
+    BillEntity *bill1 = new BillEntity(wallet2);
+    BillEntity *bill2 = new BillEntity(wallet2);
     bill1->setAddress("skdfjho2347yp23p9523ghsdf5lk673l4562ggksdfgsdfgsdfg");
     bill1->setPublicKey("94837523ot25go3r6w9erqtwefqwh4p72y34rqwerfqwrew56");
     bill1->setPrivateKey("923487tlqfjreogqw47trqlagef468wtroqpfaqwffdgdyw45");

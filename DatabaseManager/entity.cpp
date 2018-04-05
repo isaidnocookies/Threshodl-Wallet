@@ -17,36 +17,26 @@
  * @param persistenceType
  */
 Entity::Entity(PersistenceType persistenceType) {
-    this->persistenceType = persistenceType;
-    this->repositoryType = RepositoryType::REPOSITORY_TYPE_QSETTINGS;
+    this->persistenceType = persistenceType;    
 }
 
 /**
- * Initialize a persistable Entity using the defined type
- * Indicating the type is a shortcut to avoid using reflections
- * should work as lonf as the models remain simple enough.
- * Entity objects are not abstract and instead they hold all
- * persistence logic.
- * This way every derived class can just select how to be persisted
- * using repositoryType parameter
+ * Get persistence type for the entity. This is a hardcoded short cut
+ * to not to deal with type reflection
  *
- * @brief Entity::Entity
- * @param persistenceType
- * @param repositoryType
+ * @brief Entity::getPersistenceType
+ * @return
  */
-Entity::Entity(PersistenceType persistenceType, RepositoryType repositoryType) {
-    this->persistenceType = persistenceType;
-    this->repositoryType = repositoryType;
-}
-
 PersistenceType Entity::getPersistenceType() {
     return this->persistenceType;
 }
 
-RepositoryType Entity::getRepositoryType() {
-    return this->repositoryType;
-}
-
+/**
+ * Get a name for persitence types to ease debugging
+ *
+ * @brief Entity::getPersistenceTypeName
+ * @return
+ */
 QString Entity::getPersistenceTypeName() {
     QString result = "unknown";
     switch(this->persistenceType) {
@@ -55,19 +45,6 @@ QString Entity::getPersistenceTypeName() {
             break;
         case PersistenceType::PERSISTENCE_TYPE_WALLET:
             result = "wallet";
-            break;
-    }
-    return result;
-}
-
-QString Entity::getRepositoryTypeName() {
-    QString result = "unknown";
-    switch(this->repositoryType) {
-        case RepositoryType::REPOSITORY_TYPE_QSETTINGS:
-            result = "qsettings";
-            break;
-        case RepositoryType::REPOSITORY_TYPE_SQLITE:
-            result = "sqlite";
             break;
     }
     return result;
