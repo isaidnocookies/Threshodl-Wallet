@@ -37,8 +37,8 @@ signals:
 public slots:
     void open(const QUrl &iUrl); // only used from a client connection
     void close();
-    void sendBinaryMessage(const QByteArray &iMessage);
-    void sendTextMessage(const QString &iMessage);
+    bool sendBinaryMessage(const QByteArray &iMessage);
+    bool sendTextMessage(const QString &iMessage);
     void setSslConfiguration(const QSslConfiguration iConfiguration);
 
 protected slots:

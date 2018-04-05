@@ -20,5 +20,5 @@ QString RPCMessagePingReply::pingPayloadKey()
 QByteArray RPCMessagePingReply::payload() const
 { return fieldValue(pingPayloadKey()).toByteArray(); }
 
-QString RPCMessagePingReply::create(const QByteArray iPayload, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
-{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{pingPayloadKey(), iPayload} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }
+QString RPCMessagePingReply::create(const QByteArray iPayload, const QString iUsername)
+{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{pingPayloadKey(), iPayload} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, "", RPCMessage::KeyEncoding::None ); }

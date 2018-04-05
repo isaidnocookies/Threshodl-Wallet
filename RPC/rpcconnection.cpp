@@ -94,30 +94,38 @@ void RPCConnection::close()
     }
 }
 
-void RPCConnection::sendBinaryMessage(const QByteArray &iMessage)
+bool RPCConnection::sendBinaryMessage(const QByteArray &iMessage)
 {
     bool lSuccess = false;
+
     mSendLock.lock();
     if( mSocket )
         lSuccess = (mSocket->sendBinaryMessage(iMessage) == iMessage.size());
     mSendLock.unlock();
+
     if( lSuccess )
         emit sentBinaryMessage();
     else
         emit failedToSendBinaryMessage();
+
+    return lSuccess;
 }
 
-void RPCConnection::sendTextMessage(const QString &iMessage)
+bool RPCConnection::sendTextMessage(const QString &iMessage)
 {
     bool lSuccess = false;
+
     mSendLock.lock();
     if( mSocket )
         lSuccess = (mSocket->sendTextMessage(iMessage) == iMessage.size());
     mSendLock.unlock();
+
     if( lSuccess )
         emit sentTextMessage();
     else
         emit failedToSendTextMessage();
+
+    return lSuccess;
 }
 
 void RPCConnection::setSslConfiguration(const QSslConfiguration iConfiguration)

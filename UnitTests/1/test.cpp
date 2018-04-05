@@ -11,14 +11,12 @@ Test::Test(RPCConnection * iConnection, QObject *iParent)
     connect( mConnection, &RPCConnection::textMessageReceived, this, &Test::messageReceived );
     connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &Test::failedToSendMessage );
     connect( mConnection, &RPCConnection::sentTextMessage, this, &Test::sentMessage );
-
-    qDebug() << RPCMessagePingRequest::create("ping", QStringLiteral("UnitTest"), "", RPCMessage::KeyEncoding::None);
 }
 
 void Test::rpcConnected()
 {
     qDebug() << "Connected.";
-    mConnection->sendTextMessage( RPCMessagePingRequest::create("ping", QStringLiteral("UnitTest"), "", RPCMessage::KeyEncoding::None) );
+    mConnection->sendTextMessage( RPCMessagePingRequest::create("some payload", QStringLiteral("UnitTest")) );
 }
 
 void Test::rpcSslErrors(const QList<QSslError> iErrors)

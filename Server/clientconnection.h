@@ -16,6 +16,7 @@ signals:
     void clientDisconnected();
 
 public slots:
+    bool sendMessage(const QString &iMessage);
 
 protected slots:
     void timerCheckBuffer();

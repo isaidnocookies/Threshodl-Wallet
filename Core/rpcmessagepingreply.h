@@ -15,7 +15,7 @@ public:
 
     QByteArray payload() const;
 
-    static QString create(const QByteArray iPayload, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
+    static QString create(const QByteArray iPayload, const QString iUsername);
 };
 
 #endif // RPCMESSAGEPINGREPLY_H

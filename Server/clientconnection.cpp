@@ -1,9 +1,11 @@
 #include "clientconnection.h"
 #include "rpcserverhandler.h"
 #include "rpcmessage.h"
-#include "rpcmessagepingrequest.h"
-#include "rpcmessagepingreply.h"
-#include "rpcmessagecreateaccountrequest.h"
+#include "clientalphahandler.h"
+
+//#include "rpcmessagepingrequest.h"
+//#include "rpcmessagepingreply.h"
+//#include "rpcmessagecreateaccountrequest.h"
 
 ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler *iServer)
     : QObject(iServer)
@@ -25,6 +27,9 @@ ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler 
     mCheckBufferTimer->start();
 }
 
+bool ClientConnection::sendMessage(const QString &iMessage)
+{ return mConnection->sendTextMessage(iMessage); }
+
 void ClientConnection::timerCheckBuffer()
 {
     if( mConnection->haveTextMessages() )
@@ -42,19 +47,24 @@ void ClientConnection::processIncomingMessage()
             RPCMessage  lMessage{lRawMessage};
             QString     lCommand = lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-            if( lCommand == RPCMessagePingRequest::commandValue() ) {
-                RPCMessagePingRequest   lPingReq{lMessage};
-                QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"),"",RPCMessage::KeyEncoding::None);
-                if( ! lReply.isEmpty() ) {
-                    mConnection->sendTextMessage(lReply);
-                }else{
-                    qWarning() << "Failed to generate a reply message, this is a coding issue!";
-                }
-            }else if( lCommand == RPCMessageCreateAccountRequest::commandValue() ) {
-
-            }else{
+            if( ! ClientAlphaHandler::handle(this,lCommand,lMessage) ) {
                 qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+                mConnection->close();
             }
+
+//            if( lCommand == RPCMessagePingRequest::commandValue() ) {
+//                RPCMessagePingRequest   lPingReq{lMessage};
+//                QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"));
+//                if( ! lReply.isEmpty() ) {
+//                    mConnection->sendTextMessage(lReply);
+//                }else{
+//                    qWarning() << "Failed to generate a reply message, this is a coding issue!";
+//                }
+//            }else if( lCommand == RPCMessageCreateAccountRequest::commandValue() ) {
+
+//            }else{
+//                qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+//            }
         }
     }
 }
