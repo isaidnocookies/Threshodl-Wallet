@@ -31,6 +31,7 @@
     	$$PWD/rpcmessagepingrequest.h \
         $$PWD/rpcmessagepingreply.h \
         $$PWD/bitcoininterface.h \
+        $$PWD/rawtransaction.h \
         $$PWD/utils.h
 
     SOURCES += \
@@ -42,7 +43,8 @@
         $$PWD/rpcmessage.cpp \
 	$$PWD/rpcmessagepingrequest.cpp \
         $$PWD/rpcmessagepingreply.cpp \
-        $$PWD/bitcoininterface.cpp
+        $$PWD/bitcoininterface.cpp \
+        $$PWD/rawtransaction.cpp
 
     OTHER_FILES += \
         $$PWD/rpcmessages.h \
@@ -50,7 +52,9 @@
 }
 
 HEADERS += \
-    $$PWD/rawtransaction.h
+    $$PWD/rpcmessagecreateaccountrequest.h \
+    $$PWD/rpcmessagecreateaccountreply.h
 
 SOURCES += \
-    $$PWD/rawtransaction.cpp
+    $$PWD/rpcmessagecreateaccountrequest.cpp \
+    $$PWD/rpcmessagecreateaccountreply.cpp

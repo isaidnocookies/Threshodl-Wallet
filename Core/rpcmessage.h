@@ -26,7 +26,7 @@ public:
     QVariant operator[](const QString iKey) const;
     QVariant fieldValue(const QString iKey) const;
 
-    QString toMessage(const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
+    QString toMessage(const QString iUsername, const QByteArray iPrivateKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
     QString     username() const;
     QByteArray  signature() const;              // Only valid if constructed from a message or signed
@@ -36,7 +36,7 @@ public:
     void setFields(QList<RPCField> iFields);
     QList< RPCField > fields() const;
 
-    static QString toMessage(QList< RPCField > iFields, const QString iUsername, const QByteArray iPublicKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
+    static QString toMessage(QList< RPCField > iFields, const QString iUsername, const QByteArray iPrivateKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
 protected:
     void _copy(const RPCMessage &iOther);

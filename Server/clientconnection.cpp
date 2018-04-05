@@ -3,6 +3,7 @@
 #include "rpcmessage.h"
 #include "rpcmessagepingrequest.h"
 #include "rpcmessagepingreply.h"
+#include "rpcmessagecreateaccountrequest.h"
 
 ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler *iServer)
     : QObject(iServer)
@@ -17,6 +18,8 @@ ClientConnection::ClientConnection(RPCConnection *iConnection, RPCServerHandler 
     connect( iConnection, &RPCConnection::textMessageReceived, this, &ClientConnection::processIncomingMessage );
     connect( iConnection, &RPCConnection::failedToSendTextMessage, this, &ClientConnection::outgoingMessageFailedToSend );
     connect( iConnection, &RPCConnection::sentTextMessage, this, &ClientConnection::outgoingMessageSent );
+    connect( iConnection, &RPCConnection::socketError, this, &ClientConnection::socketError );
+    connect( iConnection, &RPCConnection::sslErrors, this, &ClientConnection::sslErrors );
     connect( this, &ClientConnection::clientDisconnected, iServer, &RPCServerHandler::clientDisconnected );
 
     mCheckBufferTimer->start();
@@ -47,6 +50,8 @@ void ClientConnection::processIncomingMessage()
                 }else{
                     qWarning() << "Failed to generate a reply message, this is a coding issue!";
                 }
+            }else if( lCommand == RPCMessageCreateAccountRequest::commandValue() ) {
+
             }else{
                 qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
             }
@@ -61,6 +66,18 @@ void ClientConnection::outgoingMessageSent()
 
 void ClientConnection::outgoingMessageFailedToSend()
 {
+    mConnection->close();
+}
+
+void ClientConnection::socketError(QAbstractSocket::SocketError iError)
+{
+    Q_UNUSED(iError)
+    mConnection->close();
+}
+
+void ClientConnection::sslErrors(const QList<QSslError> iErrors)
+{
+    Q_UNUSED(iErrors)
     mConnection->close();
 }
 

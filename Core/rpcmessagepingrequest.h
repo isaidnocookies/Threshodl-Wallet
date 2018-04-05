@@ -11,11 +11,11 @@ public:
     RPCMessagePingRequest(const QString iMessage);
 
     static QString commandValue();
-    static QString pingPayloadKey();
+    static QString payloadKey();
 
     QByteArray payload() const;
 
-    static QString create(const QByteArray iPayload, const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
+    static QString create(const QByteArray iPayload, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 };
 
 #endif // RPCMESSAGEPINGREQUEST_H

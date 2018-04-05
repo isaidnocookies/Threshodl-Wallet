@@ -14,11 +14,11 @@ RPCMessagePingRequest::RPCMessagePingRequest(const QString iMessage)
 QString RPCMessagePingRequest::commandValue()
 { return QStringLiteral("ping"); }
 
-QString RPCMessagePingRequest::pingPayloadKey()
+QString RPCMessagePingRequest::payloadKey()
 { return QStringLiteral("payload"); }
 
 QByteArray RPCMessagePingRequest::payload() const
-{ return fieldValue(pingPayloadKey()).toByteArray(); }
+{ return fieldValue(payloadKey()).toByteArray(); }
 
-QString RPCMessagePingRequest::create(const QByteArray iPayload, const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
-{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{pingPayloadKey(), iPayload} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPublicKey, iKeyEncoding ); }
+QString RPCMessagePingRequest::create(const QByteArray iPayload, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
+{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{payloadKey(), iPayload} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }

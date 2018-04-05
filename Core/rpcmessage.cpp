@@ -69,7 +69,7 @@ QVariant RPCMessage::fieldValue(const QString iKey) const
     return QVariant();
 }
 
-QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     mUsername = iUsername;
     mSignatureEncoding = static_cast<int>(iKeyEncoding);
@@ -91,7 +91,7 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPublicK
             break;
         }
 
-        mSignature = Digest::sign(iPublicKey,mDataForSignature,lHashType);
+        mSignature = Digest::sign(iPrivateKey,mDataForSignature,lHashType);
     }
 
     lOutterMap[kUsernameKey]            = mUsername;
@@ -120,11 +120,11 @@ void RPCMessage::setFields(QList<RPCField> iFields)
 QList<RPCField> RPCMessage::fields() const
 { return mFields; }
 
-QString RPCMessage::toMessage(QList<RPCField> iFields, const QString iUsername, const QByteArray iPublicKey, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessage::toMessage(QList<RPCField> iFields, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     RPCMessage  lMessage;
     lMessage.setFields(iFields);
-    return lMessage.toMessage(iUsername, iPublicKey, iKeyEncoding);
+    return lMessage.toMessage(iUsername, iPrivateKey, iKeyEncoding);
 }
 
 void RPCMessage::_copy(const RPCMessage &iOther)
