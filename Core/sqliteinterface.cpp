@@ -23,8 +23,8 @@ bool SQLiteInterface::insert(Entity* entity, QSqlQuery preparedQuery) {
     bool error = false;
     QString query = entity->getSQLInsert();
     //qDebug() << "trying with: " << query;
-    preparedQuery.prepare(query);
-    if(preparedQuery.exec()) {
+    // preparedQuery.prepare(query);
+    if(preparedQuery.exec(query)) {
         entity->updateAfterPersist(preparedQuery.lastInsertId().toInt());
         qDebug() << entity->getPersistenceTypeName() << " successfully stored";
     } else {

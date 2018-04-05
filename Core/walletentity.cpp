@@ -1,5 +1,6 @@
 #include "walletentity.h"
 
+#include <QDebug>
 #include <QVariant>
 
 WalletEntity::WalletEntity() : Entity(PersistenceType::PERSISTENCE_TYPE_WALLET) {

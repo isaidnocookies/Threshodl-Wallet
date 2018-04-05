@@ -2,12 +2,19 @@
 #include "utils.h"
 
 #include <QDebug>
+#include <QDir>
 
 WalletApp::WalletApp() {
     this->mTitle = "threeBX Magic Wallet";
 
     // An empty database file and its sql structure are available at folder `Local store` inside `Core` project
-    SQLiteInterface* dataBase = new SQLiteInterface("wallets.store");
+#ifdef Q_OS_MACOS
+    qDebug() << "DB:" << QStringLiteral("%1%2%3").arg(QDir::currentPath()).arg(QDir::separator()).arg("wallets.store");
+    SQLiteInterface* dataBase = new SQLiteInterface(QStringLiteral("%1%2%3").arg(QDir::currentPath()).arg(QDir::separator()).arg("../../../wallets.store"));
+#else
+    qDebug() << "DB:" << QStringLiteral("%1%2%3").arg(QDir::currentPath()).arg(QDir::separator()).arg("wallets.store");
+    SQLiteInterface* dataBase = new SQLiteInterface(QStringLiteral("%1%2%3").arg(QDir::currentPath()).arg(QDir::separator()).arg("wallets.store"));
+#endif
 
     qDebug() << "Creating a single wallet with no bills...";
     WalletEntity *wallet1 = new WalletEntity();
