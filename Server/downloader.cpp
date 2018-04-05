@@ -51,13 +51,13 @@ void Downloader::threadStarted()
     }
 
     mTimer  = new QTimer(this);
-    connect( mTimer, &QTimer::timeout, this, &Downloader::timerEvent );
+    connect( mTimer, &QTimer::timeout, this, &Downloader::timerEventFired );
     mTimer->setSingleShot(false);
     mTimer->setInterval(mTimerInterval);
     mTimer->start();
 }
 
-void Downloader::timerEvent()
+void Downloader::timerEventFired()
 {
     QStringList     lTimedOutUrls;
 

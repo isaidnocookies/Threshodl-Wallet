@@ -22,6 +22,8 @@ protected slots:
     void processIncomingMessage();
     void outgoingMessageSent();
     void outgoingMessageFailedToSend();
+    void socketError(QAbstractSocket::SocketError iError);
+    void sslErrors(const QList<QSslError> iErrors);
 
 private:
     QTimer *            mCheckBufferTimer;
