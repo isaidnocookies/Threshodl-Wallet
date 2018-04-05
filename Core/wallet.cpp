@@ -11,7 +11,7 @@
  * @param currency Currency type
  * @param owner Owner nickname
  */
-Wallet::Wallet(WalletMode type, QString currency, QString owner)
+Wallet::Wallet(WalletType type, QString currency, QString owner)
 {
     this->mType = type;
     this->mCurrency = currency;
@@ -23,9 +23,9 @@ Wallet::Wallet(WalletMode type, QString currency, QString owner)
  * Get the wallet type or mode
  *
  * @brief Wallet::getType
- * @return WalletMode
+ * @return WalletType
  */
-WalletMode Wallet::getType() {
+WalletType Wallet::getType() {
     return this->mType;
 }
 

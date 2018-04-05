@@ -24,27 +24,31 @@
         $$PWD/core.h \
         $$PWD/microwallet.h \
         $$PWD/encapsulatedmicrowallet.h \
-        $$PWD/bill.h \
-        $$PWD/wallet.h \
         $$PWD/rpcfield.h \
         $$PWD/rpcmessage.h \
     	$$PWD/rpcmessagepingrequest.h \
         $$PWD/rpcmessagepingreply.h \
         $$PWD/bitcoininterface.h \
         $$PWD/rawtransaction.h \
+        $$PWD/entity.h \
+        $$PWD/walletentity.h \
+        $$PWD/billentity.h \
+        $$PWD/sqliteinterface.h \
         $$PWD/utils.h
 
     SOURCES += \
         $$PWD/core.cpp \
         $$PWD/microwallet.cpp \
         $$PWD/encapsulatedmicrowallet.cpp \
-        $$PWD/bill.cpp \
-        $$PWD/wallet.cpp \
         $$PWD/rpcmessage.cpp \
 	$$PWD/rpcmessagepingrequest.cpp \
         $$PWD/rpcmessagepingreply.cpp \
         $$PWD/bitcoininterface.cpp \
-        $$PWD/rawtransaction.cpp
+        $$PWD/rawtransaction.cpp \
+        $$PWD/entity.cpp \
+        $$PWD/walletentity.cpp \
+        $$PWD/billentity.cpp \
+        $$PWD/sqliteinterface.cpp
 
     OTHER_FILES += \
         $$PWD/rpcmessages.h \
