@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<WalletApp>("com.threebx.walletapp", 1, 0, "WalletApp");    
+    qmlRegisterType<WalletApp>("com.threebx.walletapp", 1, 0, "WalletApp");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

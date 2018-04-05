@@ -18,7 +18,7 @@ Bill::Bill(Wallet* wallet)
     this->mCurrency = wallet->getCurrency();
     // Just BTC at this time
     switch(this->mWallet->getType()) {
-        case WalletMode::WALLET_MODE_DARK:
+        case WalletType::WALLET_TYPE_DARK:
             // Generate the Bill at server side
             // ...
         break;

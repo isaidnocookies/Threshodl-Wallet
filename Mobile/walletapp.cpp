@@ -3,16 +3,58 @@
 
 #include <QDebug>
 
-WalletApp::WalletApp()
-{
+WalletApp::WalletApp() {
     this->mTitle = "threeBX Magic Wallet";
-    Wallet* wallet1 = new Wallet(WalletMode::WALLET_MODE_LIGHT,"BTC","john");
-    Wallet* wallet2 = new Wallet(WalletMode::WALLET_MODE_DARK,"BTC","Bob");
-    wallet1->addBill(new Bill(wallet1));
-    wallet1->addBill(new Bill(wallet1));
-    this->mWallets.append(wallet1);
-    this->mWallets.append(wallet2);
 
+    // An empty database file and its sql structure are available at folder `Local store` inside `Core` project
+    SQLiteInterface* dataBase = new SQLiteInterface("wallets.store");
+
+    qDebug() << "Creating a single wallet with no bills...";
+    WalletEntity *wallet1 = new WalletEntity();
+    wallet1->setOwner("guy1");
+    wallet1->setCurrency("BTC");
+    wallet1->setType(WalletType::WALLET_TYPE_LIGHT);
+
+    if(dataBase->persist(wallet1)) {
+        qDebug() << "Wallet1 id: " << wallet1->getId();
+    }
+
+    qDebug() << "Adding a bill after created...";
+    BillEntity *bill = new BillEntity(wallet1);
+    if(dataBase->persist(bill)) {
+        qDebug() << "Bill Id: " << bill->getId();
+    }
+
+    qDebug() << "Creating a single wallet with two bills at once...";
+    WalletEntity *wallet2 = new WalletEntity();
+    wallet2->setOwner("guy2");
+    wallet2->setCurrency("THDL");
+    wallet2->setType(WalletType::WALLET_TYPE_LIGHT);
+
+    BillEntity *bill1 = new BillEntity(wallet2);
+    BillEntity *bill2 = new BillEntity(wallet2);
+    wallet2->addBill(bill1);
+    wallet2->addBill(bill2);
+    if(dataBase->persist(wallet2)) {
+        qDebug() << "Wallet2 Id: " << wallet2->getId() << ", Bills: " << bill1->getId() << " & " << bill2->getId();
+    }
+
+    qDebug() << "Listing all available wallets...";
+    QList<Entity*> WalletList = dataBase->findAll(PersistenceType::PERSISTENCE_TYPE_WALLET);
+    foreach(Entity* entity, WalletList) {
+        WalletEntity* wallet = (WalletEntity*)entity;
+        this->mWallets.append(wallet);
+        qDebug() << "Id " << wallet->getId() << "Owner " << wallet->getOwner() << " amount " << wallet->getAmount() << wallet->getCurrency();
+    }
+
+    qDebug() << "Listing all available bills...";
+    QList<Entity*> billList = dataBase->findAll(PersistenceType::PERSISTENCE_TYPE_BILL);
+    foreach(Entity* entity, billList) {
+        BillEntity* bill = (BillEntity*)entity;
+        qDebug() << "Id:" << bill->getId() << " Owner:" << bill->getWallet()->getOwner() << " Wallet:" << bill->getWallet()->getId() << " Address:" << bill->getAddress() << " amount:" << bill->getAmount() << bill->getCurrency();
+    }
+
+    qDebug() << this->mWallets.length();
 }
 
 void WalletApp::setTitle(const QString &title) {
@@ -24,22 +66,13 @@ QString WalletApp::getTitle() const {
     return this->mTitle;
 }
 
-QList<Wallet*> WalletApp::getWallets() {
-    return this->mWallets;
-}
-
 QList<QObject*> WalletApp::listWallets() {
     QList<QObject*> list;
-    foreach(Wallet* wallet, this->mWallets) {
+    foreach(WalletEntity* wallet, this->mWallets) {
         list.append(wallet);
     }
     return list;
 }
-
-int WalletApp::getCount() const {
-    return this->mWallets.length();
-}
-
 
 void WalletApp::listener(const QString &param1, int param2) {
     qDebug() << param1 << " & " << param2;
