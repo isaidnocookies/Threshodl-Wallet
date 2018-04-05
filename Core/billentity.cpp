@@ -1,13 +1,32 @@
 #include "billentity.h"
 
 #include <QDebug>
+#include "bitcoininterface.h"
 
 BillEntity::BillEntity(WalletEntity* wallet) : Entity(PersistenceType::PERSISTENCE_TYPE_BILL) {
     this->mAmount = "0";
     this->mWallet = wallet;
     if (wallet != NULL) {
+        QString currencyType = wallet->getCurrency();
         this->mOwner = wallet->getOwner();
-        this->mCurrency = wallet->getCurrency();
+        this->mCurrency = currencyType;
+        // Just BTC at this time
+        switch(this->mWallet->getType()) {
+            case WalletType::WALLET_TYPE_DARK:
+                // Generate the Bill at server side
+                // ...
+            break;
+            default:
+                if (QString::compare("BTC", this->getCurrency(), Qt::CaseInsensitive) == 0) {
+                    BitcoinInterface btcInterface;
+                    QList<BitcoinWalletRef> wallets = btcInterface.createWallets(1, true);
+                    BitcoinWalletRef localWallet = wallets.at(0);
+                    // Using the classic address this time
+                    this->mAddress = localWallet->Addresses["P2PKH"];
+                    this->mPublicKey = localWallet->PublicKey;
+                    this->mPrivateKey = localWallet->PrivateKey;
+                }
+        }
     }
 }
 
