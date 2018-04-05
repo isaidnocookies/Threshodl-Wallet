@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <digest.h>
 #include <rpcmessagecreateaccountreply.h>
 
 Widget::Widget(QWidget *parent) :
@@ -62,7 +63,6 @@ void Widget::connectedToServer()
 {
     qDebug() << "Connected to server.";
     ui->statusLabel->setText("Connected.");
-
     mConnection->sendTextMessage(RPCMessageCreateAccountRequest::create(mThisPublicKey,ui->accountNameLineEdit->text(),mThisPrivateKey));
 }
 

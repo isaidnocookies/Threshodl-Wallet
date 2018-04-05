@@ -18,7 +18,7 @@ QString RPCMessageCreateAccountRequest::publicKeyKey()
 { return QStringLiteral("publicKey"); }
 
 QByteArray RPCMessageCreateAccountRequest::publicKey() const
-{ return fieldValue(publicKeyKey()).toByteArray(); }
+{ return QByteArray::fromBase64(fieldValue(publicKeyKey()).toByteArray()); }
 
 QString RPCMessageCreateAccountRequest::create(const QByteArray iPublicKey, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
-{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{publicKeyKey(), iPublicKey} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }
+{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{publicKeyKey(), iPublicKey.toBase64()} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }

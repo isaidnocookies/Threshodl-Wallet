@@ -32,11 +32,10 @@ RPCMessage::RPCMessage(const QString iMessage)
     QVariantMap lOutterMap = QJsonDocument::fromJson(lUtf8Message,&lJsonParseError).toVariant().toMap();
     if( lJsonParseError.error == QJsonParseError::NoError ) {
         mUsername           = lOutterMap[kUsernameKey].toString();
-        mSignature          = lOutterMap[kSignatureKey].toByteArray();
+        mSignature          = QByteArray::fromBase64(lOutterMap[kSignatureKey].toByteArray());
         mSignatureEncoding  = lOutterMap[kSignatureEncodingKey].toInt();
-        mDataForSignature   = lOutterMap[kInnerMapKey].toByteArray();
+        mDataForSignature   = QByteArray::fromBase64(lOutterMap[kInnerMapKey].toByteArray());
 
-        // QVariantMap lInnerMap   = lOutterMap[kInnerMapKey].toMap();
         QVariantMap lInnerMap = QJsonDocument::fromJson(mDataForSignature,&lJsonParseError).toVariant().toMap();
         if( lJsonParseError.error == QJsonParseError::NoError ) {
             for( auto lKey : lInnerMap.keys() ) {
@@ -95,9 +94,9 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPrivate
     }
 
     lOutterMap[kUsernameKey]            = mUsername;
-    lOutterMap[kSignatureKey]           = mSignature;
+    lOutterMap[kSignatureKey]           = mSignature.toBase64();
     lOutterMap[kSignatureEncodingKey]   = mSignatureEncoding;
-    lOutterMap[kInnerMapKey]            = mDataForSignature;
+    lOutterMap[kInnerMapKey]            = mDataForSignature.toBase64();
 
     return QString::fromUtf8( QJsonDocument::fromVariant(lOutterMap).toJson(QJsonDocument::Compact) );
 }

@@ -383,6 +383,7 @@ void App::start()
     connect( mDownloader, &Downloader::downloaded, mRecordsManager, &RecordsManager::handleDownloadedUrlData );
 
     mDBInterface = new DBInterfaceAlpha{mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort};
+    mDBInterface->setSqlType(mDBType);
 
     mLogsManagerThread->start();
     mRecordsManagerThread->start();
