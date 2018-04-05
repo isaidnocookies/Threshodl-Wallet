@@ -39,76 +39,15 @@ Entity::Entity(PersistenceType persistenceType, RepositoryType repositoryType) {
     this->repositoryType = repositoryType;
 }
 
-/**
- * Save the Entity as a new instance in the storage object
- * This method should have the ability to save single isntances but also
- * collections or nested instances
- *
- * @brief Entity::save
- * @return bool indicating if the operation was successfull
- */
-bool Entity::save() {
-    bool result = false;
-    WalletEntity* wallet;
-    switch(this->persistenceType) {
-        case PersistenceType::PERSISTENCE_TYPE_BILL:
-            qDebug() << "Saving and instance of: " << this->getType() << " in " << this->getRepositoryType();
-            result = true;
-            break;
-        case PersistenceType::PERSISTENCE_TYPE_WALLET:
-            qDebug() << "Saving and instance of: " << this->getType() << " in " << this->getRepositoryType();
-            wallet = (WalletEntity*)this;
-            foreach (BillEntity* bill, wallet->getBills()) {
-                bill->save();
-            }
-            result = true;
-            break;
-        default:
-            result = false;
-    }
-    return result;
+PersistenceType Entity::getPersistenceType() {
+    return this->persistenceType;
 }
 
-/**
- * Get all Entities matching the type of the caller. The usage could be in the form:
- * WalletEntity *entityReference = new WalletEntity();
- * QList<Entity*> list = entityReference->loadAll();
- *
- * @brief Entity::loadAll
- * @return QList<Entity*> a collection of Entity objects of the same type as the caller
- */
-QList<Entity*> Entity::loadAll() {
-    QList<Entity*> list;
-    qDebug() << "Gettings all instances of: " << this->getType() << " in " << this->getRepositoryType();
-    return list;
+RepositoryType Entity::getRepositoryType() {
+    return this->repositoryType;
 }
 
-/**
- * Load an specific entity using the id in the parameter and the type of the caller
- * WalletEntity *entityReference = new WalletEntity();
- * Entity* entity = entityReference->load(get_index_somehow());
- *
- * @brief Entity::load
- * @param id
- * @return
- */
-Entity* Entity::load(int id) {
-    Entity* entity;
-    switch(this->persistenceType) {
-        case PersistenceType::PERSISTENCE_TYPE_BILL:
-            entity = new BillEntity(NULL);
-            break;
-        case PersistenceType::PERSISTENCE_TYPE_WALLET:
-            entity = new WalletEntity();
-            break;
-        default:
-            entity = NULL;
-    }
-    qDebug() << "Gettings an instance of: " << this->getType() << " with id: " << id << " in " << this->getRepositoryType();
-    return entity;
-}
-
-QString Entity::getType() {
+QString Entity::getPersistenceTypeName() {
     QString result = "unknown";
     switch(this->persistenceType) {
         case PersistenceType::PERSISTENCE_TYPE_BILL:
@@ -121,7 +60,7 @@ QString Entity::getType() {
     return result;
 }
 
-QString Entity::getRepositoryType() {
+QString Entity::getRepositoryTypeName() {
     QString result = "unknown";
     switch(this->repositoryType) {
         case RepositoryType::REPOSITORY_TYPE_QSETTINGS:

@@ -1,9 +1,10 @@
 #ifndef BILLENTITY_H
 #define BILLENTITY_H
 
+#include <QString>
+#include <QSqlRecord>
 #include "walletentity.h"
 #include "entity.h"
-#include <QString>
 
 class WalletEntity;
 
@@ -22,6 +23,7 @@ private:
 public:
     BillEntity(WalletEntity* wallet);
     BillEntity(WalletEntity* wallet, RepositoryType repositoryType);
+    BillEntity(QSqlRecord sqlrecord, WalletEntity* wallet);
     // Getters
     int getId();
     WalletEntity* getWallet();
@@ -39,6 +41,11 @@ public:
     void setPrivateKey(QString privateKey);
     void setCurrency(QString currency);
     void setAmount(QString amount);
+    // Persitence
+    void updateAfterPersist(int id);
+    QString getSQLSelect(FetchMode fetchMode);
+    QString getSQLInsert();
+    QString getSQLUpdate(QString amount);
 };
 
 #endif // BILLENTITY_H

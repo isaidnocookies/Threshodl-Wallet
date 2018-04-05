@@ -4,6 +4,7 @@
 #include "walletentity.h"
 #include "entity.h"
 #include <QString>
+#include <QSqlRecord>
 #include <QList>
 #include "billentity.h"
 
@@ -24,6 +25,7 @@ public:
     WalletEntity(RepositoryType repositoryType);
     WalletEntity(WalletType type, QString owner, QString currency);
     WalletEntity(WalletType type, QString owner, QString currency, RepositoryType repositoryType);
+    WalletEntity(QSqlRecord sqlRecord);
     // Getters
     int getId();
     WalletType getType();
@@ -39,6 +41,11 @@ public:
     void addBill(BillEntity* bill);
     void removeBill(BillEntity* bill);
     void addBillWad(QList<BillEntity*> wad);
+    // Persitence
+    void updateAfterPersist(int id);
+    QString getSQLSelect(FetchMode fetchMode);
+    QString getSQLInsert();
+    QString getSQLUpdate(QString amount);
 };
 
 #endif // WALLETENTITY_H

@@ -1,4 +1,5 @@
 QT -= gui
+QT += sql
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -21,11 +22,13 @@ SOURCES += \
     walletentity.cpp \
     billentity.cpp \
     entity.cpp \
-    qsettingsinterface.cpp
+    qsettingsinterface.cpp \
+    sqliteinterface.cpp
 
 HEADERS += \
     walletentity.h \
     billentity.h \
     entity.h \
     utils.h \
-    qsettingsinterface.h
+    qsettingsinterface.h \
+    sqliteinterface.h
