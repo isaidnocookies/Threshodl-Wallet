@@ -85,7 +85,7 @@ bool DBInterfaceAlpha::initDB()
 
         QSqlQuery   lQuery(lDB);
 
-        if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob )") ) ) {
+        if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob, UNIQUE(rid, address) )") ) ) {
             lQuery.finish();
             lRet = true;
         }
