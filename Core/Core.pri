@@ -6,8 +6,8 @@
     include($$PWD/../CertLib/CertLib.pri)
     include($$PWD/../RPC/RPC.pri)
 
-    linux | macos {
-        INCLUDEPATH += -I $$PWD/../libbtc/include
+    linux | macos | ios {
+        INCLUDEPATH += $$PWD/../libbtc/include
     }
 
     linux {
@@ -16,6 +16,10 @@
 
     macos {
         LIBS += $$PWD/../MacDeps/libbtc.a $$PWD/../MacDeps/libsecp256k1.a
+    }
+
+    ios {
+        LIBS += $$PWD/../iOSDeps/libbtc.a $$PWD/../iOSDeps/libsecp256k1.a
     }
 
     INCLUDEPATH += $$PWD
@@ -28,13 +32,9 @@
         $$PWD/rpcmessage.h \
     	$$PWD/rpcmessagepingrequest.h \
         $$PWD/rpcmessagepingreply.h \
-        $$PWD/bitcoininterface.h \
-        $$PWD/rawtransaction.h \
-        $$PWD/entity.h \
-        $$PWD/walletentity.h \
-        $$PWD/billentity.h \
-        $$PWD/sqliteinterface.h \
-        $$PWD/utils.h
+        $$PWD/rpcmessagecreateaccountrequest.h \
+        $$PWD/rpcmessagecreateaccountreply.h \
+        $$PWD/bitcoininterface.h
 
     SOURCES += \
         $$PWD/core.cpp \
@@ -43,22 +43,22 @@
         $$PWD/rpcmessage.cpp \
 	$$PWD/rpcmessagepingrequest.cpp \
         $$PWD/rpcmessagepingreply.cpp \
-        $$PWD/bitcoininterface.cpp \
+        $$PWD/rpcmessagecreateaccountrequest.cpp \
+        $$PWD/rpcmessagecreateaccountreply.cpp \
+        $$PWD/bitcoininterface.cpp
+
+    OTHER_FILES += \
         $$PWD/rawtransaction.cpp \
         $$PWD/entity.cpp \
         $$PWD/walletentity.cpp \
         $$PWD/billentity.cpp \
-        $$PWD/sqliteinterface.cpp
-
-    OTHER_FILES += \
+        $$PWD/rawtransaction.h \
+        $$PWD/entity.h \
+        $$PWD/walletentity.h \
+        $$PWD/billentity.h \
+        $$PWD/utils.h \
+        $$PWD/sqliteinterface.cpp \
+        $$PWD/sqliteinterface.h \
         $$PWD/rpcmessages.h \
         $$PWD/rpcmessages.cpp
 }
-
-HEADERS += \
-    $$PWD/rpcmessagecreateaccountrequest.h \
-    $$PWD/rpcmessagecreateaccountreply.h
-
-SOURCES += \
-    $$PWD/rpcmessagecreateaccountrequest.cpp \
-    $$PWD/rpcmessagecreateaccountreply.cpp

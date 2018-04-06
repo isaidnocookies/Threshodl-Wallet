@@ -16,6 +16,13 @@
         !contains( LIBS, -lcrypto ): LIBS += -lcrypto
     }
 
+    ios {
+        INCLUDEPATH += /usr/local/opt/openssl/include
+
+        !contains( LIBS, libssl.a ): LIBS += $$PWD/../iOSDeps/libssl.a
+        !contains( LIBS, libcrypto.a ): LIBS += $$PWD/../iOSDeps/libcrypto.a
+    }
+
     INCLUDEPATH += $$PWD
 
     HEADERS += \

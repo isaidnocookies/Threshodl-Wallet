@@ -2,11 +2,10 @@
 #include "ui_widget.h"
 
 #include "rpcmessagecreateaccountrequest.h"
+#include "rpcmessagecreateaccountreply.h"
 
 #include <QDebug>
 #include <QFile>
-#include <digest.h>
-#include <rpcmessagecreateaccountreply.h>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
