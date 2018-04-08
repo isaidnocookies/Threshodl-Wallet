@@ -2,47 +2,34 @@
 #define WALLET_H
 
 #include <QString>
-#include <QObject>
-#include <QList>
-#include "bill.h"
-#include "utils.h"
+#include <QVariantMap>
 
-// Forward declaration to deal with class interdependency
-class Bill;
-
-class Wallet : public QObject
+class Wallet
 {
-    Q_OBJECT
-    Q_PROPERTY(WalletType type READ getType)
-    Q_PROPERTY(QString currency READ getCurrency)
-    Q_PROPERTY(QString owner READ getOwner)
-    Q_PROPERTY(QString amount READ getAmount NOTIFY amountChanged)
-    Q_PROPERTY(QList<QObject*> bills READ listBills NOTIFY billsChanged)
+protected:
+    QString     mShortNameType;         // Example: BTC
+    QString     mLongNameType;          // Example: Bitcoin
+    QString     mValue;                 // Example: 0.12345678
+    QByteArray  mPrivateKey;
+    QByteArray  mPublicKey;
+    QByteArray  mAddress;
 
-private:
-    WalletType mType;
-    QString mCurrency;
-    QString mOwner;
-    QString mAmount;
-    QList<Bill*> mBills;
-    // Internal usage methods
-    // ...
+    QByteArray _baseClassToData(QVariantMap iMap) const;
+    void _baseClassFromData(QVariantMap iDataMap);
+
+    Wallet()
+    { }
 
 public:
-    Wallet(WalletType type, QString currency, QString owner);
-    WalletType getType();
-    QString getCurrency();
-    QString getOwner();
-    QString getAmount();
-    QList<Bill*> getBills();
-    QList<QObject*> listBills();
-    void addBill(Bill* bill);
-    void addBillWad(QList<Bill*> bills);
+    Wallet(const QByteArray iData);
 
-signals:
-    void amountChanged();
-    void countChanged();
-    void billsChanged();
+    virtual QString     shortNameType() const   { return mShortNameType; }
+    virtual QString     longNameType() const    { return mLongNameType; }
+    virtual QString     value() const           { return mValue; }
+    virtual QByteArray  privateKey() const      { return mPrivateKey; }
+    virtual QByteArray  publicKey() const       { return mPublicKey; }
+    virtual QByteArray  address() const         { return mAddress; }
+    virtual QByteArray  toData() const          { return _baseClassToData(QVariantMap()); }
 };
 
 #endif // WALLET_H

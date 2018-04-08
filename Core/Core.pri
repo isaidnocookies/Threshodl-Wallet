@@ -26,6 +26,7 @@
 
     HEADERS += \
         $$PWD/core.h \
+        $$PWD/wallet.h \
         $$PWD/microwallet.h \
         $$PWD/encapsulatedmicrowallet.h \
         $$PWD/rpcfield.h \
@@ -38,6 +39,7 @@
 
     SOURCES += \
         $$PWD/core.cpp \
+        $$PWD/wallet.cpp \
         $$PWD/microwallet.cpp \
         $$PWD/encapsulatedmicrowallet.cpp \
         $$PWD/rpcmessage.cpp \

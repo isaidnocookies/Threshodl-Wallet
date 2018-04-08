@@ -2,25 +2,17 @@
 
 #include <QJsonDocument>
 
-QByteArray MicroWallet::_baseClassToData(QVariantMap iMap) const
+QVariantMap MicroWallet::_microWalletClassToData(QVariantMap iMap) const
 {
-    iMap["value"]           = mValue;
-    iMap["longNameType"]    = mLongNameType;
-    iMap["shortNameType"]   = mShortNameType;
-    iMap["privateKey"]      = mPrivateKey;
-    iMap["publicKey"]       = mPublicKey;
-    iMap["address"]         = mAddress;
-    return QJsonDocument::fromVariant(iMap).toBinaryData();
+    iMap["privateKeyComplete"]  = mPrivateKeyComplete;
+    iMap["microWalletId"]       = mMicroWalletId.toBase64();
+    return iMap;
 }
 
-void MicroWallet::_baseClassFromData(QVariantMap iDataMap)
+void MicroWallet::_microWalletClassFromData(QVariantMap iDataMap)
 {
-    mValue          = iDataMap["value"].toString();
-    mLongNameType   = iDataMap["longNameType"].toString();
-    mShortNameType  = iDataMap["shortNameType"].toString();
-    mPrivateKey     = iDataMap["privateKey"].toByteArray();
-    mPublicKey      = iDataMap["publicKey"].toByteArray();
-    mAddress        = iDataMap["address"].toByteArray();
+    mPrivateKeyComplete = iDataMap["privateKeyComplete"].toBool();
+    mMicroWalletId      = QByteArray::fromBase64(iDataMap["microWalletId"].toByteArray());
 }
 
 MicroWallet::MicroWallet(const QByteArray iData)
@@ -28,5 +20,26 @@ MicroWallet::MicroWallet(const QByteArray iData)
     QVariantMap lDataMap;
     lDataMap = QJsonDocument::fromBinaryData(iData).toVariant().toMap();
     _baseClassFromData(lDataMap);
+    _microWalletClassFromData(lDataMap);
 }
+
+void MicroWallet::setCompleteKeyComplete(bool iComplete)
+{ mPrivateKeyComplete = iComplete; }
+
+bool MicroWallet::completePrivateKey(const QByteArray iNewPrivateKey)
+{
+    if( mPrivateKeyComplete ) return false;
+    mPrivateKeyComplete = true;
+    mPrivateKey = iNewPrivateKey;
+    return true;
+}
+
+void MicroWallet::setMicroWalletId(const QByteArray iMicroWalletId)
+{ mMicroWalletId = iMicroWalletId; }
+
+QByteArray MicroWallet::microWalletId() const
+{ return mMicroWalletId; }
+
+QByteArray MicroWallet::toData() const
+{ return _baseClassToData(_microWalletClassToData(QVariantMap())); }
 

@@ -1,21 +1,16 @@
 #ifndef MICROWALLET_H
 #define MICROWALLET_H
 
-#include <QString>
-#include <QVariantMap>
+#include "wallet.h"
 
-class MicroWallet
+class MicroWallet : public Wallet
 {
 private:
-    QString     mShortNameType;         // Example: BTC
-    QString     mLongNameType;          // Example: Bitcoin
-    QString     mValue;                 // Example: 0.12345678
-    QByteArray  mPrivateKey;
-    QByteArray  mPublicKey;
-    QByteArray  mAddress;
+    bool            mPrivateKeyComplete = false;
+    QByteArray      mMicroWalletId;
 
-    QByteArray _baseClassToData(QVariantMap iMap) const;
-    void _baseClassFromData(QVariantMap iDataMap);
+    QVariantMap _microWalletClassToData(QVariantMap iMap) const;
+    void _microWalletClassFromData(QVariantMap iDataMap);
 
     MicroWallet()
     { }
@@ -23,13 +18,14 @@ private:
 public:
     MicroWallet(const QByteArray iData);
 
-    virtual QString     shortNameType() const   { return mShortNameType; }
-    virtual QString     longNameType() const    { return mLongNameType; }
-    virtual QString     value() const           { return mValue; }
-    virtual QByteArray  privateKey() const      { return mPrivateKey; }
-    virtual QByteArray  publicKey() const       { return mPublicKey; }
-    virtual QByteArray  address() const         { return mAddress; }
-    virtual QByteArray  toData() const          { return _baseClassToData(QVariantMap()); }
+    virtual void        setCompleteKeyComplete(bool iComplete = false);
+    virtual bool        completePrivateKey(const QByteArray iNewPrivateKey);
+
+    virtual void        setMicroWalletId(const QByteArray iMicroWalletId);  // Should Only be done at the server
+    virtual QByteArray  microWalletId() const;
+
+    virtual bool        privateKeyComplete() const      { return mPrivateKeyComplete; }
+    virtual QByteArray  toData() const override;
 };
 
 #endif // MICROWALLET_H
