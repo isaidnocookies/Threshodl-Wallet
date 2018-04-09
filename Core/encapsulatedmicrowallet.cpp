@@ -23,8 +23,9 @@ QByteArray EncapsulatedMicroWallet::toData() const
     QVariantMap lMap;
 
     if(mMicroWallet) {
-        lMap["microWalletType"] = mMicroWallet->shortNameType();
-        lMap["microWallet"]     = mMicroWallet->toData();
+#warning This is broken
+//        lMap["microWalletType"] = mMicroWallet->shortNameType();
+//        lMap["microWallet"]     = mMicroWallet->toData();
     }
 
     return QJsonDocument::fromVariant(lMap).toBinaryData();

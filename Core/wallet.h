@@ -14,11 +14,12 @@ protected:
     QByteArray  mPublicKey;
     QByteArray  mAddress;
 
-    QByteArray _baseClassToData(QVariantMap iMap) const;
-    void _baseClassFromData(QVariantMap iDataMap);
-
     Wallet()
     { }
+
+public:
+    QByteArray _baseClassToData(QVariantMap iMap) const;
+    void _baseClassFromData(QVariantMap iDataMap);
 
 public:
     Wallet(const QByteArray iData);
