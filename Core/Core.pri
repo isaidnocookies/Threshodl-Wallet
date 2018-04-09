@@ -26,8 +26,10 @@
 
     HEADERS += \
         $$PWD/core.h \
+        $$PWD/wallet.h \
         $$PWD/microwallet.h \
         $$PWD/encapsulatedmicrowallet.h \
+        $$PWD/bitcoinwallet.h \
         $$PWD/rpcfield.h \
         $$PWD/rpcmessage.h \
     	$$PWD/rpcmessagepingrequest.h \
@@ -38,8 +40,10 @@
 
     SOURCES += \
         $$PWD/core.cpp \
+        $$PWD/wallet.cpp \
         $$PWD/microwallet.cpp \
         $$PWD/encapsulatedmicrowallet.cpp \
+        $$PWD/bitcoinwallet.cpp \
         $$PWD/rpcmessage.cpp \
 	$$PWD/rpcmessagepingrequest.cpp \
         $$PWD/rpcmessagepingreply.cpp \
@@ -62,3 +66,11 @@
         $$PWD/rpcmessages.h \
         $$PWD/rpcmessages.cpp
 }
+
+HEADERS += \
+    $$PWD/bitcoinmicrowallet.h \
+    $$PWD/cryptocurrencywallet.h \
+    $$PWD/walletdatacore.h
+
+SOURCES += \
+    $$PWD/bitcoinmicrowallet.cpp

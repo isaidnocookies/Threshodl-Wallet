@@ -78,16 +78,28 @@ QString DBInterfaceAlpha::sqlType() const
 bool DBInterfaceAlpha::initDB()
 {
     QSqlDatabase    lDB;
-    bool            lRet            = false;
+    bool            lRet            = true;
 
     if( _connectOrReconnectToDB(lDB) ) {
         lDB.transaction();
 
-        QSqlQuery   lQuery(lDB);
+        try {
+            QSqlQuery   lQuery(lDB);
+            // This might be the correct format for PSQL but does not work on SQLITE, keep for the future:
+            // "CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob, UNIQUE(rid, address) )"
+            if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL UNIQUE, key blob )") ) )
+                lQuery.finish();
+            else
+                throw __LINE__;
 
-        if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob )") ) ) {
-            lQuery.finish();
-            lRet = true;
+            if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS escrow( rid integer PRIMARY KEY, walletid blob UNIQUE, owner text NOT NULL, payload blob )") ) )
+                lQuery.finish();
+            else
+                throw __LINE__;
+
+        }catch(int iLine){
+            qWarning() << "Failed to initialize database on line" << iLine;
+            lRet = false;
         }
 
         _flushDB(lDB);
