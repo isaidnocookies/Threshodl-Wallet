@@ -69,7 +69,8 @@
 
 HEADERS += \
     $$PWD/bitcoinmicrowallet.h \
-    $$PWD/cryptocurrencywallet.h
+    $$PWD/cryptocurrencywallet.h \
+    $$PWD/walletdatacore.h
 
 SOURCES += \
     $$PWD/bitcoinmicrowallet.cpp
