@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="black_back">Resources/Images/black_backIcon.png</file>
+        <file alias="white_back">Resources/Images/white_backIcon.png</file>
+        <file alias="qr_scan_black">Resources/Images/qr_scan_icon.png</file>
+        <file alias="qr_scan_white">Resources/Images/qr_scan_icon_white.png</file>
+        <file alias="black_next">Resources/Images/next_icon_black.png</file>
+        <file alias="bright_btc">Resources/Images/bright_bitcoin.png</file>
+        <file alias="dark_btc">Resources/Images/dark_bitcoin.png</file>
+        <file alias="threshodl_logo">Resources/Images/threslogo.png</file>
+    </qresource>
+</RCC>

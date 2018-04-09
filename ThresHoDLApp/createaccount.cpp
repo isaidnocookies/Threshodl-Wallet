@@ -17,7 +17,10 @@ CreateAccount::CreateAccount(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->createAccountButton->setStyleSheet("border-radius: 5px; background-color: #15AEFF; padding: 10px;");
+    ui->createAccountButton->setStyleSheet(lightBackgroundStyleSheet());
+    ui->usernameLineEdit->setStyleSheet(lightBackgroundStyleSheet());
+
+    ui->progressBar->setVisible(false);
 
     mConnection = new RPCConnection{this};
     connect( mConnection, &RPCConnection::connected, this, &CreateAccount::connectedToServer );
@@ -48,10 +51,13 @@ CreateAccount::~CreateAccount()
 
 void CreateAccount::on_createAccountButton_pressed()
 {
+//    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
+//    return;
+
     if (!ui->usernameLineEdit->text().isEmpty()) {
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral("wss://10.10.0.77:4431"));
         mConnection->open(lUrl);
-//        createUser(ui->usernameLineEdit->text());
+        startProgressBarAndDisable();
     } else {
         ui->warningLabel->setStyleSheet("color: red;");
         ui->warningLabel->setText("*Please enter username");
@@ -62,8 +68,6 @@ void CreateAccount::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mConnection->sendTextMessage(RPCMessageCreateAccountRequest::create(mPublicKey,ui->usernameLineEdit->text(),mPrivateKey));
-
-    //show loading bar?
 }
 
 void CreateAccount::disconnectedFromServer()
@@ -71,13 +75,17 @@ void CreateAccount::disconnectedFromServer()
     qDebug() << "Disconnected from server.";
 
     //catastrophic failure
+    stopProgressBarAndEnable();
+    ui->warningLabel->setText("[1] Error, please try again!");
 }
 
 void CreateAccount::failedToSendMessage()
 {
     qDebug() << "Failed to send message.";
+    ui->warningLabel->setText("[2] Error, please try again!");
 
     //failed
+    stopProgressBarAndEnable();
 }
 
 void CreateAccount::sentMessage()
@@ -91,6 +99,8 @@ void CreateAccount::receivedMessage()
 {
     qDebug() << "Received message.";
 
+    stopProgressBarAndEnable();
+
     // got reply
     QString lMessage = mConnection->nextTextMessage();
     RPCMessageCreateAccountReply    lReply{lMessage};
@@ -101,6 +111,7 @@ void CreateAccount::receivedMessage()
             break;
         case RPCMessageCreateAccountReply::UsernameTaken:
             qDebug() << "Username Taken";
+            ui->warningLabel->setText("Username has been taken!");
             break;
         default:
             qDebug() << "FUCK";
@@ -110,6 +121,8 @@ void CreateAccount::receivedMessage()
 void CreateAccount::socketError(QAbstractSocket::SocketError iError)
 {
     qDebug() << "SocketError:" << iError;
+    ui->warningLabel->setText("[3] Error, please try again!");
+    stopProgressBarAndEnable();
 }
 
 void CreateAccount::sslErrors(const QList<QSslError> iErrors)
@@ -117,13 +130,29 @@ void CreateAccount::sslErrors(const QList<QSslError> iErrors)
     qDebug() << "Ssl Errors:";
 
     int lIndex = 0;
+    stopProgressBarAndEnable();
 
     for( auto lError : iErrors ) {
         qDebug() << lIndex++ << lError.errorString();
+        ui->warningLabel->setText("[4] Error, please try again!");
     }
 }
 
 void CreateAccount::createUser(QString iUsername)
 {
     emit createUserAccount(iUsername, mPrivateKey, mPublicKey);
+}
+
+void CreateAccount::startProgressBarAndDisable()
+{
+    ui->progressBar->setVisible(true);
+    ui->createAccountButton->setEnabled(false);
+    ui->usernameLineEdit->setEnabled(false);
+}
+
+void CreateAccount::stopProgressBarAndEnable()
+{
+    ui->progressBar->setVisible(false);
+    ui->createAccountButton->setEnabled(true);
+    ui->usernameLineEdit->setEnabled(false);
 }

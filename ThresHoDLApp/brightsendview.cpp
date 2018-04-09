@@ -9,7 +9,9 @@ BrightSendView::BrightSendView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->sendTransactionButton->setStyleSheet(brightButtonStyle());
+    ui->sendTransactionButton->setStyleSheet(lightBackgroundStyleSheet());
+    ui->addressLineEdit->setStyleSheet(lightBackgroundStyleSheet());
+    ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
 }
 
 BrightSendView::~BrightSendView()

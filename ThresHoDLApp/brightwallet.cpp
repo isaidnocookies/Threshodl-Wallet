@@ -12,8 +12,8 @@ BrightWallet::BrightWallet(QWidget *parent) :
     mQrImage = new QImage();
     *mQrImage = QrEncoder::createQrCode("THRESHODL WALLET IS AWESOME");
 
-    ui->sendButton->setStyleSheet(brightButtonStyle());
-    ui->sendToDarkWalletButton->setStyleSheet(brightButtonStyle());
+    ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
+    ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
 
     ui->qrCodeLabel->setPixmap(QPixmap::fromImage(*mQrImage));
 
@@ -27,8 +27,6 @@ BrightWallet::~BrightWallet()
 
 void BrightWallet::on_closeWindowButton_pressed()
 {
-//    emit makeDashboardMaximized();
-
     this->hide();
     this->deleteLater();
 }

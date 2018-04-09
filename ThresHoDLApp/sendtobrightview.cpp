@@ -1,11 +1,17 @@
 #include "sendtobrightview.h"
 #include "ui_sendtobrightview.h"
 
+#include "globalsandstyle.h"
+
 SendToBrightView::SendToBrightView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SendToBrightView)
 {
     ui->setupUi(this);
+
+    ui->convertButton->setStyleSheet(darkBackgroundStyleSheet());
+    ui->amountLineEdit->setStyleSheet(darkBackgroundStyleSheet());
+//    ui->confirmCheckBox->setStyleSheet(darkBackgroundStyleSheet());
 }
 
 SendToBrightView::~SendToBrightView()

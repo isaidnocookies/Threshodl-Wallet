@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: #404040;</string>
+   <string notr="true">background-color: #272828;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
@@ -34,7 +34,14 @@
      <item>
       <widget class="QPushButton" name="closePushButton">
        <property name="text">
-        <string>Close</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/white_back</normaloff>:/white_back</iconset>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -126,7 +133,7 @@
         <string notr="true">color:white;</string>
        </property>
        <property name="text">
-        <string>Address:</string>
+        <string>Threshodl Address:</string>
        </property>
       </widget>
      </item>
@@ -167,7 +174,20 @@
        <item>
         <widget class="QPushButton" name="scanQrButton">
          <property name="text">
-          <string>Scan QR</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/qr_scan_white</normaloff>:/qr_scan_white</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -212,6 +232,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
