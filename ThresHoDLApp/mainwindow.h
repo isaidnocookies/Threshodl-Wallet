@@ -8,6 +8,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +25,7 @@ public:
 public slots:
     void createAccountComplete(QString iUsername, QString iPriv, QString iPub);
     void makeMaximized();
+    void saveAddressInSettings(QString iEmail, QString iAddress);
 
 private slots:
     void on_brightButton_pressed();
@@ -31,11 +33,11 @@ private slots:
 
 private:
     Ui::MainWindow  *ui;
+    QSettings       *mAccountSettings;
     CreateAccount   *mCreateAccount;
     UserAccount     *mActiveUser;
     BrightWallet    *mBrightWalletView;
     DarkWallet      *mDarkWalletView;
-
 };
 
 #endif // MAINWINDOW_H

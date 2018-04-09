@@ -39,7 +39,8 @@ SOURCES += \
     brightsendview.cpp \
     sendtodarkview.cpp \
     darksendview.cpp \
-    sendtobrightview.cpp
+    sendtobrightview.cpp \
+    darkreceiveview.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -52,7 +53,8 @@ HEADERS += \
     brightsendview.h \
     sendtodarkview.h \
     darksendview.h \
-    sendtobrightview.h
+    sendtobrightview.h \
+    darkreceiveview.h
 
 FORMS += \
     mainwindow.ui \
@@ -62,4 +64,10 @@ FORMS += \
     brightsendview.ui \
     sendtodarkview.ui \
     darksendview.ui \
-    sendtobrightview.ui
+    sendtobrightview.ui \
+    darkreceiveview.ui
+
+RESOURCES += \
+    resources.qrc
+
+DISTFILES +=

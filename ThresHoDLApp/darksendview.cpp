@@ -8,8 +8,11 @@ DarkSendView::DarkSendView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->scanQrButton->setStyleSheet(darkButtonStyle());
-    ui->sendTransactionButton->setStyleSheet(darkButtonStyle());
+//    ui->scanQrButton->setStyleSheet(darkBackgroundStyleSheet());
+    ui->sendTransactionButton->setStyleSheet(darkBackgroundStyleSheet());
+    ui->addressLineEdit->setStyleSheet(darkBackgroundStyleSheet());
+    ui->amountLineEdit->setStyleSheet(darkBackgroundStyleSheet());
+    ui->emailAddressLineEdit->setStyleSheet(darkBackgroundStyleSheet());
 }
 
 DarkSendView::~DarkSendView()

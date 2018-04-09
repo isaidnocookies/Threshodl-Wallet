@@ -44,6 +44,8 @@ private:
     QString             mUsername;
 
     void createUser(QString iUsername);
+    void startProgressBarAndDisable();
+    void stopProgressBarAndEnable();
 };
 
 #endif // CREATEACCOUNT_H

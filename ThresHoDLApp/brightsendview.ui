@@ -37,7 +37,14 @@
      <item>
       <widget class="QPushButton" name="closePushButton">
        <property name="text">
-        <string>Close</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/black_back</normaloff>:/black_back</iconset>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -216,7 +223,20 @@
            <item>
             <widget class="QPushButton" name="scanQrPushButton">
              <property name="text">
-              <string>Scan QR</string>
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="resources.qrc">
+               <normaloff>:/qr_scan_black</normaloff>:/qr_scan_black</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -279,6 +299,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

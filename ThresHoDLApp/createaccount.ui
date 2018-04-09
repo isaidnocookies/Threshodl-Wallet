@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>261</width>
-    <height>510</height>
+    <width>376</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -143,6 +143,32 @@
       </spacer>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="leftMargin">
+        <number>20</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>20</number>
+       </property>
+       <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="maximum">
+          <number>0</number>
+         </property>
+         <property name="value">
+          <number>-1</number>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="leftMargin">
         <number>20</number>
@@ -163,9 +189,6 @@
          </property>
          <property name="autoFillBackground">
           <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
          </property>
          <property name="text">
           <string>Create Account</string>

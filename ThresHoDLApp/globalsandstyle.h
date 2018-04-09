@@ -3,15 +3,78 @@
 
 #include <QString>
 
-inline QString darkButtonStyle() {      return QString("color: white;"
-                                                  "padding: 10px;"); }
+inline QString theOrganization() {              return QString("ThreeB"); }
+inline QString theApplicationName() {           return QString("Threshodl"); }
+inline QString theDomain() {                    return QString("threshodl.com"); }
 
-inline QString brightButtonStyle() {    return QString("color: black;"
-                                                    "padding: 10px;"); }
+inline QString usernameSetting() {              return QString("usernameSetting"); }
+inline QString publicKeySetting() {             return QString("publicKeySetting"); }
+inline QString privateKeySetting() {            return QString("privateKeySetting"); }
 
-inline QString mainButtonStyle() {      return QString("padding: 20px;"); }
+inline QString emailSetting() {                 return QString("emailSetting"); }
+inline QString addressSetting() {               return QString("addressSetting"); }
 
-inline QByteArray serverCert() {        return QByteArray("-----BEGIN CERTIFICATE-----"
+//03a9f4
+//old light blue - 4c586F
+//old dark blue - 404859
+
+inline QString lightBackgroundStyleSheet() {    return QString("QPushButton {"
+                                                                    "background-color: #03a9f4;"
+                                                                    "border-style: outset;"
+                                                                    "border-width: 2px;"
+                                                                    "border-radius: 10px;"
+                                                                    "border-color: #0399dd;"
+                                                                    "font: bold 14px;"
+                                                                    "color: white;"
+                                                                    "padding: 10px;"
+                                                               "}"
+                                                               "QPushButton:pressed {"
+                                                                    "background-color: #0399dd;"
+                                                               "}"
+                                                               "QLineEdit {"
+                                                                    "border: 2px solid #a2aab0;"
+                                                                    "border-radius: 10px;"
+                                                                    "padding: 5px 8px;"
+                                                                "}"
+//                                                                "QCheckBox:indicator {"
+//                                                                    "border-color: #a2aab0;"
+//                                                                    "color: black;"
+//                                                                "}"
+//                                                                "QCheckBox {"
+//                                                                   "color: black;"
+//                                                                "}"
+                                                                ); }
+
+inline QString darkBackgroundStyleSheet() {    return QString("QPushButton {"
+                                                                    "background-color: #3e3e3b;"
+                                                                    "border-style: outset;"
+                                                                    "border-width: 2px;"
+                                                                    "border-radius: 10px;"
+                                                                    "border-color: #2d2d2c;"
+                                                                    "font: bold 14px;"
+                                                                    "color: white;"
+                                                                    "padding: 10px;"
+                                                               "}"
+                                                               "QPushButton:pressed {"
+                                                                    "background-color: #2d2d2c;"
+                                                               "}"
+                                                               "QLineEdit {"
+                                                                    "border: 2px solid #3e3e3b;"
+                                                                    "border-radius: 10px;"
+                                                                    "padding: 5px 8px;"
+                                                                    "color: white;"
+                                                               "}"
+//                                                               "QCheckBox:indicator {"
+//                                                                    "border-color: #3e3e3b;"
+//                                                                    "background-color: white;"
+//                                                                    "color: black;"
+//                                                               "}"
+//                                                               "QCheckBox {"
+//                                                                   "color: white;"
+//                                                               "}"
+                                                               ); }
+
+inline QByteArray serverCert() {                return QByteArray("-----BEGIN CERTIFICATE-----"
                                                           "MIIE+zCCAuOgAwIBAgIBATANBgkqhkiG9w0BAQ0FADAUMRIwEAYDVQQDDAlUaHJl"
                                                           "c2hvZGwwHhcNMTgwNDA1MjMyOTE3WhcNMTkwNDA1MjMyOTE3WjAUMRIwEAYDVQQD"
                                                           "DAlUaHJlc2hvZGwwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCaLyG+"

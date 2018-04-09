@@ -9,7 +9,9 @@ SendToDarkView::SendToDarkView(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->convertButton->setStyleSheet(brightButtonStyle());
+    ui->convertButton->setStyleSheet(lightBackgroundStyleSheet());
+    ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
+//    ui->confirmCheckBox->setStyleSheet(lightBackgroundStyleSheet());
 }
 
 SendToDarkView::~SendToDarkView()
