@@ -6,13 +6,8 @@
 
 class BitcoinWallet : public Wallet
 {
-protected:
-    BitcoinWallet();
-
 public:
-    BitcoinWallet(const QByteArray iData);
-
-    virtual ~BitcoinWallet();
+    BitcoinWallet() : Wallet() { }
 
     enum ChainType {
         None            = 0x0,  /* invalid wallet */
@@ -23,26 +18,20 @@ public:
 
     typedef enum ChainType ChainType;
 
-    virtual ChainType   chain() const;
-    virtual QByteArray  wif() const;
-    virtual QByteArray  p2pkhAddress() const;           // Same as address() - Default / Classic BTC address
-    virtual QByteArray  p2wpkhAddress();                // Generates and caches a P2KPKH address, does not retain it between object destructions
-    virtual QByteArray  p2sh_p2wpkhAddress();           // Generates and caches a P2SH+P2KPKH (aka SEGWIT) address, does not retain it between object destructions
+    virtual ChainType   chain() const                                       { return static_cast<ChainType>(WalletDataCoreValueToUInt(walletDataCore(),QStringLiteral("btcChain"))); }
+    virtual QByteArray  wif() const                                         { return WalletDataCoreValueToByteArray(walletDataCore(),QStringLiteral("btcWifAddress")); }
+    virtual QByteArray  P2PKHAddress() const                                { return address(); }
+    virtual QByteArray  P2WPKHAddress() const                               { return WalletDataCoreValueToByteArray(walletDataCore(),QStringLiteral("btcP2WPHKAddress")); }
+    virtual QByteArray  P2SH_P2WPKHAddress() const                          { return WalletDataCoreValueToByteArray(walletDataCore(),QStringLiteral("btcP2SH+P2WPHKAddress")); }
 
-    virtual QByteArray  toData() const override;
+    virtual void        setChain(const ChainType iValue)                    { WalletDataCoreValueFromUInt(walletDataCore(),QStringLiteral("btcChain"),static_cast<unsigned int>(iValue)); }
+    virtual void        setWif(const QByteArray iValue)                     { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("btcWifAddress"),iValue); }
+    virtual void        setP2PKHAddress(const QByteArray iValue)            { setAddress(iValue); }
+    virtual void        setP2WPKHAddress(const QByteArray iValue)           { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("btcP2WPHKAddress"),iValue); }
+    virtual void        setP2SH_P2WPKHAddress(const QByteArray iValue)      { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("btcP2SH+P2WPHKAddress"),iValue); }
 
-    static QSharedPointer<BitcoinWallet> createNewBitcoinWallet(ChainType iChainType = ChainType::Main);
-    static QSharedPointer<BitcoinWallet> fromWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
-
-protected:
-    QVariantMap _bitcoinWalletClassToData(QVariantMap iMap) const;
-    void _bitcoinWalletClassFromData(QVariantMap iDataMap);
-    void _calculateAddresses();
-
-    ChainType       mChain              = ChainType::None;
-    QByteArray      mWif;
-    QByteArray      mP2WPKHAddress;         // Cached
-    QByteArray      mP2SH_P2WPKHAddress;    // Cached
+    static BitcoinWallet createNewBitcoinWallet(ChainType iChainType = ChainType::Main);
+    static BitcoinWallet fromWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
 };
 
 #endif // BITCOINWALLET_H
