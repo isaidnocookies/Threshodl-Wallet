@@ -229,8 +229,8 @@ void Certificate::addSubjectName(const QString iSubjectName)
 
 void Certificate::addServerName(const QString iServerName)
 {
-     QByteArray  lUtf8 = iServerName.toUtf8();
-     _addExtension(NID_netscape_ssl_server_name,lUtf8.constData());
+//     QByteArray  lUtf8 = iServerName.toUtf8();
+//     _addExtension(NID_netscape_ssl_server_name,lUtf8.constData());
     addSubjectName(QString("CN=%1").arg(iServerName));
 }
 
@@ -262,14 +262,15 @@ void Certificate::setCAExtensions(unsigned int iSigningDepth)
     _addExtension(NID_basic_constraints,lConstraints);
     _addExtension(NID_key_usage, "critical,keyCertSign,cRLSign,digitalSignature");
     _addExtension(NID_subject_key_identifier, "hash");
-    _addExtension(NID_netscape_cert_type, "sslCA");
+//    _addExtension(NID_netscape_cert_type, "sslCA");
 }
 
 void Certificate::setServerExtensions()
 {
+//    X509_set_version(mX509,0);
     _addExtension(NID_subject_key_identifier, "hash");
     _addExtension(NID_netscape_cert_type, "server,client");
-    _addExtension(NID_basic_constraints,"critical,CA:FALSE,pathlen:0");
+//    _addExtension(NID_basic_constraints,"critical,CA:FALSE,pathlen:0");
     _addExtension(NID_ext_key_usage,"serverAuth,clientAuth");
     _addExtension(NID_key_usage,"digitalSignature");
     // NS_SSL_CLIENT
