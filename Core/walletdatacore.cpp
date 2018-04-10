@@ -4,5 +4,5 @@ bool WalletDataCoreDeserialize(const QByteArray iData, WalletDataCore &oWalletDa
 {
     QJsonParseError lError;
     oWalletDataCore = QJsonDocument::fromJson(iData,&lError).toVariant().toMap();
-    return lError == QJsonParseError::NoError;
+    return (lError.error == QJsonParseError::NoError);
 }
