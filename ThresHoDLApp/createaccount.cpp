@@ -58,8 +58,8 @@ CreateAccount::~CreateAccount()
 
 void CreateAccount::on_createAccountButton_pressed()
 {
-//    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
-//    return;
+    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
+    return;
 
     if (!ui->usernameLineEdit->text().isEmpty()) {
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral("wss://10.10.0.78:4431"));

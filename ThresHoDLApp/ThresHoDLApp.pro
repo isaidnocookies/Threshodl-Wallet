@@ -73,4 +73,4 @@ FORMS += \
 RESOURCES += \
     resources.qrc
 
-DISTFILES +=
+include(shared.pri)
