@@ -65,5 +65,7 @@
 }
 
 HEADERS += \
+    $$PWD/rpcmessagecreatemicrowalletpackagerequest.h
 
 SOURCES += \
+    $$PWD/rpcmessagecreatemicrowalletpackagerequest.cpp
