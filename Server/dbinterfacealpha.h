@@ -57,6 +57,7 @@ public:
     bool addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;
     bool addressValidate( const QString iAddress, const QByteArray iPublicKey ) override;
     bool addressDelete( const QString iAddress ) override;
+    QByteArray publicKeyForAddress(const QString iAddress) override;
 };
 
 #endif // DBALPHA_H

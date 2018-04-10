@@ -17,6 +17,7 @@ public:
     virtual bool addressCreate( const QString iAddress, const QByteArray iPublicKey )   = 0;
     virtual bool addressValidate( const QString iAddress, const QByteArray iPublicKey ) = 0;
     virtual bool addressDelete( const QString iAddress )                                = 0;
+    virtual QByteArray publicKeyForAddress(const QString iAddress)                      = 0;
 };
 
 #endif // DBINTERFACE_H

@@ -229,3 +229,31 @@ bool DBInterfaceAlpha::addressDelete(const QString iAddress)
 
     return lRet;
 }
+
+QByteArray DBInterfaceAlpha::publicKeyForAddress(const QString iAddress)
+{
+    QByteArray      lRet;
+    QSqlDatabase    lDB;
+
+    if( ! iAddress.isEmpty() ) {
+        if( _connectOrReconnectToDB(lDB) ) {
+            lDB.transaction();
+            QSqlQuery   lQuery(lDB);
+            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
+            lQuery.prepare( QStringLiteral("SELECT key FROM addresses WHERE address = :iAddress") );
+            lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
+
+            if( lQuery.exec() ) {
+                int         lKeyNo      = lQuery.record().indexOf(QStringLiteral("key"));
+
+                if( lQuery.first() ) {
+                    lRet = lQuery.value(lKeyNo).toByteArray();
+                }
+            }
+
+            _flushDB(lDB);
+        }
+    }
+
+    return lRet;
+}

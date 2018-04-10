@@ -21,4 +21,8 @@ RPCMessageCreateAccountReply::ReplyCode RPCMessageCreateAccountReply::replyCode(
 { return static_cast<RPCMessageCreateAccountReply::ReplyCode>(fieldValue(replyCodeKey()).toUInt()); }
 
 QString RPCMessageCreateAccountReply::create(const RPCMessageCreateAccountReply::ReplyCode iReplyCode, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
-{ return RPCMessage::toMessage( QList<RPCField>() << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }
+{
+    return RPCMessage::toMessage(
+                QList<RPCField>() << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
+                iUsername, iPrivateKey, iKeyEncoding );
+}
