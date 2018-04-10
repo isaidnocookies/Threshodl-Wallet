@@ -40,7 +40,8 @@ SOURCES += \
     sendtodarkview.cpp \
     darksendview.cpp \
     sendtobrightview.cpp \
-    darkreceiveview.cpp
+    darkreceiveview.cpp \
+    darkmicrowalletview.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -54,7 +55,8 @@ HEADERS += \
     sendtodarkview.h \
     darksendview.h \
     sendtobrightview.h \
-    darkreceiveview.h
+    darkreceiveview.h \
+    darkmicrowalletview.h
 
 FORMS += \
     mainwindow.ui \
@@ -65,7 +67,8 @@ FORMS += \
     sendtodarkview.ui \
     darksendview.ui \
     sendtobrightview.ui \
-    darkreceiveview.ui
+    darkreceiveview.ui \
+    darkmicrowalletview.ui
 
 RESOURCES += \
     resources.qrc

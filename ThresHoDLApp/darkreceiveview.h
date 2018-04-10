@@ -12,13 +12,10 @@ class DarkReceiveView : public QWidget
     Q_OBJECT
 
 public:
-    explicit DarkReceiveView(QWidget *parent = 0);
+    explicit DarkReceiveView(QWidget *parent = nullptr);
     ~DarkReceiveView();
 
     void setAddresses(QString iEmail, QString iAddress);
-
-private:
-    void createQrCode();
 
 private slots:
     void on_closeWindowButton_pressed();

@@ -35,14 +35,14 @@ Widget::Widget(QWidget *parent) :
 
     ui->statusLabel->setVisible(false);
 
-    BitcoinInterface    lBI;
+//    BitcoinInterface    lBI;
 
-    auto lWallets = lBI.createWallets();
-    if( lWallets.isEmpty() ) {
-        qFatal("Failed to generate a bitcoin wallet!");
-    }
+//    auto lWallets = lBI.createWallets();
+//    if( lWallets.isEmpty() ) {
+//        qFatal("Failed to generate a bitcoin wallet!");
+//    }
 
-    mBitcoinWallet = lWallets.takeFirst();
+//    mBitcoinWallet = lWallets.takeFirst();
 
     // Generate a cert so we get a pair of keys to use, we don't need the cert
     Certificate lThisCert;
@@ -75,6 +75,7 @@ void Widget::disconnectedFromServer()
 void Widget::failedToSendMessage()
 {
     qDebug() << "Failed to sent message.";
+    ui->goButton->setEnabled(true);
 }
 
 void Widget::sentMessage()
@@ -91,6 +92,7 @@ void Widget::receivedMessage()
 
     RPCMessageCreateAccountReply    lReply{lMessage};
     qDebug() << "Reply code:" << static_cast<int>(lReply.replyCode());
+    ui->goButton->setEnabled(true);
 }
 
 void Widget::socketError(QAbstractSocket::SocketError iError)

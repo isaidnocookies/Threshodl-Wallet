@@ -16,11 +16,8 @@ DarkReceiveView::DarkReceiveView(QWidget *parent) :
     ui->emailLineEdit->setStyleSheet(darkBackgroundStyleSheet());
 
     if (mEmailAddress.isEmpty() || mThreshodlAddress.isEmpty()) {
-        ui->qrCodeLabel->setText("?");
         ui->qrAddressLabel->setText("Please complete fields!");
         ui->qrEmailAddressLabel->setText("");
-    } else {
-        createQrCode();
     }
 }
 
@@ -40,21 +37,6 @@ void DarkReceiveView::setAddresses(QString iEmail, QString iAddress)
     if (!mThreshodlAddress.isEmpty()) {
         ui->addressLineEdit->setText(mThreshodlAddress);
     }
-
-    if (!mEmailAddress.isEmpty() && !mThreshodlAddress.isEmpty()) {
-        createQrCode();
-    }
-}
-
-void DarkReceiveView::createQrCode()
-{
-    mQrImage = new QImage();
-    *mQrImage = QrEncoder::createQrCode(QString("%1 - %2").arg(mThreshodlAddress).arg(mEmailAddress));
-    ui->qrCodeLabel->setPixmap(QPixmap::fromImage(*mQrImage));
-    ui->qrCodeLabel->setFixedSize(ui->qrCodeLabel->width(), ui->qrCodeLabel->width());
-    ui->qrCodeLabel->setText("");
-    ui->qrAddressLabel->setText(mThreshodlAddress);
-    ui->qrEmailAddressLabel->setText(mEmailAddress);
 }
 
 void DarkReceiveView::on_closeWindowButton_pressed()
@@ -66,11 +48,11 @@ void DarkReceiveView::on_closeWindowButton_pressed()
 void DarkReceiveView::on_updateQRCodePushButton_pressed()
 {
     if (ui->emailLineEdit->text().isEmpty() || ui->addressLineEdit->text().isEmpty()) {
-        ui->qrCodeLabel->setText("Please complete fields");
+        ui->warningLabel->setText("*Please complete all the fields");
     } else {
         mEmailAddress = ui->emailLineEdit->text();
         mThreshodlAddress = ui->addressLineEdit->text();
-        createQrCode();
         emit saveAddresses(mEmailAddress, mThreshodlAddress);
+        on_closeWindowButton_pressed();
     }
 }

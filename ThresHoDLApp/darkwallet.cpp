@@ -2,6 +2,7 @@
 #include "ui_darkwallet.h"
 
 #include "globalsandstyle.h"
+#include "qrencoder.h"
 
 #include <QScroller>
 #include <QFont>
@@ -13,31 +14,24 @@ DarkWallet::DarkWallet(QWidget *parent) :
     ui->setupUi(this);
 
     ui->sendButton->setStyleSheet(darkBackgroundStyleSheet());
-    ui->receiveButton->setStyleSheet(darkBackgroundStyleSheet());
     ui->withdrawToBrightWalletButton->setStyleSheet(darkBackgroundStyleSheet());
 
-    QFont lNormalFont = ui->microWalletListWidget->font();
-    QFont lBiggerFont = lNormalFont;
-    lBiggerFont.setBold(true);
-    lBiggerFont.setPointSize(20);
+    ui->qrPushButton->setStyleSheet(QString("background-color:white; border-radius:10px; margin:5px"));
+    ui->qrPushButton->setFixedSize(ui->qrPushButton->size().width(),ui->qrPushButton->size().height());
 
-    QScroller::grabGesture(ui->microWalletListWidget, QScroller::LeftMouseButtonGesture);
-
-    for (int i = 0; i < 200; i++) {
-        QString lRow = QString("0.%1\nmj55b5mdzD5jQaUFf9tY8E5kxkJ5Z7CJ21").arg(i);
-        ui->microWalletListWidget->insertItem(i, new QListWidgetItem());
-        ui->microWalletListWidget->item(i)->setTextAlignment(Qt::AlignHCenter);
-    }
+    checkToCreateQr();
 }
 
 void DarkWallet::setEmail(QString iEmail)
 {
     mEmailAddress = iEmail;
+    checkToCreateQr();
 }
 
 void DarkWallet::setAddress(QString iAddress)
 {
     mThreshodlAddress = iAddress;
+    checkToCreateQr();
 }
 
 DarkWallet::~DarkWallet()
@@ -51,6 +45,30 @@ void DarkWallet::saveAddresses(QString iEmail, QString iAddress)
     mThreshodlAddress = iAddress;
 
     emit saveAddressSettings(iEmail, iAddress);
+    checkToCreateQr();
+}
+
+void DarkWallet::createQrCode()
+{
+    mQrImage = new QImage();
+    *mQrImage = QrEncoder::createQrCode(QString("%1 - %2").arg(mThreshodlAddress).arg(mEmailAddress));
+
+    ui->qrPushButton->setIcon(QIcon(QPixmap::fromImage(*mQrImage)));
+    ui->addressLabel->setText(mThreshodlAddress);
+    ui->emailLabel->setText(mEmailAddress);
+
+    ui->qrPushButton->setText("");
+    ui->qrPushButton->setIconSize(QSize(ui->qrPushButton->size().width() - 10, ui->qrPushButton->size().width() - 10));
+    ui->qrPushButton->setStyleSheet(QString("background-color:white; border-radius:10px;"));
+}
+
+void DarkWallet::checkToCreateQr()
+{
+    if (!mEmailAddress.isEmpty() && !mThreshodlAddress.isEmpty()) {
+        createQrCode();
+    } else {
+        ui->qrPushButton->setText("?");
+    }
 }
 
 void DarkWallet::on_closeWindowButton_pressed()
@@ -67,7 +85,15 @@ void DarkWallet::on_sendButton_pressed()
     mDarkSendView->showMaximized();
 }
 
-void DarkWallet::on_receiveButton_pressed()
+void DarkWallet::on_withdrawToBrightWalletButton_pressed()
+{
+    mSendToDarkView = new SendToBrightView;
+
+    mSendToDarkView->show();
+    mSendToDarkView->showMaximized();
+}
+
+void DarkWallet::on_qrPushButton_pressed()
 {
     mDarkReceiveView = new DarkReceiveView;
 
@@ -78,10 +104,7 @@ void DarkWallet::on_receiveButton_pressed()
     mDarkReceiveView->showMaximized();
 }
 
-void DarkWallet::on_withdrawToBrightWalletButton_pressed()
+void DarkWallet::on_balancePushButton_pressed()
 {
-    mSendToDarkView = new SendToBrightView;
 
-    mSendToDarkView->show();
-    mSendToDarkView->showMaximized();
 }

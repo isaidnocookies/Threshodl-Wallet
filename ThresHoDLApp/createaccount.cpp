@@ -31,9 +31,16 @@ CreateAccount::CreateAccount(QWidget *parent) :
     connect( mConnection, &RPCConnection::sentTextMessage, this, &CreateAccount::sentMessage );
     connect( mConnection, &RPCConnection::textMessageReceived, this, &CreateAccount::receivedMessage );
 
-    mSslConfiguration = QSslConfiguration::defaultConfiguration();
-    mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{serverCert(),QSsl::Pem});
-    mConnection->setSslConfiguration(mSslConfiguration);
+    QFile lFile{QStringLiteral(":/ca.pem")};
+    if( lFile.open(QIODevice::ReadOnly) ) {
+        mSslConfiguration = QSslConfiguration::defaultConfiguration();
+        mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{lFile.readAll(),QSsl::Pem});
+
+        lFile.close();
+        mConnection->setSslConfiguration(mSslConfiguration);
+    }else{
+        qFatal("Failed to open CA cert.");
+    }
 
     // Generate a cert so we get a pair of keys to use, we don't need the cert
     Certificate lThisCert;
@@ -55,7 +62,7 @@ void CreateAccount::on_createAccountButton_pressed()
 //    return;
 
     if (!ui->usernameLineEdit->text().isEmpty()) {
-        QUrl lUrl = QUrl::fromUserInput(QStringLiteral("wss://10.10.0.77:4431"));
+        QUrl lUrl = QUrl::fromUserInput(QStringLiteral("wss://10.10.0.78:4431"));
         mConnection->open(lUrl);
         startProgressBarAndDisable();
     } else {
@@ -108,6 +115,7 @@ void CreateAccount::receivedMessage()
     switch(lReply.replyCode()) {
         case RPCMessageCreateAccountReply::Success:
             qDebug() << "Success";
+            emit createUserAccount(ui->usernameLineEdit->text(),mPrivateKey, mPublicKey);
             break;
         case RPCMessageCreateAccountReply::UsernameTaken:
             qDebug() << "Username Taken";

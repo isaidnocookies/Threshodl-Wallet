@@ -8,5 +8,6 @@
         <file alias="bright_btc">Resources/Images/bright_bitcoin.png</file>
         <file alias="dark_btc">Resources/Images/dark_bitcoin.png</file>
         <file alias="threshodl_logo">Resources/Images/threslogo.png</file>
+        <file alias="ca.pem">Resources/ca.pem</file>
     </qresource>
 </RCC>

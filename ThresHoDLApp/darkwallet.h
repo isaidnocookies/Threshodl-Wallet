@@ -24,11 +24,17 @@ public:
 public slots:
     void saveAddresses(QString iEmail, QString iAddress);
 
+private:
+    void createQrCode();
+    void checkToCreateQr();
+
 private slots:
     void on_closeWindowButton_pressed();
     void on_sendButton_pressed();
-    void on_receiveButton_pressed();
     void on_withdrawToBrightWalletButton_pressed();
+    void on_qrPushButton_pressed();
+
+    void on_balancePushButton_pressed();
 
 signals:
     void saveAddressSettings(QString oEmail, QString oAddress);
@@ -38,6 +44,7 @@ private:
     DarkSendView        *mDarkSendView;
     SendToBrightView    *mSendToDarkView;
     DarkReceiveView     *mDarkReceiveView;
+    QImage              *mQrImage;
 
     QString             mEmailAddress;
     QString             mThreshodlAddress;
