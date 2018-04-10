@@ -99,7 +99,9 @@ void MainWindow::on_darkButton_pressed()
 
    connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
    mDarkWalletView->setEmail(mAccountSettings->value(emailSetting()).toString());
-   mDarkWalletView->setAddress(mAccountSettings->value(addressSetting()).toString());
+
+//   mDarkWalletView->setAddress(mAccountSettings->value(addressSetting()).toString());
+   mDarkWalletView->setAddress(mActiveUser->getUsername());
 
    mDarkWalletView->setGeometry(QApplication::desktop()->screenGeometry());
    mDarkWalletView->showMaximized();

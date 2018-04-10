@@ -14,9 +14,7 @@ BrightWallet::BrightWallet(QWidget *parent) :
 
     ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
-
     ui->qrCodeLabel->setPixmap(QPixmap::fromImage(*mQrImage));
-
     ui->qrCodeLabel->setFixedSize(ui->qrAddressLabel->width() * 2, ui->qrAddressLabel->width() * 2);
 }
 

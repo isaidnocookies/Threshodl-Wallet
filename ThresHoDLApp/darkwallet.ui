@@ -209,7 +209,7 @@
         <string notr="true">color:white;</string>
        </property>
        <property name="text">
-        <string>?</string>
+        <string>(Click to Update)</string>
        </property>
        <property name="flat">
         <bool>true</bool>

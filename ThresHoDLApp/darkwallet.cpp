@@ -67,7 +67,7 @@ void DarkWallet::checkToCreateQr()
     if (!mEmailAddress.isEmpty() && !mThreshodlAddress.isEmpty()) {
         createQrCode();
     } else {
-        ui->qrPushButton->setText("?");
+        ui->qrPushButton->setText("(Click to Update)");
     }
 }
 

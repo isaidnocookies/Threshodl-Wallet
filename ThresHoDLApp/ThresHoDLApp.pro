@@ -29,6 +29,10 @@ DEFINES += ENABLE_RPCSERVER
 include (../Core/Core.pri)
 include (../QrCodeModule/QrCodeModule.pri)
 
+ios {
+    include (ios/plist.pri)
+}
+
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
@@ -41,7 +45,20 @@ SOURCES += \
     darksendview.cpp \
     sendtobrightview.cpp \
     darkreceiveview.cpp \
-    darkmicrowalletview.cpp
+    darkmicrowalletview.cpp \
+    darksendconfirm.cpp \
+    SmtpClient/emailaddress.cpp \
+    SmtpClient/mimeattachment.cpp \
+    SmtpClient/mimecontentformatter.cpp \
+    SmtpClient/mimefile.cpp \
+    SmtpClient/mimehtml.cpp \
+    SmtpClient/mimeinlinefile.cpp \
+    SmtpClient/mimemessage.cpp \
+    SmtpClient/mimemultipart.cpp \
+    SmtpClient/mimepart.cpp \
+    SmtpClient/mimetext.cpp \
+    SmtpClient/quotedprintable.cpp \
+    SmtpClient/smtpclient.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -56,7 +73,22 @@ HEADERS += \
     darksendview.h \
     sendtobrightview.h \
     darkreceiveview.h \
-    darkmicrowalletview.h
+    darkmicrowalletview.h \
+    darksendconfirm.h \
+    SmtpClient/emailaddress.h \
+    SmtpClient/mimeattachment.h \
+    SmtpClient/mimecontentformatter.h \
+    SmtpClient/mimefile.h \
+    SmtpClient/mimehtml.h \
+    SmtpClient/mimeinlinefile.h \
+    SmtpClient/mimemessage.h \
+    SmtpClient/mimemultipart.h \
+    SmtpClient/mimepart.h \
+    SmtpClient/mimetext.h \
+    SmtpClient/quotedprintable.h \
+    SmtpClient/smtpclient.h \
+    SmtpClient/smtpexports.h \
+    SmtpClient/SmtpMime
 
 FORMS += \
     mainwindow.ui \
@@ -68,9 +100,8 @@ FORMS += \
     darksendview.ui \
     sendtobrightview.ui \
     darkreceiveview.ui \
-    darkmicrowalletview.ui
+    darkmicrowalletview.ui \
+    darksendconfirm.ui
 
 RESOURCES += \
     resources.qrc
-
-include(shared.pri)
