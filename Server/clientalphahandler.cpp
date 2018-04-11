@@ -7,6 +7,8 @@
 
 #include "app.h"
 #include "digest.h"
+#include "walletgrinderalpha.h"
+#include "bitcoinwallet.h"
 
 #include <QDebug>
 
@@ -79,7 +81,41 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
 bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection, RPCMessage &iMessage)
 {
     if( authenticateMessage(iMessage) ) {
+        RPCMessageCreateMicroWalletPackageRequest   lRequest{iMessage};
 
+        if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
+            std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue());
+            std::vector<BValue>     lValues;
+            QStringList             lWalletValues;
+            QList<BitcoinWallet>    lBTCWallets;
+            QString                 lRawBTCTransaction  = QStringLiteral(
+                        "{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"createrawtransaction\",\"params\":\"[[{\"txid\":\"%1\",\"vout\":%2}],"
+                        ).arg(lRequest.txId()).arg(lRequest.vout());
+
+            if( lValuesPtr ) {
+                lValues = *lValuesPtr;
+
+                for( size_t lIndex = 0; lIndex < lValues.size(); lIndex++ ) {
+                    lWalletValues << QString::number(WalletGrinderAlpha::getValueFromBValue(lValues[lIndex]));
+                    lBTCWallets << BitcoinWallet::createNewBitcoinWallet();
+
+                    if( lIndex > 0 ) lRawBTCTransaction = lRawBTCTransaction.append(QStringLiteral(","));
+                    lRawBTCTransaction = lRawBTCTransaction.append( QStringLiteral("{\"%1\":%2}").arg(lBTCWallets[lIndex].address().constData()).arg(lWalletValues[lIndex]) );
+                }
+
+                if( ! lRequest.outputBalance().isEmpty() && lRequest.outputBalance().toDouble() > 0.0f ) {
+                    lRawBTCTransaction = lRawBTCTransaction.append( QStringLiteral(",{\"%1\":%2}").arg(lRequest.outputBalanceAddress()).arg(lRequest.outputBalance()) );
+                }
+
+                lRawBTCTransaction = lRawBTCTransaction.append(QStringLiteral("]}"));
+
+                delete lValuesPtr;
+            }else{
+                // Something bad happened
+            }
+        }else{
+            // Unknown crypto
+        }
     }
 
     return false;
