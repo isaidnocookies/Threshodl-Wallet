@@ -53,11 +53,16 @@ public:
     QString sqlType() const override;
 
     bool initDB() override;
+
     bool addressExists( const QString iAddress ) override;
     bool addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;
     bool addressValidate( const QString iAddress, const QByteArray iPublicKey ) override;
     bool addressDelete( const QString iAddress ) override;
     QByteArray publicKeyForAddress(const QString iAddress) override;
+
+    bool microWalletExists( const QString iMicroWalletId ) override;
+    bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
+    bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
 };
 
 #endif // DBALPHA_H

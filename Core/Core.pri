@@ -67,7 +67,9 @@
 }
 
 HEADERS += \
-    $$PWD/rpcmessagereassignmicrowalletsrequest.h
+    $$PWD/rpcmessagereassignmicrowalletsrequest.h \
+    $$PWD/rpcmessagereassignmicrowalletsreply.h
 
 SOURCES += \
-    $$PWD/rpcmessagereassignmicrowalletsrequest.cpp
+    $$PWD/rpcmessagereassignmicrowalletsrequest.cpp \
+    $$PWD/rpcmessagereassignmicrowalletsreply.cpp

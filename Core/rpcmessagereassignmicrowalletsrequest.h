@@ -6,17 +6,6 @@
 class RPCMessageReassignMicroWalletsRequest : public RPCMessage
 {
 public:
-    enum ReplyCode {
-        UnknownFailure                  = 0x0,
-        Success                         = 0x1,
-        OneOrMoreWalletsUnauthorized    = 0x2,
-        DestinationDoesNotExist         = 0x3,
-        SourceDoesNotExist              = 0x4,
-        InternalServerError1            = 0xA0,
-    };
-
-    typedef enum ReplyCode ReplyCode;
-
     RPCMessageReassignMicroWalletsRequest();
     RPCMessageReassignMicroWalletsRequest(const RPCMessage &iOther);
     RPCMessageReassignMicroWalletsRequest(const QString iMessage);
@@ -24,11 +13,16 @@ public:
     static QString commandValue();
     static QString destinationKey();
     static QString microWalletIdsKey();
-    static QString replyCodeKey();
+    static QString transactionIdKey();
 
     QString destination() const;
-    QString walletIds() const;
-    ReplyCode replyCode() const;
+    QStringList microWalletIds() const;
+    QString transactionId() const;          // Custom data passed back on the reply untouched
+
+    static QString create(
+            const QString iDestination, const QStringList iMicroWalletIds, const QString iTransactionId,
+            const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
+            );
 };
 
 #endif // RPCMESSAGEREASSIGNMICROWALLETSREQUEST_H

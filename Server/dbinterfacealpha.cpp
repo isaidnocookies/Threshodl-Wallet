@@ -92,7 +92,7 @@ bool DBInterfaceAlpha::initDB()
             else
                 throw __LINE__;
 
-            if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS escrow( rid integer PRIMARY KEY, walletid blob UNIQUE, owner text NOT NULL, payload blob )") ) )
+            if( lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS escrow( rid integer PRIMARY KEY, walletid text NOT NULL UNIQUE, owner text NOT NULL, payload blob )") ) )
                 lQuery.finish();
             else
                 throw __LINE__;
@@ -253,6 +253,105 @@ QByteArray DBInterfaceAlpha::publicKeyForAddress(const QString iAddress)
 
             _flushDB(lDB);
         }
+    }
+
+    return lRet;
+}
+
+bool DBInterfaceAlpha::microWalletExists(const QString iMicroWalletId)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() ) {
+
+        if( _connectOrReconnectToDB(lDB) ) {
+            lDB.transaction();
+            QSqlQuery   lQuery(lDB);
+            QVariant    lMicroWalletId    = QVariant{QString{iMicroWalletId.toLower()}};
+            lQuery.prepare( QStringLiteral("SELECT walletid FROM escrow WHERE walletid = :iMicroWalletId") );
+            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lMicroWalletId);
+
+            int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+
+            if( lQuery.exec() ) {
+                if( lQuery.first() ) {
+                    if( lQuery.value(lWalletIdNo).toString() == iMicroWalletId.toLower() ) {
+                        lRet = true;
+                    } else {
+                        // It does not exist, however we can not use it because there is a record using the name partially?
+                        qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                    }
+                }
+            }
+
+            _flushDB(lDB);
+        }
+    }
+
+    return lRet;
+}
+
+bool DBInterfaceAlpha::microWalletOwnershipCheck(const QString iMicroWalletId, const QString iAddress)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QVariant    lAddress    =   QVariant{iAddress.toLower()};
+        QVariant    lWalletId   =   QVariant{iMicroWalletId.toLower()};
+
+        lDB.transaction();
+
+        QSqlQuery   lQuery(lDB);
+        lQuery.prepare( QStringLiteral("SELECT walletid FROM escrow WHERE walletid = :iMicroWalletId AND owner = :iAddress") );
+        lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+        lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
+
+        int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+
+        if( lQuery.exec() ) {
+            if( lQuery.first() ) {
+                if( lQuery.value(lWalletIdNo).toString() == iMicroWalletId.toLower() ) {
+                    lRet = true;
+                } else {
+                    // It does not exist, however we can not use it because there is a record using the name partially?
+                    qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                }
+            }
+        }
+
+        _flushDB(lDB);
+    }
+
+    return lRet;
+}
+
+bool DBInterfaceAlpha::microWalletChangeOwnership(const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iFromAddress.isEmpty() && ! iToAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QVariant    lFromAddress    =   QVariant{iFromAddress.toLower()};
+        QVariant    lToAddress      =   QVariant{iToAddress.toLower()};
+        QVariant    lWalletId       =   QVariant{iMicroWalletId.toLower()};
+
+        lDB.transaction();
+
+        QSqlQuery   lQuery(lDB);
+        lQuery.prepare( QStringLiteral("UPDATE escrow SET owner = :iToAddress WHERE walletid = :iMicroWalletId AND owner = :iFromAddress") );
+        lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+        lQuery.bindValue(QStringLiteral(":iToAddress"), lToAddress);
+        lQuery.bindValue(QStringLiteral(":iFromAddress"), lFromAddress);
+
+
+        if( lQuery.exec() ) {
+            lQuery.finish();
+            lRet = true;
+        }
+
+        _flushDB(lDB);
     }
 
     return lRet;
