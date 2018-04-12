@@ -26,6 +26,8 @@ BitcoinWallet::BitcoinWallet() : Wallet()
 
 BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
 {
+    __init();
+
     const btc_chainparams *     lChain              = &btc_chainparams_main;
 
     switch( iChainType ) {
