@@ -65,3 +65,9 @@
         $$PWD/rpcmessages.h \
         $$PWD/rpcmessages.cpp
 }
+
+HEADERS += \
+    $$PWD/rpcmessagereassignmicrowalletsrequest.h
+
+SOURCES += \
+    $$PWD/rpcmessagereassignmicrowalletsrequest.cpp
