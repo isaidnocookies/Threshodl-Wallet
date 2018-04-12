@@ -1,5 +1,7 @@
 #include "bitcoinwallet.h"
 
+#include <QMutex>
+
 extern "C" {
 #include <btc/chainparams.h>
 #include <btc/ecc.h>
@@ -7,6 +9,20 @@ extern "C" {
 }
 
 #define     kBTCStringBufferSize    128
+
+static QMutex       sInitLock;
+static bool         sInitDone   = false;
+
+inline static void __init() {
+    QMutexLocker l{&sInitLock};
+    if( ! sInitDone ) {
+        btc_ecc_start();
+        sInitDone = true;
+    }
+}
+
+BitcoinWallet::BitcoinWallet() : Wallet()
+{ __init(); }
 
 BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
 {

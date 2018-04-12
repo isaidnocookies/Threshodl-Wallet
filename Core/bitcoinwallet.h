@@ -7,7 +7,7 @@
 class BitcoinWallet : public Wallet
 {
 public:
-    BitcoinWallet() : Wallet() { }
+    BitcoinWallet();
     virtual ~BitcoinWallet() { }
 
     enum ChainType {
