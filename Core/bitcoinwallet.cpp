@@ -24,6 +24,15 @@ inline static void __init() {
 BitcoinWallet::BitcoinWallet() : Wallet()
 { __init(); }
 
+BitcoinWallet::BitcoinWallet(const QByteArray iData) : Wallet(iData)
+{ __init(); }
+
+BitcoinWallet::BitcoinWallet(const Wallet &iOther) : Wallet(iOther)
+{ __init(); }
+
+BitcoinWallet::BitcoinWallet(const WalletDataCore &iOther) : Wallet(iOther)
+{ __init(); }
+
 BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
 {
     __init();
@@ -54,6 +63,8 @@ BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
 
 BitcoinWallet BitcoinWallet::fromWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, ChainType iChainType)
 {
+    __init();
+
     const btc_chainparams *     lChain              = &btc_chainparams_main;
 
     switch( iChainType ) {

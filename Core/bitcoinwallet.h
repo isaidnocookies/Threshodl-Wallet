@@ -8,6 +8,10 @@ class BitcoinWallet : public Wallet
 {
 public:
     BitcoinWallet();
+    BitcoinWallet(const QByteArray iData);
+    BitcoinWallet(const Wallet &iOther);
+    BitcoinWallet(const WalletDataCore &iOther);
+
     virtual ~BitcoinWallet() { }
 
     enum ChainType {
