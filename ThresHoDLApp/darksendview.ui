@@ -102,7 +102,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="availableBalanceLabel">
        <property name="styleSheet">
         <string notr="true">color:white;</string>
        </property>
@@ -125,7 +125,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="amountLineEdit"/>
+      <widget class="QLineEdit" name="amountLineEdit">
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_5">
@@ -138,7 +142,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="addressLineEdit"/>
+      <widget class="QLineEdit" name="addressLineEdit">
+       <property name="text">
+        <string>chris</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_6">
@@ -151,7 +159,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="emailAddressLineEdit"/>
+      <widget class="QLineEdit" name="emailAddressLineEdit">
+       <property name="text">
+        <string>isaidnocookies@gmail.com</string>
+       </property>
+      </widget>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -208,6 +220,13 @@
      </item>
      <item>
       <widget class="QLabel" name="sendConfirmationLabel">
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="styleSheet">
         <string notr="true">color:white;</string>
        </property>

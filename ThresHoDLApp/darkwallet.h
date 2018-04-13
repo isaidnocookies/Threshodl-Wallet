@@ -2,10 +2,13 @@
 #define DARKWALLET_H
 
 #include <QWidget>
+#include <QMap>
 
 #include "darksendview.h"
 #include "sendtobrightview.h"
 #include "darkreceiveview.h"
+#include "darkmicrowalletview.h"
+#include "useraccount.h"
 
 namespace Ui {
 class DarkWallet;
@@ -19,6 +22,8 @@ public:
     explicit DarkWallet(QWidget *parent = nullptr);
     void setEmail(QString iEmail);
     void setAddress(QString iAddress);
+
+    void setActiveUser(UserAccount &iActiveUser);
     ~DarkWallet();
 
 public slots:
@@ -40,14 +45,17 @@ signals:
     void saveAddressSettings(QString oEmail, QString oAddress);
 
 private:
-    Ui::DarkWallet      *ui;
-    DarkSendView        *mDarkSendView;
-    SendToBrightView    *mSendToDarkView;
-    DarkReceiveView     *mDarkReceiveView;
-    QImage              *mQrImage;
+    Ui::DarkWallet          *ui;
+    DarkSendView            *mDarkSendView;
+    SendToBrightView        *mSendToDarkView;
+    DarkReceiveView         *mDarkReceiveView;
+    DarkMicroWalletView     *mDarkMicroWalletView;
+    QImage                  *mQrImage;
 
-    QString             mEmailAddress;
-    QString             mThreshodlAddress;
+    QString                 mEmailAddress;
+    QString                 mThreshodlAddress;
+
+    UserAccount             *mActiveUser;
 };
 
 #endif // DARKWALLET_H

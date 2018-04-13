@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+#include "globalsandstyle.h"
+#include "qrreader.h"
+
 namespace Ui {
 class BrightSendView;
 }
@@ -17,9 +20,14 @@ public:
 
 private slots:
     void on_closePushButton_pressed();
+    void on_scanQrPushButton_pressed();
+
+public slots:
+    void getCameraCode(QString iCode);
 
 private:
-    Ui::BrightSendView *ui;
+    Ui::BrightSendView  *ui;
+    QrReader            *mQrReaderView;
 };
 
 #endif // BRIGHTSENDVIEW_H

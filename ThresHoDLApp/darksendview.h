@@ -1,14 +1,18 @@
 #ifndef DARKSENDVIEW_H
 #define DARKSENDVIEW_H
 
+#include "rpcconnection.h"
+#include "darksendconfirm.h"
+#include "qrreader.h"
+#include "useraccount.h"
+
 #include <QWidget>
 #include <QDebug>
 #include <QSslConfiguration>
 #include <QSslCertificate>
 #include <QSslKey>
-
-#include "rpcconnection.h"
-#include "darksendconfirm.h"
+#include <QJsonObject>
+#include <QJsonDocument>
 
 namespace Ui {
 class DarkSendView;
@@ -21,6 +25,7 @@ class DarkSendView : public QWidget
 public:
     explicit DarkSendView(QWidget *parent = nullptr);
     void setEmail(QString iEmail);
+    void setActiveUser(UserAccount *iActiveUser);
     ~DarkSendView();
 
 private slots:
@@ -43,15 +48,20 @@ private slots:
 
 public slots:
     void sendConfirmation(bool iSuccess);
+    void getQrCode(QString iData);
 
 private:
     Ui::DarkSendView    *ui;
     RPCConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
     DarkSendConfirm     *mDarkSendConfirmationView;
+    QrReader            *mQrReaderView;
+    UserAccount         *mActiveUser;
 
     void stopProgressBarAndEnable();
     void startProgressBarAndDisable();
+
+    QByteArray getAttachmentPackage();
 };
 
 #endif // DARKSENDVIEW_H

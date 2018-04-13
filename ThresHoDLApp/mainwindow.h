@@ -5,10 +5,11 @@
 #include "useraccount.h"
 #include "brightwallet.h"
 #include "darkwallet.h"
+#include "notificationsandsettingsview.h"
+#include "darkwalletimportview.h"
 
 #include <QMainWindow>
 #include <QLabel>
-#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -22,22 +23,31 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    Q_INVOKABLE void handleFileUrlReceived(const QUrl &url);
+
 public slots:
-    void createAccountComplete(QString iUsername, QString iPriv, QString iPub);
+    void createAccountComplete(QString iUsername, QByteArray iPriv, QByteArray iPub);
     void makeMaximized();
     void saveAddressInSettings(QString iEmail, QString iAddress);
 
 private slots:
     void on_brightButton_pressed();
     void on_darkButton_pressed();
+    void on_notificationPushButton_pressed();
+    void brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
 
 private:
-    Ui::MainWindow  *ui;
-    QSettings       *mAccountSettings;
-    CreateAccount   *mCreateAccount;
-    UserAccount     *mActiveUser;
-    BrightWallet    *mBrightWalletView;
-    DarkWallet      *mDarkWalletView;
+    Ui::MainWindow                  *ui;
+    CreateAccount                   *mCreateAccount;
+    BrightWallet                    *mBrightWalletView;
+    DarkWallet                      *mDarkWalletView;
+    NotificationsAndSettingsView    *mNotificationView;
+    DarkWalletImportView            *mDarkImportView;
+
+    UserAccount                     *mActiveUser;
+
+    void addNotificationToSettings (QDate iDate, QString iNotification);
+    void setUI();
 };
 
 #endif // MAINWINDOW_H

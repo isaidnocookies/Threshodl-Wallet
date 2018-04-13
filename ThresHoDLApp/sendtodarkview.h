@@ -2,6 +2,7 @@
 #define SENDTODARKVIEW_H
 
 #include "rpcconnection.h"
+#include "bitcoinwallet.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -21,6 +22,9 @@ public:
     explicit SendToDarkView(QWidget *parent = 0);
     ~SendToDarkView();
 
+    void setBalance(double iBalance);
+    void setValues(QByteArray iPriv, QString iUsername);
+
 private slots:
     void on_closeButton_pressed();
     void on_convertButton_pressed();
@@ -32,16 +36,26 @@ private slots:
     void receivedMessage();
     void socketError(QAbstractSocket::SocketError iError);
     void sslErrors(const QList<QSslError> iErrors);
-
     void on_confirmCheckBox_stateChanged(int arg1);
+
+signals:
+    void addMicroWalletsToAccount (QList<BitcoinWallet> oWallets);
+    void updateBrightBalance (double iAmountToDeduct);
+    void brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
 
 private:
     Ui::SendToDarkView *ui;
     RPCConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
 
+    double              mBalance;
+    QByteArray          mPrivateKey;
+    QString             mUsername;
+
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
+
+    void parseBitcoinPackage (QByteArray iData);
 };
 
 #endif // SENDTODARKVIEW_H

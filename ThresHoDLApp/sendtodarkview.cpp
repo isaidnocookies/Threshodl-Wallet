@@ -2,6 +2,10 @@
 #include "ui_sendtodarkview.h"
 
 #include "globalsandstyle.h"
+#include "certificate.h"
+#include "encryptionkey.h"
+
+#include "rpcmessagecreatemicrowalletpackagerequest.h"
 
 SendToDarkView::SendToDarkView(QWidget *parent) :
     QWidget(parent),
@@ -23,11 +27,34 @@ SendToDarkView::SendToDarkView(QWidget *parent) :
     connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &SendToDarkView::failedToSendMessage );
     connect( mConnection, &RPCConnection::sentTextMessage, this, &SendToDarkView::sentMessage );
     connect( mConnection, &RPCConnection::textMessageReceived, this, &SendToDarkView::receivedMessage );
+
+    QFile lFile{QStringLiteral(":/ca.pem")};
+    if( lFile.open(QIODevice::ReadOnly) ) {
+        mSslConfiguration = QSslConfiguration::defaultConfiguration();
+        mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{lFile.readAll(),QSsl::Pem});
+
+        lFile.close();
+        mConnection->setSslConfiguration(mSslConfiguration);
+    }else{
+        qFatal("Failed to open CA cert.");
+    }
 }
 
 SendToDarkView::~SendToDarkView()
 {
     delete ui;
+}
+
+void SendToDarkView::setBalance(double iBalance)
+{
+    mBalance = iBalance;
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance));
+}
+
+void SendToDarkView::setValues(QByteArray iPriv, QString iUsername)
+{
+    mUsername = iUsername;
+    mPrivateKey = iPriv;
 }
 
 void SendToDarkView::on_closeButton_pressed()
@@ -40,6 +67,9 @@ void SendToDarkView::on_convertButton_pressed()
 {
     if (ui->confirmCheckBox->isChecked()) {
         // Allow transfer
+        QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
+        mConnection->open(lUrl);
+        startProgressBarAndDisable();
     } else {
         // Don't allow
         ui->warningLabelForCheck->setText("*REQUIRED");
@@ -49,7 +79,7 @@ void SendToDarkView::on_convertButton_pressed()
 void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
-//    mConnection->sendTextMessage(RPCMessageCreateAccountRequest::create(mPublicKey,ui->usernameLineEdit->text(),mPrivateKey));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::create("BTC", ui->amountLineEdit->text(), mUsername, mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -83,6 +113,8 @@ void SendToDarkView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
+
+    ui->warningLabel->setText(lMessage);
 //    RPCMessageCreateAccountReply    lReply{lMessage};
 
 //    switch(lReply.replyCode()) {
@@ -116,6 +148,8 @@ void SendToDarkView::startProgressBarAndDisable()
     ui->progressBar->setVisible(true);
     ui->convertButton->setEnabled(false);
     ui->amountLineEdit->setEnabled(false);
+    ui->closeButton->setEnabled(false);
+    ui->confirmCheckBox->setEnabled(false);
 }
 
 void SendToDarkView::stopProgressBarAndEnable()
@@ -123,6 +157,22 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->progressBar->setVisible(false);
     ui->convertButton->setEnabled(true);
     ui->amountLineEdit->setEnabled(true);
+    ui->closeButton->setEnabled(true);
+    ui->confirmCheckBox->setEnabled(true);
+}
+
+void SendToDarkView::parseBitcoinPackage(QByteArray iData)
+{
+    double lTotalDarkCoin = 0;
+    double lTotalBrightCoin = 0;
+
+    ui->warningLabel->setText(QString(iData));
+    // DO MORE STUFFS
+
+//    lTotalBrightCoin = ui->amountLineEdit->text().toDouble();
+
+    emit updateBrightBalance(lTotalBrightCoin);
+    emit brightToDarkCompleted(lTotalBrightCoin, QList<BitcoinWallet>());
 }
 
 void SendToDarkView::on_confirmCheckBox_stateChanged(int arg1)

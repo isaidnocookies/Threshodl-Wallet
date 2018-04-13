@@ -2,6 +2,7 @@
 #define BITCOINWALLET_H
 
 #include "wallet.h"
+
 #include <QSharedPointer>
 
 class BitcoinWallet : public Wallet

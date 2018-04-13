@@ -58,7 +58,10 @@ SOURCES += \
     SmtpClient/mimepart.cpp \
     SmtpClient/mimetext.cpp \
     SmtpClient/quotedprintable.cpp \
-    SmtpClient/smtpclient.cpp
+    SmtpClient/smtpclient.cpp \
+    notificationsandsettingsview.cpp \
+    darkwalletimportview.cpp \
+    serializer.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -88,7 +91,10 @@ HEADERS += \
     SmtpClient/quotedprintable.h \
     SmtpClient/smtpclient.h \
     SmtpClient/smtpexports.h \
-    SmtpClient/SmtpMime
+    SmtpClient/SmtpMime \
+    notificationsandsettingsview.h \
+    darkwalletimportview.h \
+    serializer.h
 
 FORMS += \
     mainwindow.ui \
@@ -101,7 +107,9 @@ FORMS += \
     sendtobrightview.ui \
     darkreceiveview.ui \
     darkmicrowalletview.ui \
-    darksendconfirm.ui
+    darksendconfirm.ui \
+    notificationsandsettingsview.ui \
+    darkwalletimportview.ui
 
 RESOURCES += \
     resources.qrc

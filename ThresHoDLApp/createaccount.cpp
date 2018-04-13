@@ -62,7 +62,7 @@ void CreateAccount::on_createAccountButton_pressed()
     return;
 
     if (!ui->usernameLineEdit->text().isEmpty()) {
-        QUrl lUrl = QUrl::fromUserInput(QStringLiteral("wss://10.10.0.78:4431"));
+        QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
         mConnection->open(lUrl);
         startProgressBarAndDisable();
     } else {

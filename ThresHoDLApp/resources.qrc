@@ -9,5 +9,6 @@
         <file alias="dark_btc">Resources/Images/dark_bitcoin.png</file>
         <file alias="threshodl_logo">Resources/Images/threslogo.png</file>
         <file alias="ca.pem">../Certificates/ca.pem</file>
+        <file alias="notifications_and_settings">Resources/Images/notificationAndSettings.png</file>
     </qresource>
 </RCC>

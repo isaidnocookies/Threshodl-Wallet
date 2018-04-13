@@ -3,6 +3,7 @@
 
 #include "globalsandstyle.h"
 #include "qrencoder.h"
+#include "serializer.h"
 
 #include <QScroller>
 #include <QFont>
@@ -34,6 +35,13 @@ void DarkWallet::setAddress(QString iAddress)
     checkToCreateQr();
 }
 
+void DarkWallet::setActiveUser(UserAccount &iActiveUser)
+{
+    mActiveUser = &iActiveUser;
+
+    ui->balancePushButton->setText(QString("%1").arg(mActiveUser->getDarkBalance()));
+}
+
 DarkWallet::~DarkWallet()
 {
     delete ui;
@@ -51,7 +59,8 @@ void DarkWallet::saveAddresses(QString iEmail, QString iAddress)
 void DarkWallet::createQrCode()
 {
     mQrImage = new QImage();
-    *mQrImage = QrEncoder::createQrCode(QString("%1 - %2").arg(mThreshodlAddress).arg(mEmailAddress));
+    QByteArray lQrCodeData = Serializer::serializeDarkQrCode(mThreshodlAddress, mEmailAddress);
+    *mQrImage = QrEncoder::createQrCode(QString(lQrCodeData));
 
     ui->qrPushButton->setIcon(QIcon(QPixmap::fromImage(*mQrImage)));
     ui->addressLabel->setText(mThreshodlAddress);
@@ -106,5 +115,9 @@ void DarkWallet::on_qrPushButton_pressed()
 
 void DarkWallet::on_balancePushButton_pressed()
 {
+    mDarkMicroWalletView = new DarkMicroWalletView;
+    mDarkMicroWalletView->setMicroWallets(mActiveUser->getDarkWallets());
 
+    mDarkMicroWalletView->show();
+    mDarkMicroWalletView->showMaximized();
 }

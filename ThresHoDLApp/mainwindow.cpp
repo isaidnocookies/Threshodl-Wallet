@@ -9,6 +9,9 @@
 #include <QObject>
 #include <QDebug>
 #include <QPropertyAnimation>
+#include <QDesktopServices>
+#include <QFileInfo>
+#include <QJsonArray>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,36 +19,26 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QCoreApplication::setOrganizationDomain(theDomain());
-    QCoreApplication::setApplicationName(theApplicationName());
-    QCoreApplication::setOrganizationName(theOrganization());
-    mAccountSettings = new QSettings;
-
     ui->centralWidget->setGeometry(QApplication::desktop()->screenGeometry());
 
-//    ui->brightButton->setStyleSheet(mainButtonStyle());
-//    ui->darkButton->setStyleSheet(mainButtonStyle());
+    QDesktopServices::setUrlHandler("file", this, "handleFileUrlReceived");
 
     ui->logoLabel->setText("");
     ui->logoLabel->setPixmap(QPixmap::fromImage(QImage(":/threshodl_logo")));
     ui->logoLabel->setPixmap(ui->logoLabel->pixmap()->scaledToWidth(QApplication::desktop()->screenGeometry().width(),Qt::SmoothTransformation));
 
+    mActiveUser = new UserAccount;
 
-
-    if ( mAccountSettings->contains(usernameSetting()) ) { // login
-        QString lUsername = mAccountSettings->value(usernameSetting()).toString();
-        QString lPublic = mAccountSettings->value(publicKeySetting()).toString();
-        QString lPrivate = mAccountSettings->value(privateKeySetting()).toString();
-        mCreateAccount = new CreateAccount;
-        createAccountComplete(lUsername, lPublic, lPrivate);
-    } else { // create user
-        this->showNormal();
-
+    if (mActiveUser->isNewAccount()) {
         mCreateAccount = new CreateAccount;
         connect(mCreateAccount, &CreateAccount::createUserAccount, this, &MainWindow::createAccountComplete);
 
+        this->showNormal();
+
         mCreateAccount->showMaximized();
         mCreateAccount->show();
+    } else {
+        setUI();
     }
 }
 
@@ -54,22 +47,59 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::createAccountComplete(QString iUsername, QString iPriv, QString iPub)
+void MainWindow::handleFileUrlReceived(const QUrl &url)
 {
-    mActiveUser = new UserAccount(iUsername);
-    mActiveUser->setKeys(iPub, iPriv);
+    QString incomingUrl = url.toString();
+    if(incomingUrl.isEmpty()) {
+        qWarning() << "setFileUrlReceived: we got an empty URL";
+        return;
+    }
+    QString myUrl;
+    if(incomingUrl.startsWith("file://")) {
+        myUrl= incomingUrl.right(incomingUrl.length()-7);
+        qDebug() << "QFile needs this URL: " << myUrl;
+    } else {
+        myUrl= incomingUrl;
+    }
 
-    mAccountSettings->setValue(usernameSetting(), iUsername);
-    mAccountSettings->setValue(publicKeySetting(), iPub);
-    mAccountSettings->setValue(privateKeySetting(), iPriv);
+    QFileInfo fileInfo = QFileInfo(myUrl);
+    if(fileInfo.exists()) {
+        qDebug() << "Received! YA BITCHES!!";
+        addNotificationToSettings(QDate::currentDate(), "Import Micro-Wallets Successful -- sort of");
 
-    this->showMaximized();
+        QFile lPackage(myUrl);
+        QByteArray lPackageArray;
 
-    mCreateAccount->showNormal();
+        if (!lPackage.open(QIODevice::ReadOnly)) {
+            qDebug() << "Failed to open package";
+        } else {
+            lPackageArray = lPackage.readAll();
+            QJsonDocument lDoc = QJsonDocument::fromJson(lPackageArray);
+            QJsonObject lObject = lDoc.object();
+            QJsonArray lArray = lObject["Wallets"].toArray();
+
+            mDarkImportView = new DarkWalletImportView;
+            mDarkImportView->setFields(lObject["Amount"].toString(), lObject["Notes"].toString());
+
+            mDarkImportView->show();
+            mDarkImportView->showMaximized();
+
+            qDebug() << lPackageArray;
+        }
+
+    } else {
+        qDebug() << "setFileUrlReceived: FILE does NOT exist ";
+    }
+}
+
+void MainWindow::createAccountComplete(QString iUsername, QByteArray iPriv, QByteArray iPub)
+{
+    mActiveUser->createNewAccount(iUsername, iPriv, iPub);
+
     mCreateAccount->hide();
     mCreateAccount->deleteLater();
 
-    ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
+    setUI();
 }
 
 void MainWindow::makeMaximized()
@@ -79,18 +109,19 @@ void MainWindow::makeMaximized()
 
 void MainWindow::saveAddressInSettings(QString iEmail, QString iAddress)
 {
-    mAccountSettings->setValue(emailSetting(), iEmail);
-    mAccountSettings->setValue(addressSetting(), iAddress);
+    mActiveUser->setAddresses(iEmail, iAddress);
 }
 
 void MainWindow::on_brightButton_pressed()
 {
     mBrightWalletView = new BrightWallet;
 
-    mBrightWalletView->setGeometry(QApplication::desktop()->screenGeometry());
-    mBrightWalletView->showMaximized();
-    mBrightWalletView->raise();
+    connect (mBrightWalletView, &BrightWallet::brightToDarkCompleted, this, &MainWindow::brightToDarkCompleted);
+
+    mBrightWalletView->setAddress(mActiveUser->getBrightWallet().address());
+    mBrightWalletView->setActiveUser(*mActiveUser);
     mBrightWalletView->show();
+    mBrightWalletView->showMaximized();
 }
 
 void MainWindow::on_darkButton_pressed()
@@ -98,13 +129,52 @@ void MainWindow::on_darkButton_pressed()
    mDarkWalletView = new DarkWallet;
 
    connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
-   mDarkWalletView->setEmail(mAccountSettings->value(emailSetting()).toString());
-
-//   mDarkWalletView->setAddress(mAccountSettings->value(addressSetting()).toString());
+   mDarkWalletView->setEmail(mActiveUser->getEmail());
    mDarkWalletView->setAddress(mActiveUser->getUsername());
+   mDarkWalletView->setActiveUser(*mActiveUser);
 
-   mDarkWalletView->setGeometry(QApplication::desktop()->screenGeometry());
    mDarkWalletView->showMaximized();
-   mDarkWalletView->raise();
    mDarkWalletView->show();
+}
+
+void MainWindow::on_notificationPushButton_pressed()
+{
+    mNotificationView = new NotificationsAndSettingsView;
+
+    mNotificationView->setActiveUser(*mActiveUser);
+    mNotificationView->hide();
+    mNotificationView->showMaximized();
+}
+
+void MainWindow::brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets)
+{
+    double lDarkTotal = 0;
+    for (auto dw : iDarkWallets) {
+        mActiveUser->addMicroWallet(dw);
+        lDarkTotal += dw.value().toDouble();
+    }
+
+    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getDarkBalance()));
+
+    mActiveUser->setBrightBalance(mActiveUser->getBrightBalance() - lBrightAmount);
+    ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getBrightBalance()));
+    ui->btcTotalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance() + mActiveUser->getDarkBalance()));
+
+    addNotificationToSettings(QDate::currentDate(), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal));
+}
+
+void MainWindow::addNotificationToSettings(QDate iDate, QString iNotification)
+{
+    QList<QVariant> lNotifications;
+
+    mActiveUser->addNotification(iDate.toString(myDateFormat()), iNotification);
+}
+
+void MainWindow::setUI()
+{
+    ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
+
+    ui->btcTotalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance() + mActiveUser->getDarkBalance()));
+    ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getBrightBalance()));
+    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getDarkBalance()));
 }

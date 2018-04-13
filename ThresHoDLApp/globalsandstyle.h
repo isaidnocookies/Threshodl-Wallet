@@ -2,6 +2,9 @@
 #define GLOBALSANDSTYLE_H
 
 #include <QString>
+#include <QStringLiteral>
+
+#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
 
 inline QString theOrganization() {              return QString("ThreeB"); }
 inline QString theApplicationName() {           return QString("Threshodl"); }
@@ -10,9 +13,21 @@ inline QString theDomain() {                    return QString("threshodl.com");
 inline QString usernameSetting() {              return QString("usernameSetting"); }
 inline QString publicKeySetting() {             return QString("publicKeySetting"); }
 inline QString privateKeySetting() {            return QString("privateKeySetting"); }
+inline QString brightWalletsSetting() {         return QString("brightWalletsSetting"); }
+inline QString darkWalletsSetting() {           return QString("darkWalletsSetting"); }
 
 inline QString emailSetting() {                 return QString("emailSetting"); }
 inline QString addressSetting() {               return QString("addressSetting"); }
+
+inline QString notificationsSetting() {         return QString("notificationsSettings"); }
+
+inline QString myDateFormat() {                 return QString("d.M.yy"); }
+
+inline QString jsonPrivateKey() {               return QString("jsonPrivateKey"); }
+inline QString jsonPublicKey() {                return QString("jsonPublicKey"); }
+inline QString jsonAmount() {                   return QString("jsonAmount"); }
+inline QString jsonEmailAddress() {             return QString("jsonEmail"); }
+inline QString jsonThreshodlAddress() {         return QString("jsonThreshodlAddress"); }
 
 //03a9f4
 //old light blue - 4c586F
