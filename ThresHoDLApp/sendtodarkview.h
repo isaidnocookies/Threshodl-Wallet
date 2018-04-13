@@ -19,7 +19,7 @@ class SendToDarkView : public QWidget
     Q_OBJECT
 
 public:
-    explicit SendToDarkView(QWidget *parent = 0);
+    explicit SendToDarkView(QWidget *parent = nullptr);
     ~SendToDarkView();
 
     void setBalance(double iBalance);
@@ -41,7 +41,7 @@ private slots:
 signals:
     void addMicroWalletsToAccount (QList<BitcoinWallet> oWallets);
     void updateBrightBalance (double iAmountToDeduct);
-    void brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
+    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
 
 private:
     Ui::SendToDarkView *ui;

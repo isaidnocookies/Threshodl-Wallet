@@ -38,7 +38,6 @@ void DarkWallet::setAddress(QString iAddress)
 void DarkWallet::setActiveUser(UserAccount &iActiveUser)
 {
     mActiveUser = &iActiveUser;
-
     ui->balancePushButton->setText(QString("%1").arg(mActiveUser->getDarkBalance()));
 }
 
@@ -54,6 +53,11 @@ void DarkWallet::saveAddresses(QString iEmail, QString iAddress)
 
     emit saveAddressSettings(iEmail, iAddress);
     checkToCreateQr();
+}
+
+void DarkWallet::updateBalance()
+{
+    ui->balancePushButton->setText(QString::number(mActiveUser->getDarkBalance()));
 }
 
 void DarkWallet::createQrCode()
@@ -89,6 +93,9 @@ void DarkWallet::on_closeWindowButton_pressed()
 void DarkWallet::on_sendButton_pressed()
 {
     mDarkSendView = new DarkSendView;
+
+    mDarkSendView->setActiveUser(mActiveUser);
+    connect(mDarkSendView, &DarkSendView::updateBalance, this, &DarkWallet::updateBalance);
 
     mDarkSendView->show();
     mDarkSendView->showMaximized();

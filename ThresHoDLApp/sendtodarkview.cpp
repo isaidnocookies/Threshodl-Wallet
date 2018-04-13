@@ -6,6 +6,7 @@
 #include "encryptionkey.h"
 
 #include "rpcmessagecreatemicrowalletpackagerequest.h"
+#include "rpcmessagecreatemicrowalletpackagereply.h"
 
 SendToDarkView::SendToDarkView(QWidget *parent) :
     QWidget(parent),
@@ -79,7 +80,8 @@ void SendToDarkView::on_convertButton_pressed()
 void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::create("BTC", ui->amountLineEdit->text(), mUsername, mPrivateKey));
+
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","","myTxid",mUsername,mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -113,14 +115,24 @@ void SendToDarkView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-
     ui->warningLabel->setText(lMessage);
-//    RPCMessageCreateAccountReply    lReply{lMessage};
+
+    RPCMessageCreateMicroWalletPackageReply lReply {lMessage};
+
+    QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+
+    if (lCommand != RPCMessageCreateMicroWalletPackageReply::commandValue()) {
+        //not for me
+    } else {
+
+        //compare transactionID for reply
 
 //    switch(lReply.replyCode()) {
 //        default:
 //            qDebug() << "FUCK";
 //    }
+    }
+
 }
 
 void SendToDarkView::socketError(QAbstractSocket::SocketError iError)
@@ -172,7 +184,7 @@ void SendToDarkView::parseBitcoinPackage(QByteArray iData)
 //    lTotalBrightCoin = ui->amountLineEdit->text().toDouble();
 
     emit updateBrightBalance(lTotalBrightCoin);
-    emit brightToDarkCompleted(lTotalBrightCoin, QList<BitcoinWallet>());
+    emit brightToDarkCompleted(true, lTotalBrightCoin, QList<BitcoinWallet>());
 }
 
 void SendToDarkView::on_confirmCheckBox_stateChanged(int arg1)

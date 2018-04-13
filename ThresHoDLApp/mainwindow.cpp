@@ -23,11 +23,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QDesktopServices::setUrlHandler("file", this, "handleFileUrlReceived");
 
+    mMainBalanceFont = ui->btcTotalLabel->font();
+
     ui->logoLabel->setText("");
     ui->logoLabel->setPixmap(QPixmap::fromImage(QImage(":/threshodl_logo")));
     ui->logoLabel->setPixmap(ui->logoLabel->pixmap()->scaledToWidth(QApplication::desktop()->screenGeometry().width(),Qt::SmoothTransformation));
 
     mActiveUser = new UserAccount;
+    mPendingImport = "";
+
+    connect (mActiveUser, &UserAccount::updateBalancesForMainWindow, this, &MainWindow::updateBalances);
 
     if (mActiveUser->isNewAccount()) {
         mCreateAccount = new CreateAccount;
@@ -65,7 +70,7 @@ void MainWindow::handleFileUrlReceived(const QUrl &url)
     QFileInfo fileInfo = QFileInfo(myUrl);
     if(fileInfo.exists()) {
         qDebug() << "Received! YA BITCHES!!";
-        addNotificationToSettings(QDate::currentDate(), "Import Micro-Wallets Successful -- sort of");
+        addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), "Import Micro-Wallets Successful -- sort of");
 
         QFile lPackage(myUrl);
         QByteArray lPackageArray;
@@ -80,6 +85,10 @@ void MainWindow::handleFileUrlReceived(const QUrl &url)
 
             mDarkImportView = new DarkWalletImportView;
             mDarkImportView->setFields(lObject["Amount"].toString(), lObject["Notes"].toString());
+            mPendingImport = lPackageArray;
+
+            connect (mDarkImportView, &DarkWalletImportView::addNotification, this, &MainWindow::addNotificationToSettings);
+            connect (mDarkImportView, &DarkWalletImportView::completeWalletImport, this, &MainWindow::completePendingImport);
 
             mDarkImportView->show();
             mDarkImportView->showMaximized();
@@ -110,6 +119,31 @@ void MainWindow::makeMaximized()
 void MainWindow::saveAddressInSettings(QString iEmail, QString iAddress)
 {
     mActiveUser->setAddresses(iEmail, iAddress);
+}
+
+void MainWindow::completePendingImport(bool iComplete)
+{
+    if (iComplete) {
+        //import wallets
+        QJsonDocument lDoc = QJsonDocument::fromJson(mPendingImport);
+        QJsonObject lObject = lDoc.object();
+        QJsonArray lArray = lObject["Wallets"].toArray();
+
+        for (auto w : lArray) {
+            if (mActiveUser->accountContainsWallet(BitcoinWallet(w.toVariant().toByteArray()).walletId())) {
+                ui->warningLabel->setText("Wallet import was canceled. Wallet(s) already exist!");
+                mPendingImport = "";
+                return;
+            }
+        }
+
+        for (auto w : lArray) {
+            BitcoinWallet lNewWallet = BitcoinWallet(w.toVariant().toByteArray());
+            mActiveUser->addMicroWallet(lNewWallet);
+        }
+    } else {
+        mPendingImport = "";
+    }
 }
 
 void MainWindow::on_brightButton_pressed()
@@ -160,21 +194,45 @@ void MainWindow::brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet
     ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getBrightBalance()));
     ui->btcTotalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance() + mActiveUser->getDarkBalance()));
 
-    addNotificationToSettings(QDate::currentDate(), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal));
+    addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal));
 }
 
-void MainWindow::addNotificationToSettings(QDate iDate, QString iNotification)
+void MainWindow::addNotificationToSettings(QString iDate, QString iNotification)
 {
     QList<QVariant> lNotifications;
+    mActiveUser->addNotification(iDate, iNotification);
+}
 
-    mActiveUser->addNotification(iDate.toString(myDateFormat()), iNotification);
+void MainWindow::updateBalances(double iBrightBalance, double iDarkBalances)
+{
+    QString lTotalBalance = QString("%1").arg(QString::number(iBrightBalance + iDarkBalances, 'f'));
+
+    lTotalBalance.remove( QRegExp("0+$") );
+    if (lTotalBalance.at(lTotalBalance.size() - 1) == '.')
+        lTotalBalance.append("00");
+
+    bool    lFontFits = false;
+    QFont   lFont = mMainBalanceFont;
+
+    ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(iBrightBalance));
+    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(iDarkBalances));
+
+    while (!lFontFits) {
+        QFontMetrics lFm(lFont);
+        QRect lBound = lFm.boundingRect(0,0, ui->btcTotalLabel->width(), ui->btcTotalLabel->height(), Qt::TextWordWrap | Qt::AlignCenter, lTotalBalance);
+
+        if (lBound.width() <= QApplication::desktop()->screenGeometry().width())
+            lFontFits = true;
+        else
+            lFont.setPointSize(lFont.pointSize() - 2);
+    }
+
+    ui->btcTotalLabel->setText(QString("%1").arg(lTotalBalance));
+    ui->btcTotalLabel->setFont(lFont);
 }
 
 void MainWindow::setUI()
 {
     ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
-
-    ui->btcTotalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance() + mActiveUser->getDarkBalance()));
-    ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getBrightBalance()));
-    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getDarkBalance()));
+    updateBalances(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
 }

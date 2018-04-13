@@ -5,8 +5,10 @@
 #include <QDebug>
 #include <QCoreApplication>
 
-UserAccount::UserAccount()
+UserAccount::UserAccount(QObject *parent)
 {
+    Q_UNUSED(parent)
+
     QCoreApplication::setOrganizationDomain(theDomain());
     QCoreApplication::setApplicationName(theApplicationName());
     QCoreApplication::setOrganizationName(theOrganization());
@@ -109,13 +111,23 @@ void UserAccount::addNotification(QString iTime, QString iNotificationText)
     mAccountSettings->sync();
 }
 
-void UserAccount::setNotifications(QList<QVariant> lNotifications)
+void UserAccount::setNotifications(QList<QVariant> iNotifications)
 {
     mNotifications.clear();
-    int lCount = lNotifications.size();
+    mAccountSettings->remove(notificationsSetting());
+    int lCount = iNotifications.size();
+    QList<QVariant> lNotifications;
 
     for (int i = 0; i < lCount; i+=2) {
-        addNotification(lNotifications.at(i).toString(), lNotifications.at(i+1).toString());
+
+        mNotifications.append(iNotifications[i].toString());
+        mNotifications.append(iNotifications[i+1].toString());
+
+        lNotifications.append(QVariant(iNotifications[i].toString()));
+        lNotifications.append(QVariant(iNotifications[i+1].toString()));
+
+        mAccountSettings->setValue(notificationsSetting(), QVariantList(lNotifications));
+        mAccountSettings->sync();
     }
 }
 
@@ -129,58 +141,106 @@ void UserAccount::setAddresses(QString iEmail, QString iThreshodlAddress)
     mAccountSettings->sync();
 }
 
+void UserAccount::savePendingToSendDarkWallets(QList<BitcoinWallet> iWallets)
+{
+    QList<QVariant> lPendingWallets;
+    mAccountSettings->remove(darkWalletPendingSetting());
+
+    for (auto w : iWallets) {
+        lPendingWallets.append(w.toData());
+    }
+
+    mAccountSettings->setValue(darkWalletPendingSetting(), lPendingWallets);
+    mAccountSettings->sync();
+}
+
+void UserAccount::clearPendingToSendDarkWallets()
+{
+    mAccountSettings->remove(darkWalletPendingSetting());
+    mAccountSettings->sync();
+}
+
+QList<BitcoinWallet> UserAccount::getPendingToSendDarkWallets()
+{
+    QList<BitcoinWallet> lPendingWallets;
+    QList<QVariant> lWallets = mAccountSettings->value(darkWalletPendingSetting()).toList();
+
+    for (auto w : lWallets) {
+        lPendingWallets.append(BitcoinWallet(w.toByteArray()));
+    }
+
+    mAccountSettings->remove(darkWalletPendingSetting());
+    mAccountSettings->sync();
+
+    return lPendingWallets;
+}
+
 void UserAccount::createNewBrightWallet()
 {
     BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+    QString lWalletId = QString::number(QDateTime::currentMSecsSinceEpoch()).append(lNewWallet.address());
+
     lNewWallet.setValue("0");
+    lNewWallet.setWalletId(lWalletId);
 
     mBrightWallet.append(lNewWallet);
 }
 
 void UserAccount::addMicroWallet(BitcoinWallet iWallet)
 {
-    if (iWallet.chain() != BitcoinWallet::ChainType::None) {
+    if (iWallet.chain() != BitcoinWallet::ChainType::None && !mAllWallets.contains(iWallet.walletId())) {
         mDarkWallet.append(iWallet);
         mDarkBalance += iWallet.value().toDouble();
+        mAllWallets.insert(iWallet.walletId());
+
+        std::sort(mDarkWallet.begin(), mDarkWallet.end(), [] (const BitcoinWallet& lhs, const BitcoinWallet& rhs) {
+                                    return lhs.value().toDouble() < rhs.value().toDouble();
+                                });
+
+        QList<QVariant> lWalletList = mAccountSettings->value(darkWalletsSetting()).toList();
+        lWalletList.append(iWallet.toData());
+
+        mAccountSettings->setValue(darkWalletsSetting(), lWalletList);
+        mAccountSettings->sync();
+
+        emit updateBalancesForMainWindow(mBrightBalance, mDarkBalance);
     }
-
-    std::sort(mDarkWallet.begin(), mDarkWallet.end(), [] (const BitcoinWallet& lhs, const BitcoinWallet& rhs) {
-                                return lhs.value().toDouble() < rhs.value().toDouble();
-                            });
-
-    QList<QVariant> lWalletList = mAccountSettings->value(darkWalletsSetting()).toList();
-    lWalletList.append(iWallet.toData());
-
-    mAccountSettings->setValue(darkWalletsSetting(), lWalletList);
-    mAccountSettings->sync();
 }
 
 void UserAccount::addBrightWallet(BitcoinWallet iWallet)
 {
-    if (iWallet.chain() != BitcoinWallet::ChainType::None) {
+    if (iWallet.chain() != BitcoinWallet::ChainType::None && !mAllWallets.contains(iWallet.walletId())) {
         mBrightWallet.append(iWallet);
+        mBrightBalance += iWallet.value().toDouble();
+        mAllWallets.insert(iWallet.walletId());
+
+        QList<QVariant> lWalletList = mAccountSettings->value(brightWalletsSetting()).toList();
+        lWalletList.append(iWallet.toData());
+
+        mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
+        mAccountSettings->sync();
+
+        emit updateBalancesForMainWindow(mBrightBalance, mDarkBalance);
     }
-
-    QList<QVariant> lWalletList = mAccountSettings->value(brightWalletsSetting()).toList();
-    lWalletList.append(iWallet.toData());
-
-    mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
-    mAccountSettings->sync();
 }
 
 void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
 {
     mBrightWallet.clear();
     mBrightWallet = iWallets;
+    mBrightBalance = 0;
 
     QList<QVariant> lWalletList;
 
     for (auto w : iWallets) {
         lWalletList.append(w.toData());
+        mBrightBalance += w.value().toDouble();
     }
 
     mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
     mAccountSettings->sync();
+
+    emit updateBalancesForMainWindow(mBrightBalance, mDarkBalance);
 }
 
 void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
@@ -192,14 +252,19 @@ void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
         return lhs.value().toDouble() < rhs.value().toDouble();
     });
 
+    mDarkBalance = 0;
+
     QList<QVariant> lWalletList;
 
     for (auto w : iWallets) {
         lWalletList.append(w.toData());
+        mDarkBalance += w.value().toDouble();
     }
 
     mAccountSettings->setValue(darkWalletsSetting(), lWalletList);
     mAccountSettings->sync();
+
+    emit updateBalancesForMainWindow(mBrightBalance, mDarkBalance);
 }
 
 bool UserAccount::isNewAccount()
@@ -208,6 +273,11 @@ bool UserAccount::isNewAccount()
         return true;
     }
     return false;
+}
+
+bool UserAccount::accountContainsWallet(QString iWalletId)
+{
+    return mAllWallets.contains(iWalletId);
 }
 
 void UserAccount::loadFromSettings()
@@ -237,7 +307,7 @@ void UserAccount::loadFromSettings()
         ////////////////////////
         // For testing only.....
 
-        mBrightWallet[0].setValue("10.0013");
+        mBrightWallet[0].setValue("10.00");
         mBrightBalance = mBrightWallet[0].value().toDouble();
 
         // .....................
@@ -252,12 +322,12 @@ void UserAccount::loadFromSettings()
     } else {
         //pull wallet from storage
         QList<QVariant> lWalletList = mAccountSettings->value(brightWalletsSetting()).toList();
-        for (auto w : lWalletList) {
-            addBrightWallet(BitcoinWallet(w.toByteArray()));
-        }
         mBrightBalance = 0;
-        for (auto w : mBrightWallet) {
-            mBrightBalance += w.value().toDouble();
+        mBrightWallet.clear();
+        for (auto w : lWalletList) {
+            BitcoinWallet lNewWallet = BitcoinWallet(w.toByteArray());
+            mBrightWallet.append(lNewWallet);
+            mBrightBalance += lNewWallet.value().toDouble();
         }
     }
 
@@ -268,19 +338,44 @@ void UserAccount::loadFromSettings()
         QList<QVariant> lWalletList = mAccountSettings->value(darkWalletsSetting()).toList();
 
         for (auto w : lWalletList) {
-            addMicroWallet(BitcoinWallet(w.toByteArray()));
+            BitcoinWallet lNewWallet = BitcoinWallet(w.toByteArray());
+            mDarkWallet.append(lNewWallet);
+            mDarkBalance += lNewWallet.value().toDouble();
         }
 
         std::sort(mDarkWallet.begin(), mDarkWallet.end(), [] (const BitcoinWallet& lhs, const BitcoinWallet& rhs) {
             return lhs.value().toDouble() < rhs.value().toDouble();
         });
-
-        for (auto w : mDarkWallet) {
-            mDarkBalance += w.value().toDouble();
-        }
     } else {
         mDarkWallet.clear();
+
+#if 1
+        ////////////////////////
+        ////////////////////////
+        // For testing only.....
+        QList<BitcoinWallet> lNewWallets;
+
+        for (int i = 0; i <20; i++) {
+            BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+            QString lNewWalletId = QString::number(QDateTime::currentMSecsSinceEpoch()).append(lNewWallet.address());
+            lNewWallet.setOwner(mUsername);
+            lNewWallet.setValue("0.1");
+            lNewWallet.setIsMicroWallet(true);
+            lNewWallet.setWalletId(lNewWallet.address());
+
+            lNewWallets.push_back(lNewWallet);
+        }
+
+        setDarkWallets(lNewWallets);
+
+        // .....................
+        ////////////////////////
+        ////////////////////////
+#endif
+
     }
+
+    emit updateBalancesForMainWindow(mBrightBalance, mDarkBalance);
 }
 
 bool UserAccount::greaterThanWallet(BitcoinWallet iLHS, BitcoinWallet iRHS)

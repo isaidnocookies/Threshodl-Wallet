@@ -174,7 +174,7 @@ QByteArray DarkSendView::getAttachmentPackage()
     double lValue = ui->amountLineEdit->text().toDouble();
 
     for (auto w : mActiveUser->getDarkWallets()) {
-        if (w.value().toDouble() < lValue) {
+        if (w.value().toDouble() <= lValue) {
             lValue -= w.value().toDouble();
             lWalletsToSend.append(w);
             lWalletArray.push_back(QString(w.toData()));
@@ -183,10 +183,13 @@ QByteArray DarkSendView::getAttachmentPackage()
         }
     }
 
+    mWalletsToSend_Pending = lWalletsToSend;
+
     mActiveUser->setDarkWallets(lRemainingWallets);
+    mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
 
     lJson.insert("Amount", ui->amountLineEdit->text());
-    lJson.insert("TransactionId", "0000000");
+    lJson.insert("TransactionId", "00000000000000000");
     lJson.insert("Notes", "Bitcoin dark transaction.");
 
     lJson.insert("Wallets", lWalletArray);
@@ -293,7 +296,20 @@ void DarkSendView::sentConfirmation(bool iSuccess)
         ui->emailAddressLineEdit->setText("");
 
         ui->sendConfirmationLabel->setText("Transfer Sent - Success!");
+
+        mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Transfer Successful! Dark Bitcoin has been sent.");
     } else {
         ui->sendConfirmationLabel->setText("Transfer Failed!");
+        QList<BitcoinWallet> lWallets = mActiveUser->getPendingToSendDarkWallets();
+        for (auto w : lWallets) {
+            mActiveUser->addMicroWallet(w);
+        }
+
+        mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Transfer FAILED! Dark Bitcoin has not been sent.");
     }
+    mActiveUser->clearPendingToSendDarkWallets();
+
+    ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance()));
+    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+    emit updateBalance();
 }
