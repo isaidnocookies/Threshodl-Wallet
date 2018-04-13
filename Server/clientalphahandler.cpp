@@ -88,18 +88,20 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
 #warning THIS IS INCOMPLETE
     // Missing BTC transaction stuff
 
+    RPCMessageCreateMicroWalletPackageReply::ReplyCode  lReplyCode  = RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnknownFailure;
+    RPCMessageCreateMicroWalletPackageRequest           lRequest{iMessage};
+    QList<QByteArray>                                   lMicroWalletsData;
+
     if( authenticateMessage(iMessage) ) {
         auto lDBI = gApp->databaseInterface();
 
         if( lDBI ) {
-            RPCMessageCreateMicroWalletPackageRequest   lRequest{iMessage};
 
             if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
                 std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue());
                 std::vector<BValue>     lValues;
                 QStringList             lWalletValues;
                 QList<BitcoinWallet>    lBTCWallets;
-                QList<QByteArray>       lMicroWalletsData;
 
 
                 if( lValuesPtr ) {
@@ -119,6 +121,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
                     QByteArray  lPrivKeyLeft;
                     int         lPrivKeyLen;
                     int         lPrivKeyMid;
+                    quint64     lNextBlockOfWalletIds   = gApp->getNextWalletId(lBTCWallets.size());
                     for( BitcoinWallet lMW : lBTCWallets ) {
                         lMW.setValue(lWalletValues[lIndex]);
                         lMW.setIsMicroWallet(true);
@@ -131,23 +134,39 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
                         lMW.setPrivateKey(lPrivKeyLeft);
                         lMW.setWif(QByteArray()); // Clear the Wif.
 
+                        // Generate the WalletId
+                        QString lWalletId = QStringLiteral("%1.%2").arg(lNextBlockOfWalletIds,16,16,QChar('0')).arg(QDateTime::currentMSecsSinceEpoch());
+
                         // Store PrivKeyRight
+                        do{
+                            if( lDBI->microWalletCreate(lWalletId,lRequest.username(),lPrivKeyRight)) {
+                                lMicroWalletsData << lMW.toData();
+                                lNextBlockOfWalletIds++;
+                                break;
+                            }
+                            QThread::msleep(300);
+                        }while(1);
                     }
 
+                    lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success;
                 }else{
                     qWarning() << "Unable to grind up crypto currency into Micro-Wallets.";
+                    lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency;
                 }
             }else{
                 qWarning() << "Unhandled crypto type for creating Micro-Wallets.";
+                lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType;
             }
         }else{
             qWarning() << "Unable to connect to database!";
+            lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1;
         }
     }else{
         qWarning() << "Unable to authenticate message.";
+        lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized;
     }
 
-    return false;
+    return iConnection->sendMessage(RPCMessageCreateMicroWalletPackageReply::create(lReplyCode,lMicroWalletsData,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
 }
 
 bool ClientAlphaHandler::reassignMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)

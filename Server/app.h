@@ -97,6 +97,8 @@ public:
 
     RPCServer *         rpcServer() const;
 
+    quint64             getNextWalletId(quint32 iAdvance = 1);
+
 public slots:
     void                eventLoopStarted();
 
@@ -157,6 +159,8 @@ protected:
     QThread *           mRPCServerThread            = nullptr;
     RPCServer *         mRPCServer                  = nullptr;
     RPCServerHandler *  mRPCServerHandler           = nullptr;
+
+    QMutex              mNextWalletIdLock;
 };
 
 #endif // APP_H

@@ -514,6 +514,25 @@ RPCServer *App::rpcServer() const
     return mRPCServer;
 }
 
+quint64 App::getNextWalletId(quint32 iAdvance)
+{
+    QMutexLocker    l{&mNextWalletIdLock};
+    quint64         lValue;
+    QFile           lNextWalletIdFile{QStringLiteral("%1%2NextWalletId").arg(mRecordsPath).arg(QDir::separator())};
+
+    if( lNextWalletIdFile.open(QIODevice::ReadWrite | QIODevice::Append) ) {
+        lNextWalletIdFile.seek(0);
+        QByteArray lData = lNextWalletIdFile.readAll();
+        lValue = lData.toULongLong();
+        quint64 lNewValue = lValue + iAdvance;
+        lNextWalletIdFile.seek(0);
+        lNextWalletIdFile.write(QByteArray::number(lNewValue));
+        lNextWalletIdFile.close();
+    }
+
+    return lValue;
+}
+
 void App::startHTTPS()
 {
     mHttpsSettings = new QSettings(this);

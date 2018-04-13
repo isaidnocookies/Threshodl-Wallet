@@ -17,8 +17,14 @@ QString RPCMessageCreateMicroWalletPackageReply::commandValue()
 QString RPCMessageCreateMicroWalletPackageReply::transactionIdKey()
 { return QStringLiteral("transactionId"); }
 
+QString RPCMessageCreateMicroWalletPackageReply::replyCodeKey()
+{ return QStringLiteral("replyCode"); }
+
 QString RPCMessageCreateMicroWalletPackageReply::microWalletsDataKey()
 { return QStringLiteral("microWalletsData"); }
+
+RPCMessageCreateMicroWalletPackageReply::ReplyCode RPCMessageCreateMicroWalletPackageReply::replyCode() const
+{ return static_cast<ReplyCode>(fieldValue(replyCodeKey()).toUInt()); }
 
 QString RPCMessageCreateMicroWalletPackageReply::transactionId() const
 { return fieldValue(transactionIdKey()).toString(); }
@@ -34,7 +40,7 @@ QList<QByteArray> RPCMessageCreateMicroWalletPackageReply::microWalletsData() co
     return lRet;
 }
 
-QString RPCMessageCreateMicroWalletPackageReply::create(const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessageCreateMicroWalletPackageReply::create(const ReplyCode iReplyCode, const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     QVariantList    lMicroWalletDatas;
 
@@ -43,6 +49,7 @@ QString RPCMessageCreateMicroWalletPackageReply::create(const QList<QByteArray> 
 
     return RPCMessage::toMessage(
                 QList<RPCField>()
+                << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)}
                 << RPCField{microWalletsDataKey(), lMicroWalletDatas}
                 << RPCField{transactionIdKey(), iTransactionId}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
