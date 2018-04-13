@@ -136,6 +136,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
 
                         // Generate the WalletId
                         QString lWalletId = QStringLiteral("%1.%2").arg(lNextBlockOfWalletIds,16,16,QChar('0')).arg(QDateTime::currentMSecsSinceEpoch());
+                        lMW.setWalletId(lWalletId);
 
                         // Store PrivKeyRight
                         do{

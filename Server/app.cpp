@@ -520,7 +520,7 @@ quint64 App::getNextWalletId(quint32 iAdvance)
     quint64         lValue;
     QFile           lNextWalletIdFile{QStringLiteral("%1%2NextWalletId").arg(mRecordsPath).arg(QDir::separator())};
 
-    if( lNextWalletIdFile.open(QIODevice::ReadWrite | QIODevice::Append) ) {
+    if( lNextWalletIdFile.open(QIODevice::ReadWrite) ) {
         lNextWalletIdFile.seek(0);
         QByteArray lData = lNextWalletIdFile.readAll();
         lValue = lData.toULongLong();
