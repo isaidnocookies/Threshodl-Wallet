@@ -50,13 +50,17 @@ public slots:
     void sendConfirmation(bool iSuccess);
     void getQrCode(QString iData);
 
+signals:
+    void updateBalance();
+
 private:
-    Ui::DarkSendView    *ui;
-    RPCConnection       *mConnection;
-    QSslConfiguration   mSslConfiguration;
-    DarkSendConfirm     *mDarkSendConfirmationView;
-    QrReader            *mQrReaderView;
-    UserAccount         *mActiveUser;
+    Ui::DarkSendView        *ui;
+    RPCConnection           *mConnection;
+    QSslConfiguration       mSslConfiguration;
+    DarkSendConfirm         *mDarkSendConfirmationView;
+    QrReader                *mQrReaderView;
+    UserAccount             *mActiveUser;
+    QList<BitcoinWallet>    mWalletsToSend_Pending;
 
     void stopProgressBarAndEnable();
     void startProgressBarAndDisable();

@@ -24,6 +24,7 @@ private slots:
 
 signals:
     void addNotification (QString iTime, QString iNotificationText);
+    void completeWalletImport (bool iComplete);
 
 private:
     Ui::DarkWalletImportView *ui;

@@ -28,6 +28,7 @@ public:
 
 public slots:
     void saveAddresses(QString iEmail, QString iAddress);
+    void updateBalance();
 
 private:
     void createQrCode();

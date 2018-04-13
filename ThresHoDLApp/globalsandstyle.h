@@ -15,6 +15,7 @@ inline QString publicKeySetting() {             return QString("publicKeySetting
 inline QString privateKeySetting() {            return QString("privateKeySetting"); }
 inline QString brightWalletsSetting() {         return QString("brightWalletsSetting"); }
 inline QString darkWalletsSetting() {           return QString("darkWalletsSetting"); }
+inline QString darkWalletPendingSetting() {     return QString("darkWalletPendingSetting"); }
 
 inline QString emailSetting() {                 return QString("emailSetting"); }
 inline QString addressSetting() {               return QString("addressSetting"); }

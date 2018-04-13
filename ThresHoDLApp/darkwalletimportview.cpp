@@ -39,6 +39,7 @@ void DarkWalletImportView::on_cancelButton_pressed()
     this->deleteLater();
 
     emit addNotification(QDate::currentDate().toString(myDateFormat()), "Dark wallet import was canceled!");
+    emit completeWalletImport(false);
 }
 
 void DarkWalletImportView::on_importButton_pressed()
@@ -47,4 +48,5 @@ void DarkWalletImportView::on_importButton_pressed()
     this->deleteLater();
 
     emit addNotification(QDate::currentDate().toString(myDateFormat()), "Dark wallet import was successful!");
+    emit completeWalletImport(true);
 }

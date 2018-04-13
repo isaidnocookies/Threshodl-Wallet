@@ -7,14 +7,19 @@
 #include <QVector>
 #include <QPair>
 #include <QDate>
+#include <QDateTime>
 #include <QVariant>
 #include <QSettings>
 #include <algorithm>
+#include <QObject>
+#include <QSet>
 
-class UserAccount
+class UserAccount : public QObject
 {
+    Q_OBJECT
+
 public:
-    UserAccount();
+    UserAccount(QObject *parent = nullptr);
 
     void createNewAccount(QString iUsername, QByteArray iPriv, QByteArray iPub);
 
@@ -28,12 +33,15 @@ public:
     BitcoinWallet           getBrightWallet(int iIndex = 0);
     double                  getDarkBalance()                    { return mDarkBalance; }
     double                  getBrightBalance()                  { return mBrightBalance; }
+    QList<BitcoinWallet> getPendingToSendDarkWallets();
 
     void setUsername(QString iUsername);
     void setKeys(QByteArray iPub, QByteArray iPriv);
     void addNotification(QString iTime, QString iNotificationText);
     void setNotifications(QList<QVariant> lNotifications);
     void setAddresses(QString iEmail, QString iThreshodlAddress);
+    void savePendingToSendDarkWallets(QList<BitcoinWallet> iWallets);
+    void clearPendingToSendDarkWallets();
 
     void createNewBrightWallet();
     void addMicroWallet(BitcoinWallet iWallet);
@@ -44,6 +52,10 @@ public:
     void setDarkBalance(double iValue)                          { mDarkBalance = iValue; }
 
     bool isNewAccount();
+    bool accountContainsWallet (QString iWalletId);
+
+signals:
+    void updateBalancesForMainWindow(double iBright, double iDark);
 
 private:
     QSettings                       *mAccountSettings;
@@ -57,6 +69,8 @@ private:
     double                          mBrightBalance;
     QList<BitcoinWallet>            mDarkWallet;
     double                          mDarkBalance;
+
+    QSet<QString>                   mAllWallets;
 
     void loadFromSettings();
     bool greaterThanWallet (BitcoinWallet iLHS, BitcoinWallet iRHS);
