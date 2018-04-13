@@ -9,7 +9,7 @@ class ClientAlphaHandler
 protected:
     static bool authenticateMessage(RPCMessage &iMessage);
     static bool createUserAccount(ClientConnection * iConnection, RPCMessage &iMessage);
-    static bool createMicroWalletPackage(ClientConnection * iConnection, RPCMessage &iMessage); // BROKEN
+    static bool createMicroWalletPackage(ClientConnection * iConnection, RPCMessage &iMessage); // This is incomplete, missing BTC transaction stuff
 
     static bool reassignMicroWallets(ClientConnection * iConnection, RPCMessage &iMessage);
 

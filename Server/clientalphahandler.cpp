@@ -6,6 +6,7 @@
 #include "rpcmessagereassignmicrowalletsrequest.h"
 #include "rpcmessagereassignmicrowalletsreply.h"
 #include "rpcmessagecreatemicrowalletpackagerequest.h"
+#include "rpcmessagecreatemicrowalletpackagereply.h"
 
 #include "app.h"
 #include "digest.h"
@@ -84,43 +85,66 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
 
 bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection, RPCMessage &iMessage)
 {
-#warning THIS IS BROKEN
+#warning THIS IS INCOMPLETE
+    // Missing BTC transaction stuff
+
     if( authenticateMessage(iMessage) ) {
-        RPCMessageCreateMicroWalletPackageRequest   lRequest{iMessage};
+        auto lDBI = gApp->databaseInterface();
 
-        if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
-            std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue());
-            std::vector<BValue>     lValues;
-            QStringList             lWalletValues;
-            QList<BitcoinWallet>    lBTCWallets;
-            QString                 lRawBTCTransaction  = QStringLiteral(
-                        "{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"createrawtransaction\",\"params\":\"[[{\"txid\":\"%1\",\"vout\":%2}],"
-                        ).arg(lRequest.txId()).arg(lRequest.vout());
+        if( lDBI ) {
+            RPCMessageCreateMicroWalletPackageRequest   lRequest{iMessage};
 
-            if( lValuesPtr ) {
-                lValues = *lValuesPtr;
+            if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
+                std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue());
+                std::vector<BValue>     lValues;
+                QStringList             lWalletValues;
+                QList<BitcoinWallet>    lBTCWallets;
+                QList<QByteArray>       lMicroWalletsData;
 
-                for( size_t lIndex = 0; lIndex < lValues.size(); lIndex++ ) {
-                    lWalletValues << QString::number(WalletGrinderAlpha::getValueFromBValue(lValues[lIndex]));
-                    lBTCWallets << BitcoinWallet::createNewBitcoinWallet();
 
-                    if( lIndex > 0 ) lRawBTCTransaction = lRawBTCTransaction.append(QStringLiteral(","));
-                    lRawBTCTransaction = lRawBTCTransaction.append( QStringLiteral("{\"%1\":%2}").arg(lBTCWallets[lIndex].address().constData()).arg(lWalletValues[lIndex]) );
+                if( lValuesPtr ) {
+                    lValues = *lValuesPtr;
+
+                    for( size_t lIndex = 0; lIndex < lValues.size(); lIndex++ ) {
+                        lWalletValues << QString::number(WalletGrinderAlpha::getValueFromBValue(lValues[lIndex]));
+                        lBTCWallets << BitcoinWallet::createNewBitcoinWallet();
+                    }
+
+                    delete lValuesPtr;
+
+                    // Now create micro-wallets from the wallets
+                    int         lIndex = 0;
+                    QByteArray  lPrivKey;
+                    QByteArray  lPrivKeyRight;
+                    QByteArray  lPrivKeyLeft;
+                    int         lPrivKeyLen;
+                    int         lPrivKeyMid;
+                    for( BitcoinWallet lMW : lBTCWallets ) {
+                        lMW.setValue(lWalletValues[lIndex]);
+                        lMW.setIsMicroWallet(true);
+
+                        lPrivKey = lMW.privateKey();
+                        lPrivKeyLen = lPrivKey.size();
+                        lPrivKeyMid = lPrivKeyLen / 2;
+                        lPrivKeyLeft = lPrivKey.left(lPrivKeyMid-1);
+                        lPrivKeyRight = lPrivKey.mid(lPrivKeyMid);
+                        lMW.setPrivateKey(lPrivKeyLeft);
+                        lMW.setWif(QByteArray()); // Clear the Wif.
+
+                        // Store PrivKeyRight
+                    }
+
+                }else{
+                    qWarning() << "Unable to grind up crypto currency into Micro-Wallets.";
                 }
-
-                if( ! lRequest.outputBalance().isEmpty() && lRequest.outputBalance().toDouble() > 0.0f ) {
-                    lRawBTCTransaction = lRawBTCTransaction.append( QStringLiteral(",{\"%1\":%2}").arg(lRequest.outputBalanceAddress()).arg(lRequest.outputBalance()) );
-                }
-
-                lRawBTCTransaction = lRawBTCTransaction.append(QStringLiteral("]}"));
-
-                delete lValuesPtr;
             }else{
-                // Something bad happened
+                qWarning() << "Unhandled crypto type for creating Micro-Wallets.";
             }
         }else{
-            // Unknown crypto
+            qWarning() << "Unable to connect to database!";
         }
+    }else{
+        qWarning() << "Unable to authenticate message.";
     }
 
     return false;

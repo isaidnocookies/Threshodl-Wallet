@@ -63,6 +63,7 @@ public:
     bool microWalletExists( const QString iMicroWalletId ) override;
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
+    bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override;
 };
 
 #endif // DBALPHA_H

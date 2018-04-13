@@ -20,11 +20,17 @@ QString RPCMessageCreateMicroWalletPackageRequest::cryptoTypeShortNameKey()
 QString RPCMessageCreateMicroWalletPackageRequest::cryptoValueKey()
 { return QStringLiteral("cryptoValue"); }
 
+QString RPCMessageCreateMicroWalletPackageRequest::transactionIdKey()
+{ return QStringLiteral("transactionId"); }
+
 QString RPCMessageCreateMicroWalletPackageRequest::cryptoTypeShortName() const
 { return fieldValue(cryptoTypeShortNameKey()).toString(); }
 
 QString RPCMessageCreateMicroWalletPackageRequest::cryptoValue() const
 { return fieldValue(cryptoValueKey()).toString(); }
+
+QString RPCMessageCreateMicroWalletPackageRequest::transactionId() const
+{ return fieldValue(transactionIdKey()).toString(); }
 
 QString RPCMessageCreateMicroWalletPackageRequest::txIdKey()
 { return QStringLiteral("txId"); }
@@ -50,18 +56,19 @@ QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceAddress() const
 QString RPCMessageCreateMicroWalletPackageRequest::outputBalance() const
 { return fieldValue(outputBalanceKey()).toString(); }
 
-QString RPCMessageCreateMicroWalletPackageRequest::create(const QString iCryptoTypeShortName, const QString iCryptoValue, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessageCreateMicroWalletPackageRequest::create(const QString iCryptoTypeShortName, const QString iCryptoValue, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     return RPCMessage::toMessage(
                 QList<RPCField>()
                 << RPCField{cryptoTypeShortNameKey(), iCryptoTypeShortName}
                 << RPCField{cryptoValueKey(), iCryptoValue}
+                << RPCField{transactionIdKey(), iTransactionId}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
                 iUsername, iPrivateKey, iKeyEncoding
                 );
 }
 
-QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress, const QString iOutputBalance, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress, const QString iOutputBalance, RPCMessage::KeyEncoding iKeyEncoding)
 {
     return RPCMessage::toMessage(
                 QList<RPCField>()
@@ -71,6 +78,7 @@ QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryp
                 << RPCField{outputBalanceKey(), iOutputBalance}
                 << RPCField{txIdKey(), iTxId}
                 << RPCField{voutKey(), iVout}
+                << RPCField{transactionIdKey(), iTransactionId}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
                 iUsername, iPrivateKey, iKeyEncoding
                 );

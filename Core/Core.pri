@@ -35,6 +35,9 @@
         $$PWD/rpcmessagecreateaccountrequest.h \
         $$PWD/rpcmessagecreateaccountreply.h \
         $$PWD/rpcmessagecreatemicrowalletpackagerequest.h \
+        $$PWD/rpcmessagecreatemicrowalletpackagereply.h \
+        $$PWD/rpcmessagereassignmicrowalletsrequest.h \
+        $$PWD/rpcmessagereassignmicrowalletsreply.h \
         $$PWD/bitcoininterface.h \
         $$PWD/walletdatacore.h
 
@@ -48,6 +51,9 @@
         $$PWD/rpcmessagecreateaccountrequest.cpp \
         $$PWD/rpcmessagecreateaccountreply.cpp \
         $$PWD/rpcmessagecreatemicrowalletpackagerequest.cpp \
+        $$PWD/rpcmessagecreatemicrowalletpackagereply.cpp \
+        $$PWD/rpcmessagereassignmicrowalletsrequest.cpp \
+        $$PWD/rpcmessagereassignmicrowalletsreply.cpp \
         $$PWD/bitcoininterface.cpp
 
     OTHER_FILES += \
@@ -65,11 +71,3 @@
         $$PWD/rpcmessages.h \
         $$PWD/rpcmessages.cpp
 }
-
-HEADERS += \
-    $$PWD/rpcmessagereassignmicrowalletsrequest.h \
-    $$PWD/rpcmessagereassignmicrowalletsreply.h
-
-SOURCES += \
-    $$PWD/rpcmessagereassignmicrowalletsrequest.cpp \
-    $$PWD/rpcmessagereassignmicrowalletsreply.cpp

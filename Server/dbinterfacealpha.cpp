@@ -356,3 +356,33 @@ bool DBInterfaceAlpha::microWalletChangeOwnership(const QString iMicroWalletId, 
 
     return lRet;
 }
+
+bool DBInterfaceAlpha::microWalletCreate(const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && ! iPayload.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QVariant    lPayload        =   QVariant{iPayload.toBase64()};
+        QVariant    lAddress        =   QVariant{iAddress.toLower()};
+        QVariant    lWalletId       =   QVariant{iMicroWalletId.toLower()};
+
+        lDB.transaction();
+
+        QSqlQuery   lQuery(lDB);
+        lQuery.prepare( QStringLiteral("INSERT INTO escrow (walletid,owner,payload) VALUES(:iMicroWalletId,:iAddress,:iPayload)") );
+        lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+        lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
+        lQuery.bindValue(QStringLiteral(":iPayload"), lPayload);
+
+
+        if( lQuery.exec() ) {
+            lQuery.finish();
+            lRet = true;
+        }
+
+        _flushDB(lDB);
+    }
+
+    return lRet;
+}
