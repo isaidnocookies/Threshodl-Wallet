@@ -30,7 +30,7 @@ QStringList RPCMessageReassignMicroWalletsRequest::microWalletIds() const
 { return fieldValue(microWalletIdsKey()).toStringList(); }
 
 QString RPCMessageReassignMicroWalletsRequest::transactionId() const
-{ return fieldValue(transactionId()).toString(); }
+{ return fieldValue(transactionIdKey()).toString(); }
 
 QString RPCMessageReassignMicroWalletsRequest::create(const QString iDestination, const QStringList iMicroWalletIds, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {

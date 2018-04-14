@@ -122,15 +122,15 @@ bool DBInterfaceAlpha::addressExists(const QString iAddress)
             lQuery.prepare( QStringLiteral("SELECT address FROM addresses WHERE address = :iAddress") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
-            int         lAddressNo  = lQuery.record().indexOf(QStringLiteral("address"));
 
             if( lQuery.exec() ) {
+                int lAddressNo = lQuery.record().indexOf(QStringLiteral("address"));
                 if( lQuery.first() ) {
                     if( lQuery.value(lAddressNo).toString() == iAddress.toLower() ) {
                         lRet = true;
                     } else {
                         // It does not exist, however we can not use it because there is a record using the name partially?
-                        qWarning() << "The database returned a record for user" << iAddress << ", howere an internal string check returned that the username does not match what were looking for.";
+                        qWarning() << "The database returned a record for user" << iAddress << ", however an internal string check returned that the username does not match what were looking for.";
                     }
                 }
             }
@@ -272,9 +272,9 @@ bool DBInterfaceAlpha::microWalletExists(const QString iMicroWalletId)
             lQuery.prepare( QStringLiteral("SELECT walletid FROM escrow WHERE walletid = :iMicroWalletId") );
             lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lMicroWalletId);
 
-            int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
 
             if( lQuery.exec() ) {
+                int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
                 if( lQuery.first() ) {
                     if( lQuery.value(lWalletIdNo).toString() == iMicroWalletId.toLower() ) {
                         lRet = true;
@@ -308,9 +308,9 @@ bool DBInterfaceAlpha::microWalletOwnershipCheck(const QString iMicroWalletId, c
         lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
         lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
-        int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
 
         if( lQuery.exec() ) {
+            int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
             if( lQuery.first() ) {
                 if( lQuery.value(lWalletIdNo).toString() == iMicroWalletId.toLower() ) {
                     lRet = true;
