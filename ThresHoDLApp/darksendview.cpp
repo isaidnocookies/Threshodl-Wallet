@@ -28,6 +28,27 @@ DarkSendView::DarkSendView(QWidget *parent) :
 
     ui->sendConfirmationLabel->setText("");
     ui->progressBar->setVisible(false);
+
+    mConnection = new RPCConnection{this};
+
+    connect( mConnection, &RPCConnection::connected, this, &DarkSendView::connectedToServer );
+    connect( mConnection, &RPCConnection::disconnected, this, &DarkSendView::disconnectedFromServer );
+    connect( mConnection, &RPCConnection::socketError, this, &DarkSendView::socketError );
+    connect( mConnection, &RPCConnection::sslErrors, this, &DarkSendView::sslErrors );
+    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &DarkSendView::failedToSendMessage );
+    connect( mConnection, &RPCConnection::sentTextMessage, this, &DarkSendView::sentMessage );
+    connect( mConnection, &RPCConnection::textMessageReceived, this, &DarkSendView::receivedMessage );
+
+    QFile lFile{QStringLiteral(":/ca.pem")};
+    if( lFile.open(QIODevice::ReadOnly) ) {
+        mSslConfiguration = QSslConfiguration::defaultConfiguration();
+        mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{lFile.readAll(),QSsl::Pem});
+
+        lFile.close();
+        mConnection->setSslConfiguration(mSslConfiguration);
+    }else{
+        qFatal("Failed to open CA cert.");
+    }
 }
 
 void DarkSendView::setActiveUser(UserAccount *iActiveUser)
@@ -67,11 +88,6 @@ void DarkSendView::on_sendTransactionButton_pressed()
 
     ui->sendWarningLabel->setText("");
 
-
-    // REVERSE SMTP CLIENT AND TRANSFERRING BITCOIN! Move smtp to message received!
-    // This way we can do a check on if the threshodl address is valid before sending package
-
-
     if (lAmount.isEmpty() || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
     } else if (lAmount.toDouble() > mActiveUser->getDarkBalance()) {
@@ -85,10 +101,6 @@ void DarkSendView::on_sendTransactionButton_pressed()
 
         QByteArray lTestMessage = getAttachmentPackage();
         MimeAttachment lAttachment(lTestMessage, "bitcoin.threshodl");
-        lAttachment.setContentType("application/json");
-        lAttachment.addHeaderLine("Content-Disposition: attachment; filename=\"bitcoin.threshodl\"");
-        lAttachment.setContentId("<bitcoin.threshodl>");
-        lAttachment.setEncoding(MimePart::Encoding::Base64);
 
         MimeHtml lHtmlBody("<html>"
                            "<h3>Threshodl Dark Transaction</h3>"
@@ -96,9 +108,11 @@ void DarkSendView::on_sendTransactionButton_pressed()
                            "<p>You have Bitcoin! Open up the attached file with your Threshodl to import your coins into your Dark Wallet.</p>"
                            "<br><br>"
                            "</html>");
+
         lMessage.setSubject("Threshodl - You have Bitcoin!");
         lMessage.addRecipient(&lToEmail);
         lMessage.setSender(&lFromEmail);
+
         lMessage.addPart(&lHtmlBody);
         lMessage.addPart(&lAttachment);
 
@@ -107,33 +121,17 @@ void DarkSendView::on_sendTransactionButton_pressed()
                 if (lClient.sendMail(lMessage)) {
                     //success
                     qDebug() << "Success";
-                    sendConfirmation(true);
+//                    return;
+                    QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
+                    mConnection->open(lUrl);
+                    startProgressBarAndDisable();
                 } else {
                     //failure
                     qDebug() << "Failure";
-                    sendConfirmation(false);
+                    sentConfirmation(false);
                 }
             }
-
-            return;
-            QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
-            mConnection->open(lUrl);
-            startProgressBarAndDisable();
         }
-    }
-}
-
-void DarkSendView::sendConfirmation(bool iSuccess)
-{
-    if (iSuccess) {
-        ui->sendConfirmationLabel->setText("Send Complete!");
-        ui->amountLineEdit->setText("");
-        ui->addressLineEdit->setText("");
-        ui->emailAddressLineEdit->setText("");
-        ui->confirmCheckBox->setChecked(false);
-    } else {
-        ui->sendConfirmationLabel->setText("Send Canceled!");
-        ui->confirmCheckBox->setChecked(false);
     }
 }
 
@@ -184,6 +182,7 @@ QByteArray DarkSendView::getAttachmentPackage()
     }
 
     mWalletsToSend_Pending = lWalletsToSend;
+    mPendingAmountToSend = ui->amountLineEdit->text().toDouble();
 
     mActiveUser->setDarkWallets(lRemainingWallets);
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
@@ -224,7 +223,13 @@ void DarkSendView::on_emailAddressLineEdit_textChanged(const QString &arg1)
 void DarkSendView::connectedToServer()
 {
     qDebug() << "Connected to server.";
-//    mConnection->sendTextMessage();
+    QStringList lWalletList;
+
+    for (auto w : mWalletsToSend_Pending) {
+        lWalletList.append(w.walletId());
+    }
+
+    mConnection->sendTextMessage(RPCMessageReassignMicroWalletsRequest::create(ui->addressLineEdit->text(), lWalletList, "", mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
 }
 
 void DarkSendView::disconnectedFromServer()
@@ -257,15 +262,51 @@ void DarkSendView::receivedMessage()
     stopProgressBarAndEnable();
 
     // got reply
-//    QString lMessage = mConnection->nextTextMessage();
-//    RPCMessageCreateAccountReply    lReply{lMessage};
+    QString lMessage = mConnection->nextTextMessage();
+    RPCMessageReassignMicroWalletsReply lReply{lMessage};
 
-//    switch(lReply.replyCode()) {
-//        case [something or other]:
-//            break;
-//        default:
-//            qDebug() << "FUCK";
-//    }
+    switch(lReply.replyCode()) {
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::Success:
+        qDebug() << "FUCK YEAH!!!";
+        sentConfirmation(true);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsDoNotExist:
+        // Server doesnt know where a wallet came from
+        qDebug() << "FUCK 1";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsUnauthorized:
+        // I dont have ownership of one or more wallets - whole transfer failed
+        qDebug() << "FUCK 2";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::SourceDoesNotExist:
+        qDebug() << "FUCK 3";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::DestinationDoesNotExist:
+        // Destination doesnt exist
+        qDebug() << "FUCK 4";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError1:
+        // Transfer never happen. internal problem
+        qDebug() << "FUCK 5";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError2:
+        // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark
+        qDebug() << "FUCK 6";
+        sentConfirmation(false);
+        break;
+    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError3:
+        // Lock all wallets. Wait for manual help
+        qDebug() << "FUCK 7";
+        sentConfirmation(false);
+        break;
+    default:
+            qDebug() << "FUCK 8";
+    }
 }
 
 void DarkSendView::socketError(QAbstractSocket::SocketError iError)
@@ -298,6 +339,7 @@ void DarkSendView::sentConfirmation(bool iSuccess)
         ui->sendConfirmationLabel->setText("Transfer Sent - Success!");
 
         mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Transfer Successful! Dark Bitcoin has been sent.");
+        ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance() - mPendingAmountToSend));
     } else {
         ui->sendConfirmationLabel->setText("Transfer Failed!");
         QList<BitcoinWallet> lWallets = mActiveUser->getPendingToSendDarkWallets();

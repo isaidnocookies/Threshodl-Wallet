@@ -58,9 +58,8 @@ CreateAccount::~CreateAccount()
 
 void CreateAccount::on_createAccountButton_pressed()
 {
-    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
-    return;
-
+//    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
+//    return;
     if (!ui->usernameLineEdit->text().isEmpty()) {
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
         mConnection->open(lUrl);
@@ -162,5 +161,5 @@ void CreateAccount::stopProgressBarAndEnable()
 {
     ui->progressBar->setVisible(false);
     ui->createAccountButton->setEnabled(true);
-    ui->usernameLineEdit->setEnabled(false);
+    ui->usernameLineEdit->setEnabled(true);
 }

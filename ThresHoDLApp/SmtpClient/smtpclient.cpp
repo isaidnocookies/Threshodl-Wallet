@@ -469,7 +469,7 @@ void SmtpClient::waitForResponse()
 
 void SmtpClient::sendMessage(const QString &text)
 {
-//    qDebug() << QString(text).append("\r\n");
+    qDebug() << QString(text);
     socket->write(text.toUtf8() + "\r\n");
     if (! socket->waitForBytesWritten(sendMessageTimeout))
     {

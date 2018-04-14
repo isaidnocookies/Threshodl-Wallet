@@ -41,7 +41,7 @@ private slots:
 signals:
     void addMicroWalletsToAccount (QList<BitcoinWallet> oWallets);
     void updateBrightBalance (double iAmountToDeduct);
-    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
+    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::SendToDarkView *ui;
@@ -55,7 +55,7 @@ private:
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
 
-    void parseBitcoinPackage (QByteArray iData);
+    void parseBitcoinPackage (QList<QByteArray> iData);
 };
 
 #endif // SENDTODARKVIEW_H
