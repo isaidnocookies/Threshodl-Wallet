@@ -147,6 +147,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
                             }
                             QThread::msleep(300);
                         }while(1);
+                        lIndex++;
                     }
 
                     lReplyCode = RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success;
