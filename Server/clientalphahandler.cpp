@@ -7,6 +7,8 @@
 #include "rpcmessagereassignmicrowalletsreply.h"
 #include "rpcmessagecreatemicrowalletpackagerequest.h"
 #include "rpcmessagecreatemicrowalletpackagereply.h"
+#include "rpcmessagecheckownershipofmicrowalletsrequest.h"
+#include "rpcmessagecheckownershipofmicrowalletsreply.h"
 
 #include "app.h"
 #include "digest.h"
@@ -17,7 +19,15 @@
 
 bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCommand, RPCMessage &iMessage)
 {
-    if( iCommand == RPCMessagePingRequest::commandValue() ) {
+    if( iCommand == RPCMessageReassignMicroWalletsRequest::commandValue() ) {
+        return reassignMicroWallets(iConnection,iMessage);
+    }else if( iCommand == RPCMessageCreateMicroWalletPackageRequest::commandValue() ) {
+        return createMicroWalletPackage(iConnection,iMessage);
+    }else if( iCommand == RPCMessageCreateAccountRequest::commandValue() ) {
+        return createUserAccount(iConnection,iMessage);
+    }else if( iCommand == RPCMessageCheckOwnershipOfMicroWalletsRequest::commandValue() ) {
+        return checkOwnershipOfMicroWallets(iConnection,iMessage);
+    }else if( iCommand == RPCMessagePingRequest::commandValue() ) {
         RPCMessagePingRequest   lPingReq{iMessage};
         QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"));
         if( ! lReply.isEmpty() ) {
@@ -25,12 +35,6 @@ bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCo
         }else{
             qWarning() << "Failed to generate a reply message, this is a coding issue!";
         }
-    }else if( iCommand == RPCMessageCreateAccountRequest::commandValue() ) {
-        return createUserAccount(iConnection,iMessage);
-    }else if( iCommand == RPCMessageCreateMicroWalletPackageRequest::commandValue() ) {
-        return createMicroWalletPackage(iConnection,iMessage);
-    }else if( iCommand == RPCMessageReassignMicroWalletsRequest::commandValue() ) {
-        return reassignMicroWallets(iConnection,iMessage);
     }
 
     return false;
@@ -240,6 +244,42 @@ bool ClientAlphaHandler::reassignMicroWallets(ClientConnection *iConnection, RPC
 
             return iConnection->sendMessage(RPCMessageReassignMicroWalletsReply::create(lReplyCode,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
         }
+    }
+
+    return false;
+}
+
+bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
+{
+    if( authenticateMessage(iMessage) ) {
+        auto lDBI = gApp->databaseInterface();
+        RPCMessageCheckOwnershipOfMicroWalletsRequest           lRequest{iMessage};
+        RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode  lReplyCode  = RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::UnknownFailure;
+        bool                                                    lMWExists   = true;
+
+        for( QString &lMW : lRequest.walletIds() ) {
+            if( ! lDBI->microWalletExists(lMW) ) {
+                lMWExists = false;
+                lReplyCode = RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist;
+                break;
+            }
+        }
+
+        if( lMWExists ) {
+            for( QString &lMW : lRequest.walletIds() ) {
+                if( ! lDBI->microWalletOwnershipCheck(lMW, lRequest.owner()) ) {
+                    lMWExists = false;
+                    lReplyCode = RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized;
+                    break;
+                }
+            }
+
+            if( lMWExists ) {
+                lReplyCode = RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::Success;
+            }
+        }
+
+        return iConnection->sendMessage(RPCMessageCheckOwnershipOfMicroWalletsReply::create(lReplyCode,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
     }
 
     return false;
