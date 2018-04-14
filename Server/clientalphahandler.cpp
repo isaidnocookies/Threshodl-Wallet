@@ -133,7 +133,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
                         lPrivKey = lMW.privateKey();
                         lPrivKeyLen = lPrivKey.size();
                         lPrivKeyMid = lPrivKeyLen / 2;
-                        lPrivKeyLeft = lPrivKey.left(lPrivKeyMid-1);
+                        lPrivKeyLeft = lPrivKey.left(lPrivKeyMid);
                         lPrivKeyRight = lPrivKey.mid(lPrivKeyMid);
                         lMW.setPrivateKey(lPrivKeyLeft);
                         lMW.setWif(QByteArray()); // Clear the Wif.
