@@ -118,7 +118,7 @@ bool DBInterfaceAlpha::addressExists(const QString iAddress)
         if( _connectOrReconnectToDB(lDB) ) {
             lDB.transaction();
             QSqlQuery   lQuery(lDB);
-            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
+            QVariant    lAddress    = QVariant{iAddress.toLower()};
             lQuery.prepare( QStringLiteral("SELECT address FROM addresses WHERE address = :iAddress") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
@@ -153,8 +153,8 @@ bool DBInterfaceAlpha::addressCreate(const QString iAddress, const QByteArray iP
             lDB.transaction();
 
             QSqlQuery   lQuery(lDB);
-            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
-            QVariant    lPublicKey  = QVariant{QByteArray{iPublicKey}};
+            QVariant    lAddress    = QVariant{iAddress.toLower()};
+            QVariant    lPublicKey  = QVariant{iPublicKey};
             lQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey)") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
             lQuery.bindValue(QStringLiteral(":iPublicKey"),lPublicKey);
@@ -180,7 +180,7 @@ bool DBInterfaceAlpha::addressValidate(const QString iAddress, const QByteArray 
         if( _connectOrReconnectToDB(lDB) ) {
             lDB.transaction();
             QSqlQuery   lQuery(lDB);
-            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
+            QVariant    lAddress    = QVariant{iAddress.toLower()};
             lQuery.prepare( QStringLiteral("SELECT address, key FROM addresses WHERE address = :iAddress") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
@@ -215,7 +215,7 @@ bool DBInterfaceAlpha::addressDelete(const QString iAddress)
         if( _connectOrReconnectToDB(lDB) ) {
             lDB.transaction();
             QSqlQuery   lQuery(lDB);
-            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
+            QVariant    lAddress    = QVariant{iAddress.toLower()};
             lQuery.prepare( QStringLiteral("DELETE FROM addresses WHERE address = :iAddress") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
@@ -239,7 +239,7 @@ QByteArray DBInterfaceAlpha::publicKeyForAddress(const QString iAddress)
         if( _connectOrReconnectToDB(lDB) ) {
             lDB.transaction();
             QSqlQuery   lQuery(lDB);
-            QVariant    lAddress    = QVariant{QString{iAddress.toLower()}};
+            QVariant    lAddress    = QVariant{iAddress.toLower()};
             lQuery.prepare( QStringLiteral("SELECT key FROM addresses WHERE address = :iAddress") );
             lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
 
@@ -268,7 +268,7 @@ bool DBInterfaceAlpha::microWalletExists(const QString iMicroWalletId)
         if( _connectOrReconnectToDB(lDB) ) {
             lDB.transaction();
             QSqlQuery   lQuery(lDB);
-            QVariant    lMicroWalletId    = QVariant{QString{iMicroWalletId.toLower()}};
+            QVariant    lMicroWalletId    = QVariant{iMicroWalletId.toLower()};
             lQuery.prepare( QStringLiteral("SELECT walletid FROM escrow WHERE walletid = :iMicroWalletId") );
             lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lMicroWalletId);
 
@@ -386,3 +386,59 @@ bool DBInterfaceAlpha::microWalletCreate(const QString iMicroWalletId, const QSt
 
     return lRet;
 }
+
+QByteArray DBInterfaceAlpha::microWalletCopyPayload(const QString iMicroWalletId, const QString iAddress)
+{
+    QByteArray      lRet;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QVariant    lAddress    =   QVariant{iAddress.toLower()};
+        QVariant    lWalletId   =   QVariant{iMicroWalletId.toLower()};
+
+        lDB.transaction();
+
+        QSqlQuery   lQuery(lDB);
+        lQuery.prepare( QStringLiteral("SELECT payload FROM escrow WHERE walletid = :iMicroWalletId AND owner = :iAddress") );
+        lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+        lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
+
+
+        if( lQuery.exec() ) {
+            int         lPayloadNo  = lQuery.record().indexOf(QStringLiteral("payload"));
+            if( lQuery.first() ) {
+                lRet = lQuery.value(lPayloadNo).toByteArray();
+            }
+        }
+
+        _flushDB(lDB);
+    }
+
+    return lRet;
+}
+
+bool DBInterfaceAlpha::microWalletDelete(const QString iMicroWalletId, const QString iAddress)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        lDB.transaction();
+        QSqlQuery   lQuery(lDB);
+        QVariant    lAddress    = QVariant{iAddress.toLower()};
+        QVariant    lWalletId   = QVariant{iMicroWalletId.toLower()};
+
+        lQuery.prepare( QStringLiteral("DELETE FROM escrow WHERE walletid = :iMicroWalletId AND owner = :iAddress") );
+        lQuery.bindValue(QStringLiteral(":iAddress"), lAddress);
+        lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+
+        if( lQuery.exec() ) {
+            lRet = true;
+        }
+
+        _flushDB(lDB);
+    }
+
+    return lRet;
+}
+

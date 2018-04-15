@@ -19,7 +19,7 @@ QString RPCMessageCompleteMicroWalletsReply::transactionIdKey()
 { return QStringLiteral("transactionId"); }
 
 QString RPCMessageCompleteMicroWalletsReply::walletPartialKeysKey()
-{ }
+{ return QStringLiteral("walletPartialKeys"); }
 
 RPCMessageCompleteMicroWalletsReply::ReplyCode RPCMessageCompleteMicroWalletsReply::replyCode() const
 { return static_cast<ReplyCode>(fieldValue(replyCodeKey()).toUInt()); }

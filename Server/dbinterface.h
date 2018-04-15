@@ -27,6 +27,8 @@ public:
     virtual bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress )                                  = 0;
     virtual bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress )   = 0;
     virtual bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload )               = 0;
+    virtual QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress )                               = 0;
+    virtual bool microWalletDelete( const QString iMicroWalletId, const QString iAddress )                                          = 0;
 };
 
 #endif // DBINTERFACE_H
