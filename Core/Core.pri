@@ -40,6 +40,8 @@
         $$PWD/rpcmessagereassignmicrowalletsreply.h \
         $$PWD/rpcmessagecheckownershipofmicrowalletsrequest.h \
         $$PWD/rpcmessagecheckownershipofmicrowalletsreply.h \
+        $$PWD/rpcmessagecompletemicrowalletsrequest.h \
+        $$PWD/rpcmessagecompletemicrowalletsreply.h \
         $$PWD/bitcoininterface.h \
         $$PWD/walletdatacore.h
 
@@ -58,6 +60,8 @@
         $$PWD/rpcmessagereassignmicrowalletsreply.cpp \
         $$PWD/rpcmessagecheckownershipofmicrowalletsrequest.cpp \
         $$PWD/rpcmessagecheckownershipofmicrowalletsreply.cpp \
+        $$PWD/rpcmessagecompletemicrowalletsrequest.cpp \
+        $$PWD/rpcmessagecompletemicrowalletsreply.cpp \
         $$PWD/bitcoininterface.cpp
 
     OTHER_FILES += \

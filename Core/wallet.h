@@ -4,6 +4,7 @@
 #include "walletdatacore.h"
 
 #include <QList>
+#include <QMap>
 
 class Wallet
 {    
