@@ -11,7 +11,9 @@ public:
         Success                         = 0x1,
         OneOrMoreMicroWalletsDoNotExist = 0x2,
         OneOrMoreUnauthorized           = 0x3,
-        InternalServerError1            = 0xA0
+        InternalServerError1            = 0xA0,
+        InternalServerError2            = 0xA1,
+        InternalServerError3            = 0xA2
     };
 
     typedef enum ReplyCode ReplyCode;

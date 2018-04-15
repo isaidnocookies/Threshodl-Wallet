@@ -9,6 +9,8 @@
 #include "rpcmessagecreatemicrowalletpackagereply.h"
 #include "rpcmessagecheckownershipofmicrowalletsrequest.h"
 #include "rpcmessagecheckownershipofmicrowalletsreply.h"
+#include "rpcmessagecompletemicrowalletsrequest.h"
+#include "rpcmessagecompletemicrowalletsreply.h"
 
 #include "app.h"
 #include "digest.h"
@@ -23,10 +25,12 @@ bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCo
         return reassignMicroWallets(iConnection,iMessage);
     }else if( iCommand == RPCMessageCreateMicroWalletPackageRequest::commandValue() ) {
         return createMicroWalletPackage(iConnection,iMessage);
-    }else if( iCommand == RPCMessageCreateAccountRequest::commandValue() ) {
-        return createUserAccount(iConnection,iMessage);
     }else if( iCommand == RPCMessageCheckOwnershipOfMicroWalletsRequest::commandValue() ) {
         return checkOwnershipOfMicroWallets(iConnection,iMessage);
+    }else if( iCommand == RPCMessageCompleteMicroWalletsRequest::commandValue() ) {
+        return completeMicroWallets(iConnection,iMessage);
+    }else if( iCommand == RPCMessageCreateAccountRequest::commandValue() ) {
+        return createUserAccount(iConnection,iMessage);
     }else if( iCommand == RPCMessagePingRequest::commandValue() ) {
         RPCMessagePingRequest   lPingReq{iMessage};
         QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"));
@@ -257,6 +261,7 @@ bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnect
         RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode  lReplyCode  = RPCMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::UnknownFailure;
         bool                                                    lMWExists   = true;
 
+        // Preflight, check for the micro-wallets
         for( QString &lMW : lRequest.walletIds() ) {
             if( ! lDBI->microWalletExists(lMW) ) {
                 lMWExists = false;
@@ -266,6 +271,7 @@ bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnect
         }
 
         if( lMWExists ) {
+            // Preflight, check authorization of the micro-wallets
             for( QString &lMW : lRequest.walletIds() ) {
                 if( ! lDBI->microWalletOwnershipCheck(lMW, lRequest.owner()) ) {
                     lMWExists = false;
@@ -282,5 +288,54 @@ bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnect
         return iConnection->sendMessage(RPCMessageCheckOwnershipOfMicroWalletsReply::create(lReplyCode,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
     }
 
+    return false;
+}
+
+bool ClientAlphaHandler::completeMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
+{
+    if( authenticateMessage(iMessage) ) {
+        auto lDBI = gApp->databaseInterface();
+        RPCMessageCompleteMicroWalletsRequest                   lRequest{iMessage};
+        RPCMessageCompleteMicroWalletsReply::ReplyCode          lReplyCode  = RPCMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure;
+        char                                                    lISE2       = static_cast<char>(RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2);
+        bool                                                    lMWExists   = true;
+        QMap< QString, QByteArray >                             lPayloads;
+
+        // Preflight, check for the micro-wallets
+        for( QString &lMW : lRequest.walletIds() ) {
+            if( ! lDBI->microWalletExists(lMW) ) {
+                lMWExists = false;
+                lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist;
+                break;
+            }
+        }
+
+        if( lMWExists ) {
+            // Preflight, check authorization of the micro-wallets
+            for( QString &lMW : lRequest.walletIds() ) {
+                if( ! lDBI->microWalletOwnershipCheck(lMW, lRequest.username()) ) {
+                    lMWExists = false;
+                    lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized;
+                    break;
+                }
+            }
+
+            if( lMWExists ) {
+                // Check out the micro-wallets
+                lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::Success;
+                for( QString &lMW : lRequest.walletIds() ) {
+                    if( (lPayloads[lMW] = lDBI->microWalletCopyPayload(lMW, lRequest.username())).isEmpty() ) {
+                        if( lReplyCode == RPCMessageCompleteMicroWalletsReply::ReplyCode::Success )
+                            lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2;
+                        lPayloads[lMW] = QByteArray{(static_cast<char *>(&lISE2)), 1};
+                    }else if( ! lDBI->microWalletDelete(lMW, lRequest.username() ) ) {
+                        lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3;
+                    }
+                }
+            }
+        }
+
+        return iConnection->sendMessage(RPCMessageCompleteMicroWalletsReply::create(lReplyCode,lPayloads,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
+    }
     return false;
 }
