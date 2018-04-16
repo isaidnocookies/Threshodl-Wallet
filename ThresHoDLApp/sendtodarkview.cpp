@@ -115,22 +115,30 @@ void SendToDarkView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    ui->warningLabel->setText(lMessage);
-
+    ui->warningLabel->setText("Conversion Complete!");
     RPCMessageCreateMicroWalletPackageReply lReply {lMessage};
 
     QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-    if (lCommand != RPCMessageCreateMicroWalletPackageReply::commandValue()) {
-        //not for me
-    } else {
+    if (lCommand == RPCMessageCreateMicroWalletPackageReply::commandValue()) {
+        // compare reply transaction id
 
-        //compare transactionID for reply
-
-//    switch(lReply.replyCode()) {
-//        default:
-//            qDebug() << "FUCK";
-//    }
+        switch(lReply.replyCode()) {
+        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
+            parseBitcoinPackage(lReply.microWalletsData());
+            break;
+        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
+            break;
+        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
+            break;
+        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
+            break;
+        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
+            break;
+        default:
+            //RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnknownFailure
+            break;
+        }
     }
 
 }
@@ -173,18 +181,13 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->confirmCheckBox->setEnabled(true);
 }
 
-void SendToDarkView::parseBitcoinPackage(QByteArray iData)
+void SendToDarkView::parseBitcoinPackage(QList<QByteArray> iData)
 {
-    double lTotalDarkCoin = 0;
-    double lTotalBrightCoin = 0;
-
-    ui->warningLabel->setText(QString(iData));
-    // DO MORE STUFFS
-
-//    lTotalBrightCoin = ui->amountLineEdit->text().toDouble();
+    double lTotalBrightCoin = mBalance - ui->amountLineEdit->text().toDouble();
+    setBalance(lTotalBrightCoin);
 
     emit updateBrightBalance(lTotalBrightCoin);
-    emit brightToDarkCompleted(true, lTotalBrightCoin, QList<BitcoinWallet>());
+    emit brightToDarkCompleted(true, lTotalBrightCoin, iData);
 }
 
 void SendToDarkView::on_confirmCheckBox_stateChanged(int arg1)

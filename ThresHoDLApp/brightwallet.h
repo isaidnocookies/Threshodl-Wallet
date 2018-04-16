@@ -30,6 +30,7 @@ public:
 
 public slots:
     void updateBrightBalance (double lAmount);
+    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private slots:
     void on_closeWindowButton_pressed();
@@ -40,7 +41,7 @@ signals:
     void makeDashboardMaximized();
     void updateDarkBalance(double lAmount);
     void updateBrightBalanceSignal(double lAmount);
-    void brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
+    void brightToDarkCompletedSignal(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::BrightWallet    *ui;

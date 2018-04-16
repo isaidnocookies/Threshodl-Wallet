@@ -38,11 +38,26 @@ void BrightWallet::setActiveUser(UserAccount &iUserAccount)
 
 void BrightWallet::updateBrightBalance(double lAmount)
 {
-    double newBalance = mBalance - lAmount;
-    ui->totalLabel->setText(QString::number(newBalance));
-    mBalance = newBalance;
+    ui->totalLabel->setText(QString::number(lAmount));
+    mBalance = lAmount;
+}
 
-    emit updateBrightBalanceSignal(lAmount);
+void BrightWallet::brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets)
+{
+    if (iSuccessful) {
+        mActiveUser->setBrightBalance(lBrightAmount);
+        for (auto w : iDarkWallets) {
+            mActiveUser->addMicroWallet(BitcoinWallet(w));
+            qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+        }
+        updateBrightBalance(mActiveUser->getBrightBalance());
+        mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+
+        emit brightToDarkCompletedSignal(iSuccessful, lBrightAmount, iDarkWallets);
+    } else {
+        //failed
+        qDebug() << "Failed to import wallets";
+    }
 }
 
 void BrightWallet::on_closeWindowButton_pressed()

@@ -131,6 +131,7 @@ void MainWindow::completePendingImport(bool iComplete)
 
         for (auto w : lArray) {
             if (mActiveUser->accountContainsWallet(BitcoinWallet(w.toVariant().toByteArray()).walletId())) {
+                ui->warningLabel->setWordWrap(true);
                 ui->warningLabel->setText("Wallet import was canceled. Wallet(s) already exist!");
                 mPendingImport = "";
                 return;
@@ -150,7 +151,7 @@ void MainWindow::on_brightButton_pressed()
 {
     mBrightWalletView = new BrightWallet;
 
-    connect (mBrightWalletView, &BrightWallet::brightToDarkCompleted, this, &MainWindow::brightToDarkCompleted);
+    connect (mBrightWalletView, &BrightWallet::brightToDarkCompletedSignal, this, &MainWindow::brightToDarkCompleted);
 
     mBrightWalletView->setAddress(mActiveUser->getBrightWallet().address());
     mBrightWalletView->setActiveUser(*mActiveUser);
@@ -180,19 +181,12 @@ void MainWindow::on_notificationPushButton_pressed()
     mNotificationView->showMaximized();
 }
 
-void MainWindow::brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets)
+void MainWindow::brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets)
 {
     double lDarkTotal = 0;
     for (auto dw : iDarkWallets) {
-        mActiveUser->addMicroWallet(dw);
-        lDarkTotal += dw.value().toDouble();
+        lDarkTotal += BitcoinWallet(dw).value().toDouble();
     }
-
-    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getDarkBalance()));
-
-    mActiveUser->setBrightBalance(mActiveUser->getBrightBalance() - lBrightAmount);
-    ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(mActiveUser->getBrightBalance()));
-    ui->btcTotalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance() + mActiveUser->getDarkBalance()));
 
     addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal));
 }

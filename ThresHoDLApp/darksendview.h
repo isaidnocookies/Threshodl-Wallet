@@ -5,6 +5,8 @@
 #include "darksendconfirm.h"
 #include "qrreader.h"
 #include "useraccount.h"
+#include "rpcmessagereassignmicrowalletsrequest.h"
+#include "rpcmessagereassignmicrowalletsreply.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -47,7 +49,6 @@ private slots:
     void sentConfirmation(bool iSuccess);
 
 public slots:
-    void sendConfirmation(bool iSuccess);
     void getQrCode(QString iData);
 
 signals:
@@ -61,6 +62,7 @@ private:
     QrReader                *mQrReaderView;
     UserAccount             *mActiveUser;
     QList<BitcoinWallet>    mWalletsToSend_Pending;
+    double                  mPendingAmountToSend;
 
     void stopProgressBarAndEnable();
     void startProgressBarAndDisable();

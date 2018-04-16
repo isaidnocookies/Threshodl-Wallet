@@ -38,7 +38,7 @@ private slots:
     void on_darkButton_pressed();
     void on_notificationPushButton_pressed();
 
-    void brightToDarkCompleted(double lBrightAmount, QList<BitcoinWallet> iDarkWallets);
+    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::MainWindow                  *ui;
