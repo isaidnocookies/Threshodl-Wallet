@@ -36,6 +36,8 @@ public:
     virtual void        setP2WPKHAddress(const QByteArray iValue)           { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("btcP2WPHKAddress"),iValue); }
     virtual void        setP2SH_P2WPKHAddress(const QByteArray iValue)      { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("btcP2SH+P2WPHKAddress"),iValue); }
 
+    static QByteArray generateWifFromPrivateKey(const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
+
     static BitcoinWallet createNewBitcoinWallet(ChainType iChainType = ChainType::Main);
     static BitcoinWallet fromWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
 };

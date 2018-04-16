@@ -6,6 +6,7 @@ extern "C" {
 #include <btc/chainparams.h>
 #include <btc/ecc.h>
 #include <btc/tool.h>
+#include <btc/utils.h>
 }
 
 #define     kBTCStringBufferSize    128
@@ -33,6 +34,39 @@ BitcoinWallet::BitcoinWallet(const Wallet &iOther) : Wallet(iOther)
 BitcoinWallet::BitcoinWallet(const WalletDataCore &iOther) : Wallet(iOther)
 { __init(); }
 
+QByteArray BitcoinWallet::generateWifFromPrivateKey(const QByteArray iPrivateKey, BitcoinWallet::ChainType iChainType)
+{
+    QByteArray  lWif{kBTCStringBufferSize,0};
+    size_t      lWifSize = lWif.size();
+    btc_key     lKey;
+    int         lKeyLen = static_cast<int>(sizeof(lKey.privkey));
+
+    const btc_chainparams *     lChain              = &btc_chainparams_main;
+
+    switch( iChainType ) {
+    case ChainType::TestNet:
+        lChain = &btc_chainparams_test;
+        break;
+    case ChainType::RegressionNet:
+        lChain = &btc_chainparams_regtest;
+        break;
+    default:
+        // Default to main, do nothing
+        break;
+    }
+
+    btc_privkey_init(&lKey);
+    utils_hex_to_bin(iPrivateKey.constData(),lKey.privkey,iPrivateKey.size(),&lKeyLen);
+    btc_privkey_encode_wif(&lKey,lChain,lWif.data(),&lWifSize);
+
+    if( lWifSize > 0 ) {
+        lWif.resize(lWifSize);
+        return lWif;
+    }
+
+    return QByteArray();
+}
+
 BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
 {
     __init();
@@ -51,8 +85,8 @@ BitcoinWallet BitcoinWallet::createNewBitcoinWallet(ChainType iChainType)
         break;
     }
 
-    QByteArray                  lWif{128,0};
-    QByteArray                  lPrivateKey{128,0};
+    QByteArray                  lWif{kBTCStringBufferSize,0};
+    QByteArray                  lPrivateKey{kBTCStringBufferSize,0};
     if( ! gen_privatekey(lChain, lWif.data(), lWif.size(), lPrivateKey.data() ) )
         return BitcoinWallet{};
 
