@@ -325,12 +325,15 @@ bool ClientAlphaHandler::completeMicroWallets(ClientConnection *iConnection, RPC
                 lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::Success;
                 for( QString &lMW : lRequest.walletIds() ) {
                     if( (lPayloads[lMW] = lDBI->microWalletCopyPayload(lMW, lRequest.username())).isEmpty() ) {
+                        qWarning() << "Could not copy micro-wallet" << lMW << "for" << lRequest.username();
                         if( lReplyCode == RPCMessageCompleteMicroWalletsReply::ReplyCode::Success )
                             lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2;
                         lPayloads[lMW] = QByteArray{(static_cast<char *>(&lISE2)), 1};
                     }else if( ! lDBI->microWalletDelete(lMW, lRequest.username() ) ) {
+                        qWarning() << "Could not delete micro-wallet" << lMW << "for" << lRequest.username();
                         lReplyCode = RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3;
                     }
+                    qDebug() << "Completed wallet-wallet" << lMW << "for" << lRequest.username();
                 }
             }
         }

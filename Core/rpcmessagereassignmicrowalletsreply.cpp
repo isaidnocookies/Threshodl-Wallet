@@ -24,7 +24,7 @@ RPCMessageReassignMicroWalletsReply::ReplyCode RPCMessageReassignMicroWalletsRep
 { return static_cast<ReplyCode>(fieldValue(replyCodeKey()).toUInt()); }
 
 QString RPCMessageReassignMicroWalletsReply::transactionId() const
-{ return fieldValue(transactionId()).toString(); }
+{ return fieldValue(transactionIdKey()).toString(); }
 
 QString RPCMessageReassignMicroWalletsReply::create(const RPCMessageReassignMicroWalletsReply::ReplyCode iReplyCode, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
