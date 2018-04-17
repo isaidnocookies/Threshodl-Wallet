@@ -36,28 +36,43 @@ darwin {
         "    <string>QR Scanner needs camera access</string>" \
         "    <key>NSMicrophoneUsageDescription</key>" \
         "    <string>QR Scanner needs camera access</string>" \
-        "    <key>LSApplicationQueriesSchemes</key> \
-        "    <array> \
-        "    <string>https</string> \
-        "    </array> \
-        "    <key>CFBundleAllowMixedLocalizations</key> \
-        "    <true/> \
-        "    <key>CFBundleDocumentTypes</key> \
-        "        <array> \
-        "            <dict> \
-        "                <key>CFBundleTypeExtensions</key> \
-        "                <array> \
-        "                    <string>"*"</string> \
-        "                </array> \
-        "                <key>CFBundleTypeName</key> \
-        "                <string>Unknown</string> \
-        "                <key>LSItemContentTypes</key> \
-        "                <array> \
-        "                    <string>public.data</string> \
-        "                </array> \
-        "            </dict> \
-        "        </array> \
-        "</dict> \
+        "    <key>LSApplicationQueriesSchemes</key>" \
+        "    <array>" \
+        "    <string>https</string>" \
+        "    </array>" \
+        "    <key>CFBundleAllowMixedLocalizations</key>" \
+        "    <true/>" \
+        "    <key>CFBundleDocumentTypes</key>" \
+        "        <array>" \
+        "            <dict>" \
+        "                <key>CFBundleTypeExtensions</key>" \
+        "                <array>" \
+        "                    <string>\"*\"</string>" \
+        "                </array>" \
+        "                <key>CFBundleTypeName</key>" \
+        "                <string>Unknown</string>" \
+        "                <key>LSItemContentTypes</key>" \
+        "                <array>" \
+        "                    <string>public.data</string>" \
+        "                </array>" \
+        "            </dict>" \
+        "        </array>" \
+        "    <key>CFBundleIcons</key>" \
+        "    <dict>" \
+        "        <key>CFBundlePrimaryIcon</key>" \
+        "        <dict>" \
+        "            <key>CFBundleIconFiles</key>" \
+        "            <array>" \
+        "                <string>Icon-App-29x29@1x.png</string>" \
+        "                <string>Icon-App-29x29@2x.png</string>" \
+        "                <string>Icon-App-40x40@2x.png</string>" \
+        "                <string>Icon-App-57x57@1x.png</string>" \
+        "                <string>Icon-App-57x57@2x.png</string>" \
+        "                <string>Icon-App-60x60@2x.png</string>" \
+        "            </array>" \
+        "        </dict>" \
+        "    </dict>" \
+        "</dict>" \
         "</plist>"
     write_file($$OUT_PWD/Info.plist, INFOPLIST)|error()
     QMAKE_INFO_PLIST = $$OUT_PWD/Info.plist

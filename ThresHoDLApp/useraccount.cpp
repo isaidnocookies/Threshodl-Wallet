@@ -184,6 +184,7 @@ void UserAccount::createNewBrightWallet()
     lNewWallet.setWalletId(lWalletId);
 
     mBrightWallet.append(lNewWallet);
+    mAllWallets.insert(lNewWallet.walletId());
 }
 
 void UserAccount::addMicroWallet(BitcoinWallet iWallet)
@@ -230,6 +231,10 @@ void UserAccount::addBrightWallet(BitcoinWallet iWallet)
 
 void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
 {
+    for (auto w : iWallets) {
+        mAllWallets.remove(w.walletId());
+    }
+
     mBrightWallet.clear();
     mBrightWallet = iWallets;
     mBrightBalance = 0;
@@ -240,6 +245,7 @@ void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
         w.setOwner(mUsername);
         lWalletList.append(w.toData());
         mBrightBalance += w.value().toDouble();
+        mAllWallets.insert(w.walletId());
     }
 
     mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
@@ -250,6 +256,12 @@ void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
 
 void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
 {
+    // remove old dark wallets from wallet set thingy
+
+    for (auto w : mDarkWallet) {
+        mAllWallets.remove(w.walletId());
+    }
+
     mDarkWallet.clear();
     mDarkWallet = iWallets;
 
@@ -262,6 +274,7 @@ void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
     QList<QVariant> lWalletList;
 
     for (auto w : iWallets) {
+        mAllWallets.insert(w.walletId());
         lWalletList.append(w.toData());
         mDarkBalance += w.value().toDouble();
     }

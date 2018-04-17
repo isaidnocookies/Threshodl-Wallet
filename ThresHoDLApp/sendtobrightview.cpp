@@ -2,6 +2,10 @@
 #include "ui_sendtobrightview.h"
 
 #include "globalsandstyle.h"
+#include "rpcmessagecompletemicrowalletsreply.h"
+#include "rpcmessagecompletemicrowalletsrequest.h"
+
+#include <QFile>
 
 SendToBrightView::SendToBrightView(QWidget *parent) :
     QWidget(parent),
@@ -11,12 +15,39 @@ SendToBrightView::SendToBrightView(QWidget *parent) :
 
     ui->convertButton->setStyleSheet(darkBackgroundStyleSheet());
     ui->amountLineEdit->setStyleSheet(darkBackgroundStyleSheet());
-//    ui->confirmCheckBox->setStyleSheet(darkBackgroundStyleSheet());
+    ui->progressBar->setVisible(false);
+
+    mConnection = new RPCConnection{this};
+
+    connect( mConnection, &RPCConnection::connected, this, &SendToBrightView::connectedToServer );
+    connect( mConnection, &RPCConnection::disconnected, this, &SendToBrightView::disconnectedFromServer );
+    connect( mConnection, &RPCConnection::socketError, this, &SendToBrightView::socketError );
+    connect( mConnection, &RPCConnection::sslErrors, this, &SendToBrightView::sslErrors );
+    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &SendToBrightView::failedToSendMessage );
+    connect( mConnection, &RPCConnection::sentTextMessage, this, &SendToBrightView::sentMessage );
+    connect( mConnection, &RPCConnection::textMessageReceived, this, &SendToBrightView::receivedMessage );
+
+    QFile lFile{QStringLiteral(":/ca.pem")};
+    if( lFile.open(QIODevice::ReadOnly) ) {
+        mSslConfiguration = QSslConfiguration::defaultConfiguration();
+        mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{lFile.readAll(),QSsl::Pem});
+
+        lFile.close();
+        mConnection->setSslConfiguration(mSslConfiguration);
+    }else{
+        qFatal("Failed to open CA cert.");
+    }
 }
 
 SendToBrightView::~SendToBrightView()
 {
     delete ui;
+}
+
+void SendToBrightView::setActiveUser(UserAccount *iUser)
+{
+    mActiveUser = iUser;
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getDarkBalance()));
 }
 
 void SendToBrightView::on_closeButton_pressed()
@@ -29,5 +60,223 @@ void SendToBrightView::on_convertButton_pressed()
 {
     if (!ui->confirmCheckBox->isChecked()) {
         ui->warningLabelForCheck->setText(QString("*Confirm to continue"));
+    } else {
+        QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
+        mConnection->open(lUrl);
+        startProgressBarAndDisable();
+    }
+}
+
+void SendToBrightView::connectedToServer()
+{
+    QStringList lWalletIds;
+    QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text().toDouble());
+
+    for (auto w : lWalletsToComplete) {
+        lWalletIds.append(w.walletId());
+    }
+
+    qDebug() << "Connected to server.";
+    mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(qrand() % 100);
+    mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletIds, mTransactionId, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+}
+
+void SendToBrightView::disconnectedFromServer()
+{
+    qDebug() << "Disconnected from server.";
+
+    //catastrophic failure
+    stopProgressBarAndEnable();
+    ui->warningLabel->setText("[1] Error, please try again!");
+}
+
+void SendToBrightView::failedToSendMessage()
+{
+    qDebug() << "Failed to send message.";
+    ui->warningLabel->setText("[2] Error, please try again!");
+
+    //failed
+    stopProgressBarAndEnable();
+}
+
+void SendToBrightView::sentMessage()
+{
+    qDebug() << "Sent message.";
+}
+
+void SendToBrightView::receivedMessage()
+{
+    qDebug() << "Received message.";
+
+    stopProgressBarAndEnable();
+
+    // got reply
+    QString lMessage = mConnection->nextTextMessage();
+    RPCMessageCompleteMicroWalletsReply lReply {lMessage};
+    bool lTreatAsFailure = false;
+
+    if (lReply.transactionId() != mTransactionId) {
+        //ignore
+        qDebug() << "Message not for us";
+        return;
+    }
+
+    QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+
+    if (lCommand == RPCMessageCompleteMicroWalletsReply::commandValue()) {
+        switch(lReply.replyCode()) {
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::Success:
+            qDebug() << "Success";
+            break;
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized:
+            qDebug() << "OneOrMoreUnauthorized Error";
+            lTreatAsFailure = true;
+            break;
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist:
+            qDebug() << "OneOrMoreMicroWalletsDoNotExist Error";
+            lTreatAsFailure = true;
+            break;
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1:
+            // Database error, cant talk to database
+            qDebug() << "InternalServerError1";
+            lTreatAsFailure = true;
+            break;
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2:
+            // Some wallets were completed.. Result data--if size of data is the error code, its bad. if its not bad, its not bad (size of error is char)
+            qDebug() << "InternalServerError2 Error";
+            break;
+        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3:
+            // Can't delete microwallet from internal database. Microwallets were complete tho... Treat as success.
+            qDebug() << "InternalServerError3 Error";
+            break;
+        default:
+            //RPCMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure
+            qDebug() << "UnknownFailure Error";
+            lTreatAsFailure = true;
+            break;
+        }
+    }
+
+    if (lTreatAsFailure) {
+        //roll back changes...
+    } else {
+        completeWalletsAndAdd(lReply.walletPartialKeys());
+    }
+}
+
+void SendToBrightView::socketError(QAbstractSocket::SocketError iError)
+{
+    qDebug() << "SocketError:" << iError;
+    ui->warningLabel->setText("[3] Error, please try again!");
+    stopProgressBarAndEnable();
+}
+
+void SendToBrightView::sslErrors(const QList<QSslError> iErrors)
+{
+    qDebug() << "Ssl Errors:";
+
+    int lIndex = 0;
+    stopProgressBarAndEnable();
+
+    for( auto lError : iErrors ) {
+        qDebug() << lIndex++ << lError.errorString();
+        ui->warningLabel->setText("[4] Error, please try again!");
+    }
+}
+
+void SendToBrightView::startProgressBarAndDisable()
+{
+    ui->progressBar->setVisible(true);
+    ui->amountLineEdit->setEnabled(false);
+    ui->convertButton->setEnabled(false);
+    ui->confirmCheckBox->setEnabled(false);
+    ui->closeButton->setEnabled(false);
+}
+
+void SendToBrightView::stopProgressBarAndEnable()
+{
+    ui->progressBar->setVisible(false);
+    ui->amountLineEdit->setEnabled(true);
+    ui->convertButton->setEnabled(true);
+    ui->confirmCheckBox->setEnabled(true);
+    ui->closeButton->setEnabled(true);
+}
+
+void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
+{
+    // parse out wallet parts
+    QList<BitcoinWallet> lPartialWallets = mActiveUser->getPendingToSendDarkWallets();
+    qDebug() << iData.count() << " Private keys back from server to complete";
+
+    for (auto w: lPartialWallets) {
+        BitcoinWallet lWallet = w;
+
+        if (*(static_cast<char *>(iData[w.walletId()].data())) == RPCMessageCompleteMicroWalletsReply::InternalServerError2) {
+            // key is an error, dont complete wallet
+            w.setOwner(mActiveUser->getUsername());
+            w.setIsMicroWallet(true);
+            mActiveUser->addMicroWallet(w);
+        }
+
+        w.setPrivateKey(w.privateKey().append(iData[w.walletId()]));
+        w.setOwner(mActiveUser->getUsername());
+        w.setIsMicroWallet(false);
+        w.setWif(BitcoinWallet::generateWifFromPrivateKey(w.privateKey()));
+        mActiveUser->addBrightWallet(lWallet);
+    }
+
+    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+    mActiveUser->clearPendingToSendDarkWallets();
+    ui->amountLineEdit->clear();
+    ui->confirmationLabel->setText(QString("Conversion Complete!"));
+    ui->confirmCheckBox->setChecked(false);
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1").arg(mActiveUser->getDarkBalance()));
+}
+
+QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(double iValue)
+{
+    QList<BitcoinWallet> lAllWallets = mActiveUser->getDarkWallets();
+    QList<BitcoinWallet> lWalletsToSend;
+    QList<BitcoinWallet> lRemainingWallets;
+    double lValue = iValue;
+
+    for (auto w : lAllWallets) {
+        qDebug() << w.walletId();
+        if (w.value().toDouble() <= lValue) {
+            lWalletsToSend.append(w);
+            lValue -= w.value().toDouble();
+            qDebug() << "Added to complete list";
+        } else {
+            lRemainingWallets.append(w);
+            qDebug() << "Added to remaining list";
+        }
+
+        if (lValue >= 0 && lValue < 0.00001) {
+            break;
+        } else if (lValue < 0) {
+            qDebug() << "Error with 'change', rolling back action.... Someday"; //TODO: roll back
+        }
+    }
+
+    if (lValue > 0) {
+        qDebug() << "lValue is not zero... something happen";
+        //roll back action and make more change
+        //TODO: make more change
+    }
+
+    qDebug() << lWalletsToSend.size() << " Wallets to complete";
+
+    mActiveUser->setDarkWallets(lRemainingWallets);
+    mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
+
+    return lWalletsToSend;
+}
+
+void SendToBrightView::on_amountLineEdit_textChanged(const QString &arg1)
+{
+    if (arg1.size() > 0) {
+        ui->confirmCheckBox->setChecked(false);
+        ui->warningLabel->clear();
+        ui->confirmationLabel->clear();
     }
 }

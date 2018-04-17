@@ -33,7 +33,7 @@ public:
     BitcoinWallet           getBrightWallet(int iIndex = 0);
     double                  getDarkBalance()                    { return mDarkBalance; }
     double                  getBrightBalance()                  { return mBrightBalance; }
-    QList<BitcoinWallet> getPendingToSendDarkWallets();
+    QList<BitcoinWallet>    getPendingToSendDarkWallets();
 
     void setUsername(QString iUsername);
     void setKeys(QByteArray iPub, QByteArray iPriv);

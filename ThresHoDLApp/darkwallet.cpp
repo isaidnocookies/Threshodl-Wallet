@@ -105,6 +105,8 @@ void DarkWallet::on_withdrawToBrightWalletButton_pressed()
 {
     mSendToDarkView = new SendToBrightView;
 
+    mSendToDarkView->setActiveUser(mActiveUser);
+
     mSendToDarkView->show();
     mSendToDarkView->showMaximized();
 }

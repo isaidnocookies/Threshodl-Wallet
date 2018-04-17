@@ -64,6 +64,8 @@ private:
     QList<BitcoinWallet>    mWalletsToSend_Pending;
     double                  mPendingAmountToSend;
 
+    QString                 mTransactionID;
+
     void stopProgressBarAndEnable();
     void startProgressBarAndDisable();
 

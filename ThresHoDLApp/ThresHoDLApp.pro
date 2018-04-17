@@ -28,8 +28,11 @@ DEFINES += ENABLE_RPCSERVER
 
 include (../Core/Core.pri)
 include (../QrCodeModule/QrCodeModule.pri)
+include (../QStringMath/QStringMath.pri)
 
 ios {
+    ios_icon.files = $$files($$PWD/ios/AppIcon.appiconset/Icon-App*.png)
+    QMAKE_BUNDLE_DATA += ios_icon
     include (ios/plist.pri)
 }
 

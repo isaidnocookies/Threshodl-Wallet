@@ -121,7 +121,8 @@ void DarkSendView::on_sendTransactionButton_pressed()
                 if (lClient.sendMail(lMessage)) {
                     //success
                     qDebug() << "Success";
-//                    return;
+
+                    mTransactionID = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 1000));
                     QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
                     mConnection->open(lUrl);
                     startProgressBarAndDisable();
@@ -179,6 +180,17 @@ QByteArray DarkSendView::getAttachmentPackage()
         } else {
             lRemainingWallets.append(w);
         }
+
+        if (lValue == 0) {
+            break;
+        } else if (lValue < 0) {
+            qDebug() << "FUCK...";
+        }
+    }
+
+    if (lValue > 0) {
+        qDebug() << "Shit, can't make change...";
+        // TODO: do something about it...
     }
 
     mWalletsToSend_Pending = lWalletsToSend;
@@ -188,7 +200,7 @@ QByteArray DarkSendView::getAttachmentPackage()
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
 
     lJson.insert("Amount", ui->amountLineEdit->text());
-    lJson.insert("TransactionId", "00000000000000000");
+    lJson.insert("TransactionId", mTransactionID);
     lJson.insert("Notes", "Bitcoin dark transaction.");
 
     lJson.insert("Wallets", lWalletArray);
@@ -229,7 +241,7 @@ void DarkSendView::connectedToServer()
         lWalletList.append(w.walletId());
     }
 
-    mConnection->sendTextMessage(RPCMessageReassignMicroWalletsRequest::create(ui->addressLineEdit->text(), lWalletList, "", mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+    mConnection->sendTextMessage(RPCMessageReassignMicroWalletsRequest::create(ui->addressLineEdit->text(), lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
 }
 
 void DarkSendView::disconnectedFromServer()
@@ -259,11 +271,16 @@ void DarkSendView::receivedMessage()
 {
     qDebug() << "Received message.";
 
-    stopProgressBarAndEnable();
-
     // got reply
     QString lMessage = mConnection->nextTextMessage();
     RPCMessageReassignMicroWalletsReply lReply{lMessage};
+
+    if (mTransactionID != lReply.transactionId()) {
+        //message isnt ours
+        return;
+    }
+
+    stopProgressBarAndEnable();
 
     switch(lReply.replyCode()) {
     case RPCMessageReassignMicroWalletsReply::ReplyCode::Success:
@@ -306,6 +323,8 @@ void DarkSendView::receivedMessage()
         break;
     default:
             qDebug() << "FUCK 8";
+            sentConfirmation(false);
+        break;
     }
 }
 
