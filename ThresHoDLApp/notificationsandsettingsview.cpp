@@ -54,3 +54,15 @@ void NotificationsAndSettingsView::on_notificationTableWidget_cellClicked(int ro
     ui->notificationLabel->setText(lNotification);
     ui->dateLabel->setText(lDate);
 }
+
+void NotificationsAndSettingsView::on_addPushButton_pressed()
+{
+    BitcoinWallet lNewBright = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+    lNewBright.setValue(ui->amountLineEdit->text());
+    lNewBright.setOwner(mActiveUser->getUsername());
+    lNewBright.setIsMicroWallet(false);
+    lNewBright.setWalletId(QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(qrand() % 1000));
+    mActiveUser->addBrightWallet(lNewBright);
+    ui->amountLineEdit->clear();
+    ui->amountLineEdit->setPlaceholderText("Bright wallet added");
+}

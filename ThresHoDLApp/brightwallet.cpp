@@ -8,6 +8,7 @@ BrightWallet::BrightWallet(QWidget *parent) :
     ui(new Ui::BrightWallet)
 {
     ui->setupUi(this);
+    mBalance = QStringMath();
 
     ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
@@ -24,7 +25,7 @@ void BrightWallet::setAddress(QByteArray iPublicAddress)
     setQrCode();
 }
 
-void BrightWallet::setBalance(double iAmount)
+void BrightWallet::setBalance(QStringMath iAmount)
 {
     mBalance = iAmount;
 }
@@ -33,27 +34,27 @@ void BrightWallet::setActiveUser(UserAccount &iUserAccount)
 {
     mActiveUser = &iUserAccount;
 
-    ui->totalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance()));
+    ui->totalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance().toString()));
 }
 
-void BrightWallet::updateBrightBalance(double lAmount)
+void BrightWallet::updateBrightBalance(QStringMath lAmount)
 {
-    ui->totalLabel->setText(QString::number(lAmount));
+    ui->totalLabel->setText(lAmount.toString());
     mBalance = lAmount;
 }
 
-void BrightWallet::brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets)
+void BrightWallet::brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAmount, QList<QByteArray> iDarkWallets)
 {
     if (iSuccessful) {
-        mActiveUser->setBrightBalance(lBrightAmount);
+        mActiveUser->setBrightBalance(lBrightAmount.toString());
         for (auto w : iDarkWallets) {
             mActiveUser->addMicroWallet(BitcoinWallet(w));
             qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
         }
         updateBrightBalance(mActiveUser->getBrightBalance());
-        mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+        mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
 
-        emit brightToDarkCompletedSignal(iSuccessful, lBrightAmount, iDarkWallets);
+        emit brightToDarkCompletedSignal(iSuccessful, lBrightAmount.toString(), iDarkWallets);
     } else {
         //failed
         qDebug() << "Failed to import wallets";
@@ -81,8 +82,7 @@ void BrightWallet::on_sendToDarkWalletButton_pressed()
     connect (mSendToDarkView, &SendToDarkView::updateBrightBalance, this, &BrightWallet::updateBrightBalance);
     connect (mSendToDarkView, &SendToDarkView::brightToDarkCompleted, this, &BrightWallet::brightToDarkCompleted);
 
-    mSendToDarkView->setBalance(mActiveUser->getBrightBalance());
-    mSendToDarkView->setValues(mActiveUser->getPrivateKey(), mActiveUser->getUsername());
+    mSendToDarkView->setActiveUser(mActiveUser);
 
     mSendToDarkView->show();
     mSendToDarkView->showMaximized();

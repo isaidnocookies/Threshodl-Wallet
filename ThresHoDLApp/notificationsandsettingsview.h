@@ -24,6 +24,8 @@ private slots:
 
     void on_notificationTableWidget_cellClicked(int row, int column);
 
+    void on_addPushButton_pressed();
+
 private:
     Ui::NotificationsAndSettingsView    *ui;
     UserAccount                         *mActiveUser;

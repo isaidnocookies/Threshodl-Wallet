@@ -46,16 +46,14 @@ SendToDarkView::~SendToDarkView()
     delete ui;
 }
 
-void SendToDarkView::setBalance(double iBalance)
+void SendToDarkView::setActiveUser(UserAccount *iActiveUser)
 {
-    mBalance = iBalance;
-    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance));
-}
+    mActiveUser = iActiveUser;
+    mBalance = mActiveUser->getBrightBalance();
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
 
-void SendToDarkView::setValues(QByteArray iPriv, QString iUsername)
-{
-    mUsername = iUsername;
-    mPrivateKey = iPriv;
+    mUsername = mActiveUser->getUsername();
+    mPrivateKey = mActiveUser->getPrivateKey();
 }
 
 void SendToDarkView::on_closeButton_pressed()
@@ -80,7 +78,6 @@ void SendToDarkView::on_convertButton_pressed()
 void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
-
     mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","","myTxid",mUsername,mPrivateKey));
 }
 
@@ -115,7 +112,6 @@ void SendToDarkView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    ui->warningLabel->setText("Conversion Complete!");
     RPCMessageCreateMicroWalletPackageReply lReply {lMessage};
 
     QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
@@ -126,6 +122,8 @@ void SendToDarkView::receivedMessage()
         switch(lReply.replyCode()) {
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
             parseBitcoinPackage(lReply.microWalletsData());
+            ui->warningLabel->setText("Conversion Complete!");
+            ui->amountLineEdit->clear();
             break;
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
             break;
@@ -136,7 +134,6 @@ void SendToDarkView::receivedMessage()
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
             break;
         default:
-            //RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnknownFailure
             break;
         }
     }
@@ -183,8 +180,11 @@ void SendToDarkView::stopProgressBarAndEnable()
 
 void SendToDarkView::parseBitcoinPackage(QList<QByteArray> iData)
 {
-    double lTotalBrightCoin = mBalance - ui->amountLineEdit->text().toDouble();
-    setBalance(lTotalBrightCoin);
+    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+    QString lTotalBrightCoin = (mBalance - ui->amountLineEdit->text()).toString();
+
+    mBalance = QStringMath(lTotalBrightCoin);
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);

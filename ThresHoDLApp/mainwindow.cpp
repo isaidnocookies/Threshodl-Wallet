@@ -140,6 +140,7 @@ void MainWindow::completePendingImport(bool iComplete)
 
         for (auto w : lArray) {
             BitcoinWallet lNewWallet = BitcoinWallet(w.toVariant().toByteArray());
+            lNewWallet.setOwner(mActiveUser->getUsername());
             mActiveUser->addMicroWallet(lNewWallet);
         }
     } else {
@@ -164,6 +165,7 @@ void MainWindow::on_darkButton_pressed()
    mDarkWalletView = new DarkWallet;
 
    connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
+   connect (mDarkWalletView, &DarkWallet::destroyed, this, &MainWindow::walletWindowDeleted);
    mDarkWalletView->setEmail(mActiveUser->getEmail());
    mDarkWalletView->setAddress(mActiveUser->getUsername());
    mDarkWalletView->setActiveUser(*mActiveUser);
@@ -181,14 +183,15 @@ void MainWindow::on_notificationPushButton_pressed()
     mNotificationView->showMaximized();
 }
 
-void MainWindow::brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets)
+void MainWindow::brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets)
 {
-    double lDarkTotal = 0;
+    Q_UNUSED(lBrightAmount);
+    QStringMath lDarkTotal = QStringMath();
     for (auto dw : iDarkWallets) {
-        lDarkTotal += BitcoinWallet(dw).value().toDouble();
+        lDarkTotal = lDarkTotal + BitcoinWallet(dw).value();
     }
 
-    addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal));
+    addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal.toString()));
 }
 
 void MainWindow::addNotificationToSettings(QString iDate, QString iNotification)
@@ -197,13 +200,9 @@ void MainWindow::addNotificationToSettings(QString iDate, QString iNotification)
     mActiveUser->addNotification(iDate, iNotification);
 }
 
-void MainWindow::updateBalances(double iBrightBalance, double iDarkBalances)
+void MainWindow::updateBalances(QString iBrightBalance, QString iDarkBalances)
 {
-    QString lTotalBalance = QString("%1").arg(QString::number(iBrightBalance + iDarkBalances, 'f'));
-
-    lTotalBalance.remove( QRegExp("0+$") );
-    if (lTotalBalance.at(lTotalBalance.size() - 1) == '.')
-        lTotalBalance.append("00");
+    QString lTotalBalance = (QStringMath(iBrightBalance) + QStringMath(iDarkBalances)).toString();
 
     bool    lFontFits = false;
     QFont   lFont = mMainBalanceFont;
@@ -225,8 +224,14 @@ void MainWindow::updateBalances(double iBrightBalance, double iDarkBalances)
     ui->btcTotalLabel->setFont(lFont);
 }
 
+void MainWindow::walletWindowDeleted()
+{
+    mDarkWalletView = nullptr;
+    mBrightWalletView = nullptr;
+}
+
 void MainWindow::setUI()
 {
     ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
-    updateBalances(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+    updateBalances(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
 }

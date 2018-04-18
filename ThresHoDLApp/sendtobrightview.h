@@ -37,6 +37,9 @@ private slots:
 
     void on_amountLineEdit_textChanged(const QString &arg1);
 
+signals:
+    void updateDarkBalanceOnDarkWallet();
+
 private:
     Ui::SendToBrightView *ui;
 
@@ -48,7 +51,7 @@ private:
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
     void completeWalletsAndAdd(QMap<QString, QByteArray> iData);
-    QList<BitcoinWallet> getWalletsToComplete(double iValue);
+    QList<BitcoinWallet> getWalletsToComplete(QStringMath iValue);
 };
 
 #endif // SENDTOBRIGHTVIEW_H

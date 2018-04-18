@@ -2,6 +2,7 @@
 #include "ui_darkmicrowalletview.h"
 
 #include "globalsandstyle.h"
+#include "qstringmath.h"
 
 #include <QtDebug>
 
@@ -14,6 +15,7 @@ DarkMicroWalletView::DarkMicroWalletView(QWidget *parent) :
     QScroller::grabGesture(ui->microWalletTableWidget, QScroller::LeftMouseButtonGesture);
 
     ui->refreshPushButton->setStyleSheet(darkBackgroundStyleSheet());
+    ui->refreshPushButton->setVisible(false);
 }
 
 DarkMicroWalletView::~DarkMicroWalletView()
@@ -24,10 +26,10 @@ DarkMicroWalletView::~DarkMicroWalletView()
 void DarkMicroWalletView::setMicroWallets(QList<BitcoinWallet> iMicros)
 {
     int i = 0;
-    double lTotal = 0;
+    QStringMath lTotal = QStringMath();
 
     for (auto entry : iMicros) {
-        lTotal += entry.value().toDouble();
+        lTotal = lTotal + entry.value();
         ui->microWalletTableWidget->insertRow(i);
         ui->microWalletTableWidget->setItem(i, 0, new QTableWidgetItem(entry.value()));
         ui->microWalletTableWidget->setItem(i, 1, new QTableWidgetItem(QString(entry.address())));
@@ -36,7 +38,7 @@ void DarkMicroWalletView::setMicroWallets(QList<BitcoinWallet> iMicros)
         i++;
     }
 
-    ui->totalLabel->setText(QString("%1 BTC").arg(QString::number(lTotal)));
+    ui->totalLabel->setText(QString("%1 BTC").arg(lTotal.toString()));
 }
 
 void DarkMicroWalletView::on_closeWindowButton_pressed()

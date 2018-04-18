@@ -62,7 +62,7 @@ private:
     QrReader                *mQrReaderView;
     UserAccount             *mActiveUser;
     QList<BitcoinWallet>    mWalletsToSend_Pending;
-    double                  mPendingAmountToSend;
+    QStringMath             mPendingAmountToSend;
 
     QString                 mTransactionID;
 

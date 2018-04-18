@@ -25,12 +25,12 @@ public:
     ~BrightWallet();
 
     void setAddress(QByteArray iPublicAddress);
-    void setBalance(double iAmount);
+    void setBalance(QStringMath iAmount);
     void setActiveUser(UserAccount &iUserAccount);
 
 public slots:
-    void updateBrightBalance (double lAmount);
-    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
+    void updateBrightBalance (QStringMath lAmount);
+    void brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private slots:
     void on_closeWindowButton_pressed();
@@ -39,9 +39,9 @@ private slots:
 
 signals:
     void makeDashboardMaximized();
-    void updateDarkBalance(double lAmount);
-    void updateBrightBalanceSignal(double lAmount);
-    void brightToDarkCompletedSignal(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
+    void updateDarkBalance(QString lAmount);
+    void updateBrightBalanceSignal(QString lAmount);
+    void brightToDarkCompletedSignal(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::BrightWallet    *ui;
@@ -49,7 +49,7 @@ private:
     SendToDarkView      *mSendToDarkView;
     QImage              *mQrImage;
     QByteArray          mPublicAddress;
-    double              mBalance;
+    QStringMath         mBalance;
     UserAccount         *mActiveUser;
 
     void setQrCode();

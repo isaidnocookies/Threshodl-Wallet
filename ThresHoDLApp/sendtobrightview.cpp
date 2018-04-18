@@ -47,7 +47,7 @@ SendToBrightView::~SendToBrightView()
 void SendToBrightView::setActiveUser(UserAccount *iUser)
 {
     mActiveUser = iUser;
-    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getDarkBalance()));
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getDarkBalance().toString()));
 }
 
 void SendToBrightView::on_closeButton_pressed()
@@ -70,7 +70,13 @@ void SendToBrightView::on_convertButton_pressed()
 void SendToBrightView::connectedToServer()
 {
     QStringList lWalletIds;
-    QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text().toDouble());
+    QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text());
+
+    if (lWalletsToComplete.count() == 0) {
+        mConnection->close();
+        ui->warningLabel->setText("ERROR! Conversion failed.");
+        return;
+    }
 
     for (auto w : lWalletsToComplete) {
         lWalletIds.append(w.walletId());
@@ -206,7 +212,7 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
 {
     // parse out wallet parts
     QList<BitcoinWallet> lPartialWallets = mActiveUser->getPendingToSendDarkWallets();
-    qDebug() << iData.count() << " Private keys back from server to complete";
+    qDebug() << iData.keys().size() << " Private keys back from server to complete";
 
     for (auto w: lPartialWallets) {
         BitcoinWallet lWallet = w;
@@ -225,43 +231,39 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
         mActiveUser->addBrightWallet(lWallet);
     }
 
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     mActiveUser->clearPendingToSendDarkWallets();
-    ui->amountLineEdit->clear();
+    emit updateDarkBalanceOnDarkWallet();
     ui->confirmationLabel->setText(QString("Conversion Complete!"));
     ui->confirmCheckBox->setChecked(false);
-    ui->availableBalanceLabel->setText(QString("(Available Balance: %1").arg(mActiveUser->getDarkBalance()));
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
+
+    mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), QString("%1 Bitcoin was sent to Bright from Dark.").arg(ui->amountLineEdit->text()));
+    ui->amountLineEdit->clear();
 }
 
-QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(double iValue)
+QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(QStringMath iValue)
 {
     QList<BitcoinWallet> lAllWallets = mActiveUser->getDarkWallets();
     QList<BitcoinWallet> lWalletsToSend;
     QList<BitcoinWallet> lRemainingWallets;
-    double lValue = iValue;
+    QStringMath lValue = QStringMath();
 
     for (auto w : lAllWallets) {
-        qDebug() << w.walletId();
-        if (w.value().toDouble() <= lValue) {
+        if (lValue + w.value() <= iValue) {
             lWalletsToSend.append(w);
-            lValue -= w.value().toDouble();
+            lValue = lValue + w.value();
             qDebug() << "Added to complete list";
         } else {
             lRemainingWallets.append(w);
             qDebug() << "Added to remaining list";
         }
-
-        if (lValue >= 0 && lValue < 0.00001) {
-            break;
-        } else if (lValue < 0) {
-            qDebug() << "Error with 'change', rolling back action.... Someday"; //TODO: roll back
-        }
     }
 
-    if (lValue > 0) {
+    if (lValue != iValue) {
         qDebug() << "lValue is not zero... something happen";
-        //roll back action and make more change
-        //TODO: make more change
+        mActiveUser->clearPendingToSendDarkWallets();
+        return QList<BitcoinWallet>();
     }
 
     qDebug() << lWalletsToSend.size() << " Wallets to complete";

@@ -31,14 +31,16 @@ public slots:
     void saveAddressInSettings(QString iEmail, QString iAddress);
     void completePendingImport(bool iComplete);
     void addNotificationToSettings (QString iDate, QString iNotification);
-    void updateBalances(double iBrightBalance, double iDarkBalances);
+    void updateBalances(QString iBrightBalance, QString iDarkBalances);
+
+    void walletWindowDeleted();
 
 private slots:
     void on_brightButton_pressed();
     void on_darkButton_pressed();
     void on_notificationPushButton_pressed();
 
-    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
+    void brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::MainWindow                  *ui;

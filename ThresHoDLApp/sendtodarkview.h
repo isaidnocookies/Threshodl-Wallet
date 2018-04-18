@@ -3,6 +3,8 @@
 
 #include "rpcconnection.h"
 #include "bitcoinwallet.h"
+#include "qstringmath.h"
+#include "useraccount.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -22,8 +24,7 @@ public:
     explicit SendToDarkView(QWidget *parent = nullptr);
     ~SendToDarkView();
 
-    void setBalance(double iBalance);
-    void setValues(QByteArray iPriv, QString iUsername);
+    void setActiveUser(UserAccount *iActiveUser);
 
 private slots:
     void on_closeButton_pressed();
@@ -40,15 +41,16 @@ private slots:
 
 signals:
     void addMicroWalletsToAccount (QList<BitcoinWallet> oWallets);
-    void updateBrightBalance (double iAmountToDeduct);
-    void brightToDarkCompleted(bool iSuccessful, double lBrightAmount, QList<QByteArray> iDarkWallets);
+    void updateBrightBalance (QString iAmountToDeduct);
+    void brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
     Ui::SendToDarkView *ui;
     RPCConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
 
-    double              mBalance;
+    UserAccount         *mActiveUser;
+    QStringMath         mBalance;
     QByteArray          mPrivateKey;
     QString             mUsername;
 

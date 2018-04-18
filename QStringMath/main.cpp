@@ -5,6 +5,7 @@
 
 void test1();
 void test2();
+void test3();
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 
     test1();
     test2();
-
+    test3();
 }
 
 void test1() {
@@ -37,4 +38,14 @@ void test2() {
     QStringMath::standardizeStrings(lValue1, lValue2, lValue1s, lValue2s);
 
     qDebug() << lValue1s << "       " << lValue2s;
+}
+
+void test3() {
+    qDebug() << "\n\n" << "Test3 - Subtract Strings\n";
+    QString lValue1 = "10.17";
+    QString lValue2 = "1.09";
+
+    QStringMath lV1 (lValue1);
+
+    qDebug() << lValue1 << " - " << lValue2 << "  =  " << (lV1 - lValue2).toString();
 }

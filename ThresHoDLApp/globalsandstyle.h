@@ -5,7 +5,7 @@
 #include <QStringLiteral>
 
 //#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
-#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.62:4431"
+#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
 
 inline QString theOrganization() {              return QString("ThreeB"); }
 inline QString theApplicationName() {           return QString("Threshodl"); }

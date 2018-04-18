@@ -54,7 +54,7 @@ DarkSendView::DarkSendView(QWidget *parent) :
 void DarkSendView::setActiveUser(UserAccount *iActiveUser)
 {
     mActiveUser = iActiveUser;
-    ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance()));
+    ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
 }
 
 DarkSendView::~DarkSendView()
@@ -82,54 +82,59 @@ void DarkSendView::on_scanQrButton_pressed()
 
 void DarkSendView::on_sendTransactionButton_pressed()
 {
-    QString lAmount         = ui->amountLineEdit->text();
+    QStringMath lAmount     = QStringMath(ui->amountLineEdit->text());
     QString lAddress        = ui->addressLineEdit->text();
     QString lEmailAddress   = ui->emailAddressLineEdit->text();
 
     ui->sendWarningLabel->setText("");
 
-    if (lAmount.isEmpty() || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
+    if (lAmount == "0.0" || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
-    } else if (lAmount.toDouble() > mActiveUser->getDarkBalance()) {
+    } else if (lAmount > mActiveUser->getDarkBalance()) {
         ui->sendWarningLabel->setText("You do not have enough Bitcoin");
     } else {
-        SmtpClient lClient ("smtp.gmail.com", 465, SmtpClient::SslConnection);
-
-        MimeMessage lMessage;
-        EmailAddress lFromEmail("admin@threebx.com", "admin@threebx.com");
-        EmailAddress lToEmail(lEmailAddress, lEmailAddress);
-
         QByteArray lTestMessage = getAttachmentPackage();
-        MimeAttachment lAttachment(lTestMessage, "bitcoin.threshodl");
 
-        MimeHtml lHtmlBody("<html>"
-                           "<h3>Threshodl Dark Transaction</h3>"
-                           "<br>"
-                           "<p>You have Bitcoin! Open up the attached file with your Threshodl to import your coins into your Dark Wallet.</p>"
-                           "<br><br>"
-                           "</html>");
+        if (lTestMessage.isEmpty()) {
+            //error
+        } else {
+            SmtpClient lClient ("smtp.gmail.com", 465, SmtpClient::SslConnection);
 
-        lMessage.setSubject("Threshodl - You have Bitcoin!");
-        lMessage.addRecipient(&lToEmail);
-        lMessage.setSender(&lFromEmail);
+            MimeMessage lMessage;
+            EmailAddress lFromEmail("admin@threebx.com", "admin@threebx.com");
+            EmailAddress lToEmail(lEmailAddress, lEmailAddress);
 
-        lMessage.addPart(&lHtmlBody);
-        lMessage.addPart(&lAttachment);
+            MimeAttachment lAttachment(lTestMessage, "bitcoin.threshodl");
 
-        if(lClient.connectToHost()) {
-            if (lClient.login("admin@threebx.com", "H0lyP33rP@1d", SmtpClient::AuthLogin)) {
-                if (lClient.sendMail(lMessage)) {
-                    //success
-                    qDebug() << "Success";
+            MimeHtml lHtmlBody(QString("<html>"
+                                       "<h3>Threshodl Dark Transaction</h3>"
+                                       "<br>"
+                                       "<p>%1, you have %2 Bitcoin! Open up the attached file with your Threshodl to import your coins into your Dark Wallet.</p>"
+                                       "<br><br>"
+                                       "</html>").arg(lAddress).arg(ui->amountLineEdit->text()));
 
-                    mTransactionID = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 1000));
-                    QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
-                    mConnection->open(lUrl);
-                    startProgressBarAndDisable();
-                } else {
-                    //failure
-                    qDebug() << "Failure";
-                    sentConfirmation(false);
+            lMessage.setSubject("Threshodl - You have Bitcoin!");
+            lMessage.addRecipient(&lToEmail);
+            lMessage.setSender(&lFromEmail);
+
+            lMessage.addPart(&lHtmlBody);
+            lMessage.addPart(&lAttachment);
+
+            if(lClient.connectToHost()) {
+                if (lClient.login("admin@threebx.com", "H0lyP33rP@1d", SmtpClient::AuthLogin)) {
+                    if (lClient.sendMail(lMessage)) {
+                        //success
+                        qDebug() << "Success";
+
+                        mTransactionID = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 1000));
+                        QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
+                        mConnection->open(lUrl);
+                        startProgressBarAndDisable();
+                    } else {
+                        //failure
+                        qDebug() << "Failure";
+                        sentConfirmation(false);
+                    }
                 }
             }
         }
@@ -170,31 +175,32 @@ QByteArray DarkSendView::getAttachmentPackage()
 
     QList<BitcoinWallet> lWalletsToSend;
     QList<BitcoinWallet> lRemainingWallets;
-    double lValue = ui->amountLineEdit->text().toDouble();
+    QStringMath lValue = QStringMath(ui->amountLineEdit->text());
+    QStringMath lCounterValue = QStringMath();
 
     for (auto w : mActiveUser->getDarkWallets()) {
-        if (w.value().toDouble() <= lValue) {
-            lValue -= w.value().toDouble();
+        if ( lCounterValue + w.value() <= lValue ) {
+            lCounterValue = lCounterValue + w.value();
             lWalletsToSend.append(w);
             lWalletArray.push_back(QString(w.toData()));
         } else {
             lRemainingWallets.append(w);
         }
 
-        if (lValue == 0) {
+        if (lCounterValue == lValue) {
             break;
-        } else if (lValue < 0) {
+        } else if (lValue < lCounterValue) {
             qDebug() << "FUCK...";
         }
     }
 
-    if (lValue > 0) {
+    if (lCounterValue > "0.0") {
         qDebug() << "Shit, can't make change...";
         // TODO: do something about it...
     }
 
     mWalletsToSend_Pending = lWalletsToSend;
-    mPendingAmountToSend = ui->amountLineEdit->text().toDouble();
+    mPendingAmountToSend = ui->amountLineEdit->text();
 
     mActiveUser->setDarkWallets(lRemainingWallets);
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
@@ -351,6 +357,7 @@ void DarkSendView::sslErrors(const QList<QSslError> iErrors)
 void DarkSendView::sentConfirmation(bool iSuccess)
 {
     if (iSuccess) {
+        mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), QString("%1 Bitcoin sent via Dark Wallet!").arg(ui->amountLineEdit->text()));
         ui->amountLineEdit->setText("");
         ui->addressLineEdit->setText("");
         ui->emailAddressLineEdit->setText("");
@@ -358,7 +365,7 @@ void DarkSendView::sentConfirmation(bool iSuccess)
         ui->sendConfirmationLabel->setText("Transfer Sent - Success!");
 
         mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Transfer Successful! Dark Bitcoin has been sent.");
-        ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance() - mPendingAmountToSend));
+        ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg((mActiveUser->getDarkBalance() - mPendingAmountToSend).toString()));
     } else {
         ui->sendConfirmationLabel->setText("Transfer Failed!");
         QList<BitcoinWallet> lWallets = mActiveUser->getPendingToSendDarkWallets();
@@ -370,7 +377,7 @@ void DarkSendView::sentConfirmation(bool iSuccess)
     }
     mActiveUser->clearPendingToSendDarkWallets();
 
-    ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance()));
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance(), mActiveUser->getDarkBalance());
+    ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
+    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     emit updateBalance();
 }

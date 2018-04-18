@@ -250,6 +250,23 @@
       </widget>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <item>
+        <widget class="QLineEdit" name="amountLineEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addPushButton">
+         <property name="text">
+          <string>Add Bright Coin (TEST)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
