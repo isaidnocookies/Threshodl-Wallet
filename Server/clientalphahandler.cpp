@@ -110,7 +110,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
         if( lDBI ) {
 
             if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
-                std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue());
+                std::vector<BValue> *   lValuesPtr = WalletGrinderAlpha::getBreaks(lRequest.cryptoValue(),2);
                 std::vector<BValue>     lValues;
                 QStringList             lWalletValues;
                 QList<BitcoinWallet>    lBTCWallets;
