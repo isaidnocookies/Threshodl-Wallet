@@ -72,6 +72,9 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
         if( lRequest.signatureKeyEncoding() == RPCMessage::KeyEncoding::SHA512 ) {
             QRegExp                         lRegExp(QStringLiteral("\\w"));
             QString                         lAddress    = lRequest.username().trimmed().split(lRegExp).join(QStringLiteral("_"));
+
+            qDebug() << "lReplyUsername should be:" << lAddress;
+
             QByteArray                      lPublicKey  = lRequest.publicKey();
 
             if( Digest::verify(lPublicKey,lRequest.dataForSignature(),lRequest.signature(),Digest::HashTypes::SHA512) ) {
