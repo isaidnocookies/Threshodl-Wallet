@@ -16,6 +16,7 @@ public:
     QByteArray publicKey() const;
 
     static QString create(const QByteArray iPublicKey, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
+    static QString createInternal(const QByteArray iPublicKey, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 };
 
 #endif // RPCMESSAGECREATEACCOUNTREQUEST_H

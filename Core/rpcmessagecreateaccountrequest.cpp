@@ -21,4 +21,10 @@ QByteArray RPCMessageCreateAccountRequest::publicKey() const
 { return QByteArray::fromBase64(fieldValue(publicKeyKey()).toByteArray()); }
 
 QString RPCMessageCreateAccountRequest::create(const QByteArray iPublicKey, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
+{
+    if( ! iUsername.startsWith(QChar('@')) ) return createInternal(iPublicKey,QStringLiteral("@%1").arg(iUsername),iPrivateKey,iKeyEncoding);
+    return createInternal(iPublicKey,iUsername,iPrivateKey,iKeyEncoding);
+}
+
+QString RPCMessageCreateAccountRequest::createInternal(const QByteArray iPublicKey, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 { return RPCMessage::toMessage( QList<RPCField>() << RPCField{publicKeyKey(), iPublicKey.toBase64()} << RPCField{QStringLiteral(kFieldKey_Command), commandValue()}, iUsername, iPrivateKey, iKeyEncoding ); }

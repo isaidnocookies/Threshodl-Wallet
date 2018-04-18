@@ -18,6 +18,7 @@
 #include "bitcoinwallet.h"
 
 #include <QDebug>
+#include <QRegExp>
 
 bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCommand, RPCMessage &iMessage)
 {
@@ -62,18 +63,21 @@ bool ClientAlphaHandler::authenticateMessage(RPCMessage &iMessage)
 
 bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMessage &iMessage)
 {
-    auto                                    lDBI        = gApp->databaseInterface();
-    RPCMessageCreateAccountReply::ReplyCode lReplyCode  = RPCMessageCreateAccountReply::ReplyCode::UnknownFailure;
+    auto                                    lDBI            = gApp->databaseInterface();
+    RPCMessageCreateAccountReply::ReplyCode lReplyCode      = RPCMessageCreateAccountReply::ReplyCode::UnknownFailure;
+    QString                                 lReplyUsername;
 
     if( lDBI ) {
         RPCMessageCreateAccountRequest  lRequest{iMessage};
         if( lRequest.signatureKeyEncoding() == RPCMessage::KeyEncoding::SHA512 ) {
-            QString                         lAddress    = lRequest.username();
+            QRegExp                         lRegExp(QStringLiteral("\\w"));
+            QString                         lAddress    = lRequest.username().trimmed().split(lRegExp).join(QStringLiteral("_"));
             QByteArray                      lPublicKey  = lRequest.publicKey();
 
             if( Digest::verify(lPublicKey,lRequest.dataForSignature(),lRequest.signature(),Digest::HashTypes::SHA512) ) {
                 if( lDBI->addressCreate(lAddress,lPublicKey) ) {
                     lReplyCode = RPCMessageCreateAccountReply::ReplyCode::Success;
+                    lReplyUsername = lAddress;
                 }else{
                     lReplyCode = RPCMessageCreateAccountReply::ReplyCode::UsernameTaken;
                 }
@@ -87,7 +91,7 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
         lReplyCode = RPCMessageCreateAccountReply::ReplyCode::InternalServerError1;
     }
 
-    QString lMessage = RPCMessageCreateAccountReply::create(lReplyCode, iMessage.username(), gApp->privateKeyPEM());
+    QString lMessage = RPCMessageCreateAccountReply::create(lReplyCode, lReplyUsername, QStringLiteral("Threshodl"), gApp->privateKeyPEM());
     return iConnection->sendMessage(lMessage);
 }
 
