@@ -70,7 +70,7 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
     if( lDBI ) {
         RPCMessageCreateAccountRequest  lRequest{iMessage};
         if( lRequest.signatureKeyEncoding() == RPCMessage::KeyEncoding::SHA512 ) {
-            QRegExp                         lRegExp(QStringLiteral("\\w"));
+            QRegExp                         lRegExp(QStringLiteral("\\W"));
             QString                         lAddress    = lRequest.username().trimmed().split(lRegExp).join(QStringLiteral("_"));
 
             qDebug() << "lReplyUsername should be:" << lAddress;
