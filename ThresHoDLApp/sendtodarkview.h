@@ -53,6 +53,7 @@ private:
     QStringMath         mBalance;
     QByteArray          mPrivateKey;
     QString             mUsername;
+    QString             mTransactionId;
 
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();

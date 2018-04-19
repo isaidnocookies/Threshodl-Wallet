@@ -58,6 +58,13 @@ void SendToBrightView::on_closeButton_pressed()
 
 void SendToBrightView::on_convertButton_pressed()
 {
+    QStringMath lValue = ui->amountLineEdit->text();
+    ui->warningLabel->clear();
+    if (lValue <= "0.0" || lValue > mActiveUser->getDarkBalance()) {
+        ui->warningLabel->setText("Please input valid amount");
+        return;
+    }
+
     if (!ui->confirmCheckBox->isChecked()) {
         ui->warningLabelForCheck->setText(QString("*Confirm to continue"));
     } else {
@@ -70,21 +77,34 @@ void SendToBrightView::on_convertButton_pressed()
 void SendToBrightView::connectedToServer()
 {
     QStringList lWalletIds;
-    QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text());
+    bool lSuccess;
+    QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text(), lSuccess);
 
-    if (lWalletsToComplete.count() == 0) {
-        mConnection->close();
-        ui->warningLabel->setText("ERROR! Conversion failed.");
-        return;
+    if (!lSuccess) {
+        mBreakdownMicroWallet = new BreakdownMicroWallet;
+        mBreakdownMicroWallet->setActiveUser(mActiveUser);
+
+        connect (mBreakdownMicroWallet, &BreakdownMicroWallet::microWalletBreakdownComplete, this, &SendToBrightView::microWalletBreakdownComplete);
+        connect (mBreakdownMicroWallet, &BreakdownMicroWallet::completeMicroWallet, this, &SendToBrightView::completeMicroWallet);
+        connect (mBreakdownMicroWallet, &BreakdownMicroWallet::newMicroWallets, this, &SendToBrightView::newMicroWallets);
+
+        mBreakdownMicroWallet->getMicroWallets(mActiveUser->getDarkWallets().first());
+    } else {
+        if (lWalletsToComplete.count() == 0) {
+            mConnection->close();
+            ui->warningLabel->setText("ERROR! Conversion failed.");
+            return;
+        }
+
+        for (auto w : lWalletsToComplete) {
+            lWalletIds.append(w.walletId());
+        }
+
+        qDebug() << "Connected to server.";
+        mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(qrand() % 100);
+        mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletIds, mTransactionId, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
     }
 
-    for (auto w : lWalletsToComplete) {
-        lWalletIds.append(w.walletId());
-    }
-
-    qDebug() << "Connected to server.";
-    mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(qrand() % 100);
-    mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletIds, mTransactionId, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
 }
 
 void SendToBrightView::disconnectedFromServer()
@@ -219,15 +239,15 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
 
         if (*(static_cast<char *>(iData[w.walletId()].data())) == RPCMessageCompleteMicroWalletsReply::InternalServerError2) {
             // key is an error, dont complete wallet
-            w.setOwner(mActiveUser->getUsername());
-            w.setIsMicroWallet(true);
-            mActiveUser->addMicroWallet(w);
+            lWallet.setOwner(mActiveUser->getUsername());
+            lWallet.setIsMicroWallet(true);
+            mActiveUser->addMicroWallet(lWallet);
         }
 
-        w.setPrivateKey(w.privateKey().append(iData[w.walletId()]));
-        w.setOwner(mActiveUser->getUsername());
-        w.setIsMicroWallet(false);
-        w.setWif(BitcoinWallet::generateWifFromPrivateKey(w.privateKey()));
+        lWallet.setPrivateKey(w.privateKey().append(iData[w.walletId()]));
+        lWallet.setOwner(mActiveUser->getUsername());
+        lWallet.setIsMicroWallet(false);
+        lWallet.setWif(BitcoinWallet::generateWifFromPrivateKey(w.privateKey()));
         mActiveUser->addBrightWallet(lWallet);
     }
 
@@ -242,7 +262,7 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
     ui->amountLineEdit->clear();
 }
 
-QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(QStringMath iValue)
+QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(QStringMath iValue, bool &oSuccess)
 {
     QList<BitcoinWallet> lAllWallets = mActiveUser->getDarkWallets();
     QList<BitcoinWallet> lWalletsToSend;
@@ -260,6 +280,12 @@ QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(QStringMath iValue)
         }
     }
 
+    if (lValue < iValue) {
+        //need to make change...
+        oSuccess = false;
+        return QList<BitcoinWallet>();
+    }
+
     if (lValue != iValue) {
         qDebug() << "lValue is not zero... something happen";
         mActiveUser->clearPendingToSendDarkWallets();
@@ -271,6 +297,7 @@ QList<BitcoinWallet> SendToBrightView::getWalletsToComplete(QStringMath iValue)
     mActiveUser->setDarkWallets(lRemainingWallets);
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
 
+    oSuccess = true;
     return lWalletsToSend;
 }
 
@@ -280,5 +307,32 @@ void SendToBrightView::on_amountLineEdit_textChanged(const QString &arg1)
         ui->confirmCheckBox->setChecked(false);
         ui->warningLabel->clear();
         ui->confirmationLabel->clear();
+    }
+}
+
+void SendToBrightView::newMicroWallets(bool iSuccess)
+{
+
+}
+
+void SendToBrightView::completeMicroWallet(bool oSuccess)
+{
+
+}
+
+void SendToBrightView::microWalletBreakdownComplete(bool iSuccess)
+{
+    if (iSuccess) {
+        qDebug() << "SUCCESS for breaking down microwallet. Continue with trying to send coin...";
+
+        if (mConnection->isConnected()) {
+            connectedToServer();
+        } else {
+            on_convertButton_pressed();
+        }
+    } else {
+        //error....
+        qDebug() << "FAILURE to break down microwallets before send. Trying again...";
+        ui->warningLabel->setText("Failed to convert back to bright. Please try again.");
     }
 }

@@ -19,6 +19,12 @@ BrightSendView::~BrightSendView()
     delete ui;
 }
 
+void BrightSendView::setActiveUser(UserAccount *iActiveUser)
+{
+    mActiveUser = iActiveUser;
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightBalance().toString()));
+}
+
 void BrightSendView::on_closePushButton_pressed()
 {
     this->hide();
@@ -39,4 +45,9 @@ void BrightSendView::getCameraCode(QString iCode)
 {
     ui->addressLineEdit->setText(iCode);
     // possibly do some checking of the code before a send is initiated
+}
+
+void BrightSendView::on_sendTransactionButton_pressed()
+{
+    ui->warningLabel->setText("Feature coming! Check out our Dark features!");
 }

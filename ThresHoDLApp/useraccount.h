@@ -47,6 +47,7 @@ public:
     void createNewBrightWallet();
     void addMicroWallet(BitcoinWallet iWallet);
     void addBrightWallet(BitcoinWallet iWallet);
+    void removeMicroWallet(BitcoinWallet iWallet);
     void setBrightWallets(QList<BitcoinWallet> iWallets);
     void setDarkWallets(QList<BitcoinWallet> iWallets);
     void setBrightBalance(QStringMath iValue)                        { mBrightBalance = iValue; }

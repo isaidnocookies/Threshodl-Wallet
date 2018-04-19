@@ -5,8 +5,7 @@
 #include "darksendconfirm.h"
 #include "qrreader.h"
 #include "useraccount.h"
-#include "rpcmessagereassignmicrowalletsrequest.h"
-#include "rpcmessagereassignmicrowalletsreply.h"
+#include "breakdownmicrowallet.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -50,6 +49,9 @@ private slots:
 
 public slots:
     void getQrCode(QString iData);
+    void newMicroWallets(bool iSuccess);
+    void completeMicroWallet(bool oSuccess);
+    void microWalletBreakdownComplete(bool oSuccess);
 
 signals:
     void updateBalance();
@@ -63,13 +65,15 @@ private:
     UserAccount             *mActiveUser;
     QList<BitcoinWallet>    mWalletsToSend_Pending;
     QStringMath             mPendingAmountToSend;
+    BreakdownMicroWallet    *mBreakdownMicroWallet;
 
     QString                 mTransactionID;
+    int                     mBreakdownAttempts;
 
     void stopProgressBarAndEnable();
     void startProgressBarAndDisable();
 
-    QByteArray getAttachmentPackage();
+    bool getAttachmentPackage(QByteArray &oData);
 };
 
 #endif // DARKSENDVIEW_H

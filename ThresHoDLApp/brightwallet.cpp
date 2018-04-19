@@ -70,6 +70,7 @@ void BrightWallet::on_closeWindowButton_pressed()
 void BrightWallet::on_sendButton_pressed()
 {
     mBrightSendView = new BrightSendView;
+    mBrightSendView->setActiveUser(mActiveUser);
 
     mBrightSendView->show();
     mBrightSendView->showMaximized();

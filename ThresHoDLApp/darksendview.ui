@@ -127,7 +127,7 @@
      <item>
       <widget class="QLineEdit" name="amountLineEdit">
        <property name="text">
-        <string>1</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -144,7 +144,7 @@
      <item>
       <widget class="QLineEdit" name="addressLineEdit">
        <property name="text">
-        <string>chris</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -161,7 +161,7 @@
      <item>
       <widget class="QLineEdit" name="emailAddressLineEdit">
        <property name="text">
-        <string>isaidnocookies@gmail.com</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -253,6 +253,12 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

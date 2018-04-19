@@ -60,6 +60,8 @@ void CreateAccount::on_createAccountButton_pressed()
 {
 //    emit createUserAccount(ui->usernameLineEdit->text(), "", "");
 //    return;
+
+    ui->warningLabel->setText("");
     if (!ui->usernameLineEdit->text().isEmpty()) {
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
         mConnection->open(lUrl);
@@ -114,7 +116,8 @@ void CreateAccount::receivedMessage()
     switch(lReply.replyCode()) {
         case RPCMessageCreateAccountReply::Success:
             qDebug() << "Success";
-            emit createUserAccount(ui->usernameLineEdit->text(),mPrivateKey, mPublicKey);
+            // create account with new username
+            emit createUserAccount(lReply.replyUsername(), mPrivateKey, mPublicKey);
             break;
         case RPCMessageCreateAccountReply::UsernameTaken:
             qDebug() << "Username Taken";

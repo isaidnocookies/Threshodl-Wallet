@@ -299,7 +299,7 @@
       <string notr="true">color:white;</string>
      </property>
      <property name="text">
-      <string>Email Address Label</string>
+      <string/>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

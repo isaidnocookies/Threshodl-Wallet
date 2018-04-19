@@ -261,6 +261,11 @@ QString QStringMath::toString() {
 
     if (lValue == "." || lValue == "") {
         lValue = "0";
+        return lValue;
+    }
+
+    if (lValue.size() > 1 && lValue.at(0) == ".") {
+        lValue.prepend("0");
     }
 
     return lValue;

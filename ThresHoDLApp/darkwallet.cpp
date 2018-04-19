@@ -39,6 +39,7 @@ void DarkWallet::setActiveUser(UserAccount &iActiveUser)
 {
     mActiveUser = &iActiveUser;
     ui->balancePushButton->setText(QString("%1").arg(mActiveUser->getDarkBalance().toString()));
+    ui->addressLabel->setText(mActiveUser->getUsername());
 }
 
 DarkWallet::~DarkWallet()
@@ -79,6 +80,8 @@ void DarkWallet::checkToCreateQr()
 {
     if (!mEmailAddress.isEmpty() && !mThreshodlAddress.isEmpty()) {
         createQrCode();
+        ui->emailLabel->setText(mEmailAddress);
+        ui->addressLabel->setText(mThreshodlAddress);
     } else {
         ui->qrPushButton->setText("(Click to Update)");
     }

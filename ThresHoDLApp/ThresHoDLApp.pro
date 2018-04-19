@@ -64,7 +64,8 @@ SOURCES += \
     SmtpClient/smtpclient.cpp \
     notificationsandsettingsview.cpp \
     darkwalletimportview.cpp \
-    serializer.cpp
+    serializer.cpp \
+    breakdownmicrowallet.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -97,7 +98,8 @@ HEADERS += \
     SmtpClient/SmtpMime \
     notificationsandsettingsview.h \
     darkwalletimportview.h \
-    serializer.h
+    serializer.h \
+    breakdownmicrowallet.h
 
 FORMS += \
     mainwindow.ui \

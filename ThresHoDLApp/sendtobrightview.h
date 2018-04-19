@@ -3,6 +3,7 @@
 
 #include "rpcconnection.h"
 #include "useraccount.h"
+#include "breakdownmicrowallet.h"
 
 #include <QWidget>
 #include <QSslConfiguration>
@@ -37,6 +38,10 @@ private slots:
 
     void on_amountLineEdit_textChanged(const QString &arg1);
 
+    void newMicroWallets(bool iSuccess);
+    void completeMicroWallet(bool oSuccess);
+    void microWalletBreakdownComplete(bool oSuccess);
+
 signals:
     void updateDarkBalanceOnDarkWallet();
 
@@ -47,11 +52,12 @@ private:
     QSslConfiguration       mSslConfiguration;
     QString                 mTransactionId;
     UserAccount             *mActiveUser;
+    BreakdownMicroWallet    *mBreakdownMicroWallet;
 
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
     void completeWalletsAndAdd(QMap<QString, QByteArray> iData);
-    QList<BitcoinWallet> getWalletsToComplete(QStringMath iValue);
+    QList<BitcoinWallet> getWalletsToComplete(QStringMath iValue, bool &oSuccess);
 };
 
 #endif // SENDTOBRIGHTVIEW_H

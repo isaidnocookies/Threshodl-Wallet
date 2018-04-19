@@ -10,6 +10,13 @@
 #include "SmtpClient/mimehtml.h"
 #include "SmtpClient/mimemultipart.h"
 
+#include "rpcmessagereassignmicrowalletsrequest.h"
+#include "rpcmessagereassignmicrowalletsreply.h"
+#include "rpcmessagecompletemicrowalletsrequest.h"
+#include "rpcmessagecompletemicrowalletsreply.h"
+#include "rpcmessagecreatemicrowalletpackagerequest.h"
+#include "rpcmessagecreatemicrowalletpackagereply.h"
+
 #include <QJsonArray>
 #include <QFile>
 #include <QStandardPaths>
@@ -88,15 +95,31 @@ void DarkSendView::on_sendTransactionButton_pressed()
 
     ui->sendWarningLabel->setText("");
 
+    if (lAmount <= "0.0" || lAmount > mActiveUser->getDarkBalance()) {
+        ui->sendWarningLabel->setText("Please input a correct amount");
+        return;
+    }
+
     if (lAmount == "0.0" || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
     } else if (lAmount > mActiveUser->getDarkBalance()) {
         ui->sendWarningLabel->setText("You do not have enough Bitcoin");
     } else {
-        QByteArray lTestMessage = getAttachmentPackage();
+        QByteArray lTestMessage;
+        startProgressBarAndDisable();
 
-        if (lTestMessage.isEmpty()) {
-            //error
+        bool lAttachmentSuccess = getAttachmentPackage(lTestMessage);
+
+        if (!lAttachmentSuccess) {
+            mBreakdownMicroWallet = new BreakdownMicroWallet;
+            mBreakdownAttempts = 3;
+            mBreakdownMicroWallet->setActiveUser(mActiveUser);
+
+            connect (mBreakdownMicroWallet, &BreakdownMicroWallet::microWalletBreakdownComplete, this, &DarkSendView::microWalletBreakdownComplete);
+            connect (mBreakdownMicroWallet, &BreakdownMicroWallet::completeMicroWallet, this, &DarkSendView::completeMicroWallet);
+            connect (mBreakdownMicroWallet, &BreakdownMicroWallet::newMicroWallets, this, &DarkSendView::newMicroWallets);
+
+            mBreakdownMicroWallet->getMicroWallets(mActiveUser->getDarkWallets().first());
         } else {
             SmtpClient lClient ("smtp.gmail.com", 465, SmtpClient::SslConnection);
 
@@ -109,9 +132,12 @@ void DarkSendView::on_sendTransactionButton_pressed()
             MimeHtml lHtmlBody(QString("<html>"
                                        "<h3>Threshodl Dark Transaction</h3>"
                                        "<br>"
-                                       "<p>%1, you have %2 Bitcoin! Open up the attached file with your Threshodl to import your coins into your Dark Wallet.</p>"
+                                       "<p>Hello %1! You have %2 Bitcoin! Open up the attached file with your Threshodl to import your coins into your Dark Wallet."
+                                       "Once this package is imported, you will not be able to import it again. Thank you!</p>"
                                        "<br><br>"
-                                       "</html>").arg(lAddress).arg(ui->amountLineEdit->text()));
+                                       "Sent at %3 on %4"
+                                       "<br><br>"
+                                       "</html>").arg(lAddress).arg(ui->amountLineEdit->text()).arg(QTime::currentTime().toString().arg(QDate::currentDate().toString(myDateFormat()))));
 
             lMessage.setSubject("Threshodl - You have Bitcoin!");
             lMessage.addRecipient(&lToEmail);
@@ -129,13 +155,19 @@ void DarkSendView::on_sendTransactionButton_pressed()
                         mTransactionID = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 1000));
                         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
                         mConnection->open(lUrl);
-                        startProgressBarAndDisable();
                     } else {
                         //failure
                         qDebug() << "Failure";
                         sentConfirmation(false);
+                        stopProgressBarAndEnable();
                     }
+                } else {
+                    qDebug() << "AUTH failed for smtp client";
+                    stopProgressBarAndEnable();
                 }
+            } else {
+                qDebug() << "Failed to connect to smtp host";
+                stopProgressBarAndEnable();
             }
         }
     }
@@ -155,6 +187,29 @@ void DarkSendView::getQrCode(QString iData)
     }
 }
 
+void DarkSendView::newMicroWallets(bool iSuccess)
+{
+    //hmmm...
+}
+
+void DarkSendView::completeMicroWallet(bool iSuccess)
+{
+    //hmmm...
+}
+
+void DarkSendView::microWalletBreakdownComplete(bool iSuccess)
+{
+    if (iSuccess) {
+        qDebug() << "SUCCESS for breaking down microwallet. Continue with trying to send coin...";
+        on_sendTransactionButton_pressed();
+    } else {
+        //error....
+        qDebug() << "FAILURE to break down microwallets before send. Trying again...";
+        on_sendTransactionButton_pressed();
+        mBreakdownAttempts--;
+    }
+}
+
 void DarkSendView::stopProgressBarAndEnable()
 {
     ui->progressBar->setVisible(false);
@@ -167,7 +222,7 @@ void DarkSendView::startProgressBarAndDisable()
     ui->sendTransactionButton->setEnabled(false);
 }
 
-QByteArray DarkSendView::getAttachmentPackage()
+bool DarkSendView::getAttachmentPackage(QByteArray &oData)
 {
     QByteArray      lAttachment;
     QJsonObject     lJson;
@@ -187,16 +242,16 @@ QByteArray DarkSendView::getAttachmentPackage()
             lRemainingWallets.append(w);
         }
 
-        if (lCounterValue == lValue) {
-            break;
-        } else if (lValue < lCounterValue) {
+        if (lValue < lCounterValue) {
             qDebug() << "FUCK...";
+            return false;
         }
     }
 
-    if (lCounterValue > "0.0") {
+    if (lCounterValue < lValue) {
         qDebug() << "Shit, can't make change...";
         // TODO: do something about it...
+        return false;
     }
 
     mWalletsToSend_Pending = lWalletsToSend;
@@ -214,7 +269,8 @@ QByteArray DarkSendView::getAttachmentPackage()
     QJsonDocument lJsonDoc (lJson);
     lAttachment = lJsonDoc.toJson();
 
-    return lAttachment;
+    oData = lAttachment;
+    return true;
 }
 
 void DarkSendView::on_amountLineEdit_textChanged(const QString &arg1)

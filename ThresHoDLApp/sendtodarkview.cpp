@@ -64,6 +64,14 @@ void SendToDarkView::on_closeButton_pressed()
 
 void SendToDarkView::on_convertButton_pressed()
 {
+    QStringMath lValue = ui->amountLineEdit->text();
+    ui->warningLabel->setText("");
+
+    if (lValue <= "0.0" || lValue > mActiveUser->getBrightBalance()) {
+        ui->warningLabel->setText("Please input valid amount");
+        return;
+    }
+
     if (ui->confirmCheckBox->isChecked()) {
         // Allow transfer
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
@@ -78,7 +86,8 @@ void SendToDarkView::on_convertButton_pressed()
 void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","","myTxid",mUsername,mPrivateKey));
+    mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",mTransactionId,mUsername,mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -118,6 +127,13 @@ void SendToDarkView::receivedMessage()
 
     if (lCommand == RPCMessageCreateMicroWalletPackageReply::commandValue()) {
         // compare reply transaction id
+
+        if (mTransactionId == lReply.transactionId()) {
+//            all is good
+        } else {
+//            not for us
+            //TODO: do something
+        }
 
         switch(lReply.replyCode()) {
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:

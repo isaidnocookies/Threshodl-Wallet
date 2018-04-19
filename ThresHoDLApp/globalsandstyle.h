@@ -7,6 +7,8 @@
 //#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
 #define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
 
+//#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
+
 inline QString theOrganization() {              return QString("ThreeB"); }
 inline QString theApplicationName() {           return QString("Threshodl"); }
 inline QString theDomain() {                    return QString("threshodl.com"); }
@@ -30,10 +32,6 @@ inline QString jsonPublicKey() {                return QString("jsonPublicKey");
 inline QString jsonAmount() {                   return QString("jsonAmount"); }
 inline QString jsonEmailAddress() {             return QString("jsonEmail"); }
 inline QString jsonThreshodlAddress() {         return QString("jsonThreshodlAddress"); }
-
-//03a9f4
-//old light blue - 4c586F
-//old dark blue - 404859
 
 inline QString lightBackgroundStyleSheet() {    return QString("QPushButton {"
                                                                     "background-color: #03a9f4;"

@@ -36,6 +36,7 @@ void DarkReceiveView::setAddresses(QString iEmail, QString iAddress)
     }
     if (!mThreshodlAddress.isEmpty()) {
         ui->addressLineEdit->setText(mThreshodlAddress);
+        ui->addressLineEdit->setEnabled(false);
     }
 }
 

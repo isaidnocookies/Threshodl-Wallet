@@ -166,9 +166,9 @@ void MainWindow::on_darkButton_pressed()
 
    connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
    connect (mDarkWalletView, &DarkWallet::destroyed, this, &MainWindow::walletWindowDeleted);
+   mDarkWalletView->setActiveUser(*mActiveUser);
    mDarkWalletView->setEmail(mActiveUser->getEmail());
    mDarkWalletView->setAddress(mActiveUser->getUsername());
-   mDarkWalletView->setActiveUser(*mActiveUser);
 
    mDarkWalletView->showMaximized();
    mDarkWalletView->show();
