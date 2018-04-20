@@ -17,6 +17,8 @@ DarkWallet::DarkWallet(QWidget *parent) :
     ui->sendButton->setStyleSheet(darkBackgroundStyleSheet());
     ui->withdrawToBrightWalletButton->setStyleSheet(darkBackgroundStyleSheet());
 
+    ui->progressBar->setVisible(false);
+
     ui->qrPushButton->setStyleSheet(QString("background-color:white; border-radius:10px; margin:5px"));
     ui->qrPushButton->setFixedSize(ui->qrPushButton->size().width(),ui->qrPushButton->size().height());
 
@@ -87,6 +89,26 @@ void DarkWallet::checkToCreateQr()
     }
 }
 
+void DarkWallet::startProgressBarAndDisable()
+{
+    ui->progressBar->setVisible(true);
+    ui->sendButton->setEnabled(false);
+    ui->withdrawToBrightWalletButton->setEnabled(false);
+    ui->balancePushButton->setEnabled(false);
+    ui->closeWindowButton->setEnabled(false);
+    ui->qrPushButton->setEnabled(false);
+}
+
+void DarkWallet::stopProgressBarAndEnable()
+{
+    ui->progressBar->setVisible(false);
+    ui->sendButton->setEnabled(true);
+    ui->withdrawToBrightWalletButton->setEnabled(true);
+    ui->balancePushButton->setEnabled(true);
+    ui->closeWindowButton->setEnabled(true);
+    ui->qrPushButton->setEnabled(true);
+}
+
 void DarkWallet::on_closeWindowButton_pressed()
 {
     this->hide();
@@ -133,4 +155,9 @@ void DarkWallet::on_balancePushButton_pressed()
 
     mDarkMicroWalletView->show();
     mDarkMicroWalletView->showMaximized();
+}
+
+void DarkWallet::on_refreshWalletButton_pressed()
+{
+//    startProgressBarAndDisable();
 }

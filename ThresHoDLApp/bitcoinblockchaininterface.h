@@ -12,6 +12,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QQueue>
+
+class UserAccount;
 
 class BitcoinBlockchainInterface : public QObject
 {
@@ -20,19 +23,23 @@ public:
     explicit BitcoinBlockchainInterface(QObject *parent = nullptr);
     void setActiveUser (UserAccount *iActiveUser);
 
-    QString getBalance (BitcoinWallet iWallets, int iConfirmations = 1);
+    bool updateBrightWalletBalances(int iConfirmations = 1);
+    void getBalance (QList<BitcoinWallet> iWallets, int iConfirmations = 1);
     void getUnspentTransactions (QList<BitcoinWallet> iWallets, int iConfirmations = 1);
 
 signals:
     void updateWalletBalance (QString iWalletID, QString iBalance);
+    void brightWalletUpdateComplete (bool iSuccess);
 
 private slots:
-    void replyFinished(QNetworkReply *reply);
+    void replyFinished(QNetworkReply *iReply);
 
 private:
     QNetworkAccessManager   *mNetworkAccessManager;
     QNetworkReply           *mNetworkReply;
     UserAccount             *mActiveUser;
+    BitcoinWallet           mBitcoinWalletToCheck;
+    QQueue<BitcoinWallet>   mWalletsToUpdate;
 };
 
 #endif // BITCOINBLOCKCHAININTERFACE_H

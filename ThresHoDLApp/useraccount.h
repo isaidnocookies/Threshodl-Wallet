@@ -3,6 +3,7 @@
 
 #include "bitcoinwallet.h"
 #include "qstringmath.h"
+#include "bitcoinblockchaininterface.h"
 
 #include <QString>
 #include <QVector>
@@ -14,6 +15,8 @@
 #include <algorithm>
 #include <QObject>
 #include <QSet>
+
+class BitcoinBlockchainInterface;
 
 class UserAccount : public QObject
 {
@@ -52,17 +55,23 @@ public:
     void setDarkWallets(QList<BitcoinWallet> iWallets);
     void setBrightBalance(QStringMath iValue)                        { mBrightBalance = iValue; }
     void setDarkBalance(QStringMath iValue)                          { mDarkBalance = iValue; }
-
-    void removeBrightWallets(QString iAmount); //for testing...
-
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
 
+    void updateBrightBalanceFromBlockchain();
+
+    void removeBrightWallets(QString iAmount); //for testing...
+
+public slots:
+    void updateFromBrightComplete(bool iSuccess);
+
 signals:
     void updateBalancesForMainWindow(QString iBright, QString iDark);
+    void updateBrightBalanceComplete(bool oSuccess);
 
 private:
     QSettings                       *mAccountSettings;
+    BitcoinBlockchainInterface      *mBitcoinBlockchainInterface;
     QString                         mUsername;
     QByteArray                      mPublicKey;
     QByteArray                      mPrivateKey;

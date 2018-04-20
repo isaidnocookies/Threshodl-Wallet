@@ -10,5 +10,7 @@
         <file alias="threshodl_logo">Resources/Images/threslogo.png</file>
         <file alias="ca.pem">../Certificates/ca.pem</file>
         <file alias="notifications_and_settings">Resources/Images/notificationAndSettings.png</file>
+        <file alias="black_refresh">Resources/Images/black_refreshIcon.png</file>
+        <file alias="white_refresh">Resources/Images/white_refreshIcon.png</file>
     </qresource>
 </RCC>

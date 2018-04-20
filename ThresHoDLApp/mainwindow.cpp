@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mMainBalanceFont = ui->btcTotalLabel->font();
 
+    ui->progressBar->setVisible(false);
     ui->logoLabel->setText("");
     ui->logoLabel->setPixmap(QPixmap::fromImage(QImage(":/threshodl_logo")));
     ui->logoLabel->setPixmap(ui->logoLabel->pixmap()->scaledToWidth(QApplication::desktop()->screenGeometry().width(),Qt::SmoothTransformation));
@@ -33,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mPendingImport = "";
 
     connect (mActiveUser, &UserAccount::updateBalancesForMainWindow, this, &MainWindow::updateBalances);
+    connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
 
     if (mActiveUser->isNewAccount()) {
         mCreateAccount = new CreateAccount;
@@ -230,8 +232,40 @@ void MainWindow::walletWindowDeleted()
     mBrightWalletView = nullptr;
 }
 
+void MainWindow::brightWalletUpdateComplete(bool iSuccess)
+{
+    stopProgressBarAndEnable();
+    ui->warningLabel->setText("Wallets updated!");
+}
+
 void MainWindow::setUI()
 {
     ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
     updateBalances(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+}
+
+void MainWindow::startProgressBarAndDisable()
+{
+    ui->progressBar->setVisible(true);
+    ui->refreshWalletsButton->setEnabled(false);
+    ui->brightButton->setEnabled(false);
+    ui->darkButton->setEnabled(false);
+    ui->notificationPushButton->setEnabled(false);
+    ui->warningLabel->setText("Refreshing Wallets...");
+}
+
+void MainWindow::stopProgressBarAndEnable()
+{
+    ui->progressBar->setVisible(false);
+    ui->refreshWalletsButton->setEnabled(true);
+    ui->brightButton->setEnabled(true);
+    ui->darkButton->setEnabled(true);
+    ui->notificationPushButton->setEnabled(true);
+    ui->warningLabel->setText("");
+}
+
+void MainWindow::on_refreshWalletsButton_pressed()
+{
+    startProgressBarAndDisable();
+    mActiveUser->updateBrightBalanceFromBlockchain();
 }

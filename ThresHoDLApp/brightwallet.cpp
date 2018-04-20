@@ -12,9 +12,6 @@ BrightWallet::BrightWallet(QWidget *parent) :
 
     ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
-
-    mBlockchainInterface = new BitcoinBlockchainInterface;
-    connect (mBlockchainInterface, &BitcoinBlockchainInterface::updateWalletBalance, this, &BrightWallet::updateBrightBalanceFromBlockchain);
 }
 
 BrightWallet::~BrightWallet()
@@ -38,9 +35,6 @@ void BrightWallet::setActiveUser(UserAccount &iUserAccount)
 
     ui->totalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance().toString()));
     setQrCode();
-
-    mBlockchainInterface->setActiveUser(mActiveUser);
-    mBlockchainInterface->getBalance(mPublicAddress);
 }
 
 void BrightWallet::updateBrightBalance(QStringMath lAmount)
