@@ -12,6 +12,9 @@ BrightWallet::BrightWallet(QWidget *parent) :
 
     ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
+
+    mBlockchainInterface = new BitcoinBlockchainInterface;
+    connect (mBlockchainInterface, &BitcoinBlockchainInterface::updateWalletBalance, this, &BrightWallet::updateBrightBalanceFromBlockchain);
 }
 
 BrightWallet::~BrightWallet()
@@ -22,7 +25,6 @@ BrightWallet::~BrightWallet()
 void BrightWallet::setAddress(QByteArray iPublicAddress)
 {
     mPublicAddress = iPublicAddress;
-    setQrCode();
 }
 
 void BrightWallet::setBalance(QStringMath iAmount)
@@ -35,6 +37,10 @@ void BrightWallet::setActiveUser(UserAccount &iUserAccount)
     mActiveUser = &iUserAccount;
 
     ui->totalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance().toString()));
+    setQrCode();
+
+    mBlockchainInterface->setActiveUser(mActiveUser);
+    mBlockchainInterface->getBalance(mPublicAddress);
 }
 
 void BrightWallet::updateBrightBalance(QStringMath lAmount)
@@ -59,6 +65,12 @@ void BrightWallet::brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAm
         //failed
         qDebug() << "Failed to import wallets";
     }
+}
+
+void BrightWallet::updateBrightBalanceFromBlockchain(QString iWalletId, QString iValue)
+{
+    qDebug() << "Update from blockchain!";
+    ui->totalLabel->setText(iValue);
 }
 
 void BrightWallet::on_closeWindowButton_pressed()
@@ -94,5 +106,6 @@ void BrightWallet::setQrCode()
     mQrImage = new QImage();
     *mQrImage = QrEncoder::createQrCode(mPublicAddress);
     ui->qrCodeLabel->setPixmap(QPixmap::fromImage(*mQrImage));
+    ui->qrAddressLabel->setText(QString("Address: %1").arg(QString(mPublicAddress)));
     ui->qrCodeLabel->setFixedSize(ui->qrAddressLabel->width() * 2, ui->qrAddressLabel->width() * 2);
 }

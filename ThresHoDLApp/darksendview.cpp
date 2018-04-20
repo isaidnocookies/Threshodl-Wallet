@@ -137,7 +137,7 @@ void DarkSendView::on_sendTransactionButton_pressed()
                                        "<br><br>"
                                        "Sent at %3 on %4"
                                        "<br><br>"
-                                       "</html>").arg(lAddress).arg(ui->amountLineEdit->text()).arg(QTime::currentTime().toString().arg(QDate::currentDate().toString(myDateFormat()))));
+                                       "</html>").arg(lAddress).arg(ui->amountLineEdit->text()).arg(QTime::currentTime().toString()).arg(QDate::currentDate().toString(myDateFormat())));
 
             lMessage.setSubject("Threshodl - You have Bitcoin!");
             lMessage.addRecipient(&lToEmail);
