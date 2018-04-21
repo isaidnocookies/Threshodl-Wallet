@@ -35,8 +35,10 @@ protected:
     bool _reconnectToDB(const QString iConnectionCounterString, QSqlDatabase &oDatabase);
     bool _beginTransaction(QSqlDatabase &iDatabase);
     bool _beginTransactionLockTable(QSqlDatabase &iDatabase, const QString iTableName, bool iLockExclusive = true);
+    bool _beginTransactionLockTables(QSqlDatabase &iDatabase, const QStringList iTableNames, bool iLockExclusive = true);
     bool _commitTransaction(QSqlDatabase &iDatabase);
     bool _commitTransactionUnlockTable(QSqlDatabase &iDatabase, const QString iTableName);
+    bool _commitTransactionUnlockTables(QSqlDatabase &iDatabase, const QStringList iTableNames);
     bool _rollbackTransaction(QSqlDatabase &iDatabase);
     void _closeDB(const QString iConnectionCounterString, QSqlDatabase &iDatabase);
 
@@ -44,7 +46,7 @@ protected:
 
     static QString _sanitizeAccountName(const QString iAccountName);
     static QString _escrowTableNameForAccount(const QString iAccountName);
-    static QString _createEscrowTableSqlCommandForAccount(const QString iAccountName);
+    static QSqlQuery _createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase);
 
 public:
     DBInterfaceV1( const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort = 5432 );
@@ -60,12 +62,12 @@ public:
     bool addressDelete( const QString iAddress ) override;
     QByteArray publicKeyForAddress(const QString iAddress) override;
 
-    bool microWalletExists( const QString iMicroWalletId ) override { return false; }
-    bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override { return false; }
-    bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override { return false; }
-    bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override { return false; }
-    QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override { return QByteArray(); }
-    bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override { return false; }
+    bool microWalletExists( const QString iMicroWalletId ) override;
+    bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
+    bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
+    bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override {return false;}
+    QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override {return false;}
+    bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override {return false;}
 };
 
 #endif // DBINTERFACEV1_H
