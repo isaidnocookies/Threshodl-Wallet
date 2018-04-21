@@ -66,7 +66,7 @@ public:
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
     bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override {return false;}
-    QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override {return false;}
+    QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override {return QByteArray();}
     bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override {return false;}
 };
 
