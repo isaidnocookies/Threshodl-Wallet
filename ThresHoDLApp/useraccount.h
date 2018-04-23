@@ -57,9 +57,8 @@ public:
     void setDarkBalance(QStringMath iValue)                          { mDarkBalance = iValue; }
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
-
     void updateBrightBalanceFromBlockchain();
-
+    void getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations);
     void removeBrightWallets(QString iAmount); //for testing...
 
 public slots:
@@ -70,20 +69,20 @@ signals:
     void updateBrightBalanceComplete(bool oSuccess);
 
 private:
-    QSettings                       *mAccountSettings;
-    BitcoinBlockchainInterface      *mBitcoinBlockchainInterface;
-    QString                         mUsername;
-    QByteArray                      mPublicKey;
-    QByteArray                      mPrivateKey;
-    QList<QString>                  mNotifications;
-    QString                         mEmail;
+    QSettings                               *mAccountSettings;
+    BitcoinBlockchainInterface              *mBitcoinBlockchainInterface;
+    QString                                 mUsername;
+    QByteArray                              mPublicKey;
+    QByteArray                              mPrivateKey;
+    QList<QString>                          mNotifications;
+    QString                                 mEmail;
 
-    QList<BitcoinWallet>            mBrightWallet;
-    QStringMath                     mBrightBalance;
-    QList<BitcoinWallet>            mDarkWallet;
-    QStringMath                     mDarkBalance;
+    QList<BitcoinWallet>                    mBrightWallet;
+    QStringMath                             mBrightBalance;
+    QList<BitcoinWallet>                    mDarkWallet;
+    QStringMath                             mDarkBalance;
 
-    QSet<QString>                   mAllWallets;
+    QSet<QString>                           mAllWallets;
 
     void loadFromSettings();
     bool greaterThanWallet (BitcoinWallet iLHS, BitcoinWallet iRHS);

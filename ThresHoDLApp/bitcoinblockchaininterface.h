@@ -24,8 +24,9 @@ public:
     void setActiveUser (UserAccount *iActiveUser);
 
     bool updateBrightWalletBalances(int iConfirmations = 1);
-    void getBalance (QList<BitcoinWallet> iWallets, int iConfirmations = 1);
-    void getUnspentTransactions (QList<BitcoinWallet> iWallets, int iConfirmations = 1);
+    bool getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations = 1);
+    void createBitcoinTransaction(QList<BitcoinWallet> iInputWallet, QList<BitcoinWallet> iOuputs);
+    QString estimateMinerFee(int iInputs, int iOutputs);
 
 signals:
     void updateWalletBalance (QString iWalletID, QString iBalance);

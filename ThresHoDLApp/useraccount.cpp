@@ -360,8 +360,17 @@ bool UserAccount::accountContainsWallet(QString iWalletId)
 
 void UserAccount::updateBrightBalanceFromBlockchain()
 {
+    //testing feature
+    mBitcoinBlockchainInterface->estimateMinerFee(2, 10);
+
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
+    updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
     emit updateBrightBalanceComplete(true);
+}
+
+void UserAccount::getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations = 1)
+{
+    mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, oTxids, oValues, oVouts, iConfirmations);
 }
 
 void UserAccount::loadFromSettings()

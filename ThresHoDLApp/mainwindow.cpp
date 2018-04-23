@@ -154,6 +154,8 @@ void MainWindow::on_brightButton_pressed()
 {
     mBrightWalletView = new BrightWallet;
 
+    ui->warningLabel->setText("");
+
     connect (mBrightWalletView, &BrightWallet::brightToDarkCompletedSignal, this, &MainWindow::brightToDarkCompleted);
 
     mBrightWalletView->setAddress(mActiveUser->getBrightWallet().address());
@@ -165,6 +167,8 @@ void MainWindow::on_brightButton_pressed()
 void MainWindow::on_darkButton_pressed()
 {
    mDarkWalletView = new DarkWallet;
+
+   ui->warningLabel->setText("");
 
    connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
    connect (mDarkWalletView, &DarkWallet::destroyed, this, &MainWindow::walletWindowDeleted);
@@ -178,6 +182,8 @@ void MainWindow::on_darkButton_pressed()
 
 void MainWindow::on_notificationPushButton_pressed()
 {
+    ui->warningLabel->setText("");
+
     mNotificationView = new NotificationsAndSettingsView;
 
     mNotificationView->setActiveUser(*mActiveUser);
@@ -266,6 +272,8 @@ void MainWindow::stopProgressBarAndEnable()
 
 void MainWindow::on_refreshWalletsButton_pressed()
 {
+    ui->warningLabel->setText("");
     startProgressBarAndDisable();
     mActiveUser->updateBrightBalanceFromBlockchain();
+
 }
