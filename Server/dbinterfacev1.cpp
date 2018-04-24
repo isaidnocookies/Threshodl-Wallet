@@ -29,6 +29,7 @@ bool DBInterfaceV1::_connectToDB(QString &oConnectionCounterString, QSqlDatabase
     oConnectionCounterString = _nextConnectionCounterString();
     oDatabase = QSqlDatabase::addDatabase(mSqlType,oConnectionCounterString);
     oDatabase.setHostName(mHostName);
+    oDatabase.setPort(mPort);
     oDatabase.setDatabaseName(mDatabaseName);
     oDatabase.setUserName(mUserName);
     oDatabase.setPassword(mPassword);
