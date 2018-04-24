@@ -44,6 +44,9 @@ QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceAddressKey()
 QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceKey()
 { return QStringLiteral("outputBalance"); }
 
+QString RPCMessageCreateMicroWalletPackageRequest::chainTypeKey()
+{ return QStringLiteral("chainType"); }
+
 QString RPCMessageCreateMicroWalletPackageRequest::txId() const
 { return fieldValue(txIdKey()).toString(); }
 
@@ -55,6 +58,9 @@ QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceAddress() const
 
 QString RPCMessageCreateMicroWalletPackageRequest::outputBalance() const
 { return fieldValue(outputBalanceKey()).toString(); }
+
+BitcoinWallet::ChainType RPCMessageCreateMicroWalletPackageRequest::chainType() const
+{ return static_cast<BitcoinWallet::ChainType>(fieldValue(chainTypeKey()).toUInt()); }
 
 QString RPCMessageCreateMicroWalletPackageRequest::create(const QString iCryptoTypeShortName, const QString iCryptoValue, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
@@ -68,7 +74,7 @@ QString RPCMessageCreateMicroWalletPackageRequest::create(const QString iCryptoT
                 );
 }
 
-QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress, const QString iOutputBalance, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const BitcoinWallet::ChainType iChainType, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress, const QString iOutputBalance, RPCMessage::KeyEncoding iKeyEncoding)
 {
     return RPCMessage::toMessage(
                 QList<RPCField>()
@@ -78,6 +84,7 @@ QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryp
                 << RPCField{outputBalanceKey(), iOutputBalance}
                 << RPCField{txIdKey(), iTxId}
                 << RPCField{voutKey(), iVout}
+                << RPCField{chainTypeKey(), static_cast<unsigned int>(iChainType)}
                 << RPCField{transactionIdKey(), iTransactionId}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
                 iUsername, iPrivateKey, iKeyEncoding

@@ -124,7 +124,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
 
                     for( size_t lIndex = 0; lIndex < lValues.size(); lIndex++ ) {
                         lWalletValues << QString::number(WalletGrinderAlpha::getValueFromBValue(lValues[lIndex]));
-                        lBTCWallets << BitcoinWallet::createNewBitcoinWallet();
+                        lBTCWallets << BitcoinWallet::createNewBitcoinWallet(lRequest.chainType());
                     }
 
                     delete lValuesPtr;
