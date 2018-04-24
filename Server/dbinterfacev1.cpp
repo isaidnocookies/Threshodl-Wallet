@@ -498,3 +498,99 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
 
     return lRet;
 }
+
+bool DBInterfaceV1::microWalletCreate(const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && ! iPayload.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QString lWalletId   = iMicroWalletId.toLower();
+        QString lTableName  = _escrowTableNameForAccount(iAddress);
+
+        if( _beginTransactionLockTable(lDB,lTableName,true) ) {
+            QSqlQuery   lQuery(lDB);
+            lQuery.prepare(
+                        QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES(:iMicroWalletId,%2,:iPayload)")
+                        .arg(lTableName)
+                        .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                        );
+            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+            lQuery.bindValue(QStringLiteral(":iPayload"), QString::fromUtf8(iPayload.toBase64()) );
+
+
+            if( lQuery.exec() && lQuery.numRowsAffected() == 1 ) {
+                lRet = true;
+                _commitTransactionUnlockTable(lDB,lTableName);
+            }else{
+                _rollbackTransaction(lDB);
+            }
+        }
+    }
+
+    return lRet;
+}
+
+QByteArray DBInterfaceV1::microWalletCopyPayload(const QString iMicroWalletId, const QString iAddress)
+{
+    QByteArray      lRet;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QString lWalletId   = iMicroWalletId.toLower();
+        QString lTableName  = _escrowTableNameForAccount(iAddress);
+
+        if( _beginTransactionLockTable(lDB,lTableName,false) ) {
+
+            QSqlQuery   lQuery(lDB);
+            lQuery.prepare(
+                        QStringLiteral("SELECT payload FROM %1 WHERE walletid = :iMicroWalletId AND state = %1")
+                        .arg(lTableName)
+                        .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                        );
+            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+
+            if( lQuery.exec() ) {
+                int lPayloadNo = lQuery.record().indexOf(QStringLiteral("payload"));
+                if( lQuery.first() ) {
+                    lRet = QByteArray::fromBase64(lQuery.value(lPayloadNo).toString().toUtf8());
+                }
+            }
+        }
+
+        _commitTransactionUnlockTable(lDB,lTableName);
+    }
+
+    return lRet;
+}
+
+bool DBInterfaceV1::microWalletDelete(const QString iMicroWalletId, const QString iAddress)
+{
+    bool            lRet            = false;
+    QSqlDatabase    lDB;
+
+    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && _connectOrReconnectToDB(lDB) ) {
+        QString lTableName  = _escrowTableNameForAccount(iAddress);
+
+        if( _beginTransactionLockTable(lDB,lTableName) ) {
+            QSqlQuery   lQuery(lDB);
+            QString     lWalletId   = iMicroWalletId.toLower();
+
+            lQuery.prepare(
+                        QStringLiteral("DELETE FROM %1 WHERE walletid = :iMicroWalletId AND state = %2")
+                        .arg(lTableName)
+                        .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                        );
+            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+
+            if( lQuery.exec() && lQuery.numRowsAffected() == 1 ) {
+                lRet = true;
+                _commitTransactionUnlockTable(lDB,lTableName);
+            }else{
+                _rollbackTransaction(lDB);
+            }
+        }
+    }
+
+    return lRet;
+}
