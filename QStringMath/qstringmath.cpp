@@ -296,7 +296,11 @@ QStringMath QStringMath::roundUpToNearest0001(QString iBtc)
     lBtcAmount.replace(lBtcAmount.indexOf(".") + 4, 1, QString::number(l0001Value));
     lBtcAmount.remove(lBtcAmount.indexOf(".") + 5, (lBtcAmount.size()) - lBtcAmount.indexOf(".") + 5);
 
-    return lBtcAmount;
+    if (QStringMath(lBtcAmount) == "0.0") {
+        return QStringMath("0.0001");
+    }
+
+    return QStringMath(lBtcAmount);
 }
 
 QStringMath QStringMath::btcFromSatoshi(QString iSatoshis)
@@ -310,7 +314,7 @@ QStringMath QStringMath::btcFromSatoshi(QString iSatoshis)
         }
         lBtcValue.insert(1, ".");
     } else {
-        lBtcValue.insert(lSizeOfString - 7, ".");
+        lBtcValue.insert(lSizeOfString - 8, ".");
     }
 
     return QStringMath(lBtcValue);

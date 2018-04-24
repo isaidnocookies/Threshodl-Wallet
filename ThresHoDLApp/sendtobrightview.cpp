@@ -251,7 +251,7 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
         mActiveUser->addBrightWallet(lWallet);
     }
 
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     mActiveUser->clearPendingToSendDarkWallets();
     emit updateDarkBalanceOnDarkWallet();
     ui->confirmationLabel->setText(QString("Conversion Complete!"));

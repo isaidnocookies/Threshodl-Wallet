@@ -7,8 +7,6 @@
 
 #include <QWidget>
 #include <QImage>
-#include <QApplication>
-#include <QMainWindow>
 
 #include "useraccount.h"
 #include "bitcoinblockchaininterface.h"
@@ -25,14 +23,13 @@ public:
     explicit BrightWallet(QWidget *parent = 0);
     ~BrightWallet();
 
-    void setAddress(QByteArray iPublicAddress);
-    void setBalance(QStringMath iAmount);
     void setActiveUser(UserAccount &iUserAccount);
 
 public slots:
     void updateBrightBalance (QStringMath lAmount);
     void brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAmount, QList<QByteArray> iDarkWallets);
     void updateBrightBalanceFromBlockchain(QString iWalletId, QString iValue);
+    void updateBalancesForViews(QString iBright, QString iDark);
 
 private slots:
     void on_closeWindowButton_pressed();
@@ -54,8 +51,10 @@ private:
     QStringMath                 mBalance;
     UserAccount                 *mActiveUser;
     BitcoinBlockchainInterface  *mBlockchainInterface;
+    QFont                       mMainBalanceFont;
 
     void setQrCode();
+    void updateBalanceLabel();
 };
 
 #endif // BRIGHTWALLET_H

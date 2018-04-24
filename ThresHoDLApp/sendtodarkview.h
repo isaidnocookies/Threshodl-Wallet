@@ -58,7 +58,7 @@ private:
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
 
-    void parseBitcoinPackage (QList<QByteArray> iData);
+    void completeToDarkTransaction (QList<QByteArray> iData);
 };
 
 #endif // SENDTODARKVIEW_H

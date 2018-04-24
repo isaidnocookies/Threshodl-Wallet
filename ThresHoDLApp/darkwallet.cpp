@@ -7,6 +7,9 @@
 
 #include <QScroller>
 #include <QFont>
+#include <QDesktopWidget>
+#include <QCoreApplication>
+#include <QDesktopServices>
 
 DarkWallet::DarkWallet(QWidget *parent) :
     QWidget(parent),
@@ -21,6 +24,8 @@ DarkWallet::DarkWallet(QWidget *parent) :
 
     ui->qrPushButton->setStyleSheet(QString("background-color:white; border-radius:10px; margin:5px"));
     ui->qrPushButton->setFixedSize(ui->qrPushButton->size().width(),ui->qrPushButton->size().height());
+
+    mMainBalanceFont = ui->balancePushButton->font();
 
     checkToCreateQr();
 }
@@ -40,7 +45,8 @@ void DarkWallet::setAddress(QString iAddress)
 void DarkWallet::setActiveUser(UserAccount &iActiveUser)
 {
     mActiveUser = &iActiveUser;
-    ui->balancePushButton->setText(QString("%1").arg(mActiveUser->getDarkBalance().toString()));
+    connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &DarkWallet::updateBalancesForViews);
+    updateBalanceLabel();
     ui->addressLabel->setText(mActiveUser->getUsername());
 }
 
@@ -60,7 +66,15 @@ void DarkWallet::saveAddresses(QString iEmail, QString iAddress)
 
 void DarkWallet::updateBalance()
 {
-    ui->balancePushButton->setText(mActiveUser->getDarkBalance().toString());
+    updateBalanceLabel();
+}
+
+void DarkWallet::updateBalancesForViews(QString iBright, QString iDark)
+{
+    Q_UNUSED (iBright)
+    Q_UNUSED (iDark)
+
+    updateBalanceLabel();
 }
 
 void DarkWallet::createQrCode()
@@ -160,4 +174,25 @@ void DarkWallet::on_balancePushButton_pressed()
 void DarkWallet::on_refreshWalletButton_pressed()
 {
 //    startProgressBarAndDisable();
+}
+
+void DarkWallet::updateBalanceLabel()
+{
+    QString lTotalBalance = mActiveUser->getDarkBalance().toString();
+
+    bool    lFontFits = false;
+    QFont   lFont = mMainBalanceFont;
+
+    while (!lFontFits) {
+        QFontMetrics lFm(lFont);
+        QRect lBound = lFm.boundingRect(0,0, ui->balancePushButton->width(), ui->balancePushButton->height(), Qt::TextWordWrap | Qt::AlignCenter, lTotalBalance);
+
+        if (lBound.width() <= QApplication::desktop()->screenGeometry().width() - 20)
+            lFontFits = true;
+        else
+            lFont.setPointSize(lFont.pointSize() - 2);
+    }
+
+    ui->balancePushButton->setText(QString("%1").arg(lTotalBalance));
+    ui->balancePushButton->setFont(lFont);
 }

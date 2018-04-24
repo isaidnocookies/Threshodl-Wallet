@@ -434,6 +434,6 @@ void DarkSendView::sentConfirmation(bool iSuccess)
     mActiveUser->clearPendingToSendDarkWallets();
 
     ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     emit updateBalance();
 }

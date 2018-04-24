@@ -137,7 +137,7 @@ void SendToDarkView::receivedMessage()
 
         switch(lReply.replyCode()) {
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-            parseBitcoinPackage(lReply.microWalletsData());
+            completeToDarkTransaction(lReply.microWalletsData());
             ui->warningLabel->setText("Conversion Complete!");
             ui->amountLineEdit->clear();
             break;
@@ -194,13 +194,22 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->confirmCheckBox->setEnabled(true);
 }
 
-void SendToDarkView::parseBitcoinPackage(QList<QByteArray> iData)
+void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData)
 {
-    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+//    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+
     QString lTotalBrightCoin = (mBalance - ui->amountLineEdit->text()).toString();
+    mActiveUser->setBrightPendingBalance(lTotalBrightCoin);
 
     mBalance = QStringMath(lTotalBrightCoin);
     ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
+
+    mActiveUser->setBrightBalance(lTotalBrightCoin);
+    for (auto w : iData) {
+        mActiveUser->addMicroWallet(BitcoinWallet(w));
+        qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+    }
+    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);

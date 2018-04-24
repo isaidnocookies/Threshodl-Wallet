@@ -5,6 +5,24 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+extern "C" {
+#include <btc/chainparams.h>
+#include <btc/ecc.h>
+#include <btc/tool.h>
+#include <btc/utils.h>
+
+#include <btc/tx.h>
+#include <btc/cstr.h>
+#include <btc/ecc_key.h>
+#include <btc/script.h>
+#include <btc/utils.h>
+
+#include <btc/tool.h>
+#include <btc/bip32.h>
+
+#include <btc/base58.h>
+}
+
 UserAccount::UserAccount(QObject *parent)
 {
     Q_UNUSED(parent)
@@ -73,7 +91,7 @@ BitcoinWallet UserAccount::getBrightWallet(int iIndex)
     } else if (mBrightWallet.size() > 0) {
         return mBrightWallet.at(0);
     } else {
-        return BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::None);
+        return BitcoinWallet::createNewBitcoinWallet(currentChain());
     }
 }
 
@@ -181,7 +199,7 @@ void UserAccount::createNewBrightWallet()
 {
     QList<QVariant> lWalletListToSave = mAccountSettings->value(brightWalletsSetting()).toList();
 
-    BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+    BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(currentChain());
     QString lWalletId = QString::number(QDateTime::currentMSecsSinceEpoch()).append(lNewWallet.address());
 
     lNewWallet.setValue("0");
@@ -215,7 +233,7 @@ void UserAccount::addMicroWallet(BitcoinWallet iWallet)
         mAccountSettings->setValue(darkWalletsSetting(), lWalletList);
         mAccountSettings->sync();
 
-        emit updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+        emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
     }
 }
 
@@ -235,7 +253,7 @@ void UserAccount::addBrightWallet(BitcoinWallet iWallet)
         mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
         mAccountSettings->sync();
 
-        emit updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+        emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
     }
 }
 
@@ -287,7 +305,7 @@ void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
     mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
     mAccountSettings->sync();
 
-    emit updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
 }
 
 void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
@@ -313,7 +331,15 @@ void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
     mAccountSettings->setValue(darkWalletsSetting(), lWalletList);
     mAccountSettings->sync();
 
-    emit updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+}
+
+void UserAccount::setBrightPendingBalance(QStringMath iValue)
+{
+    mBrightPendingBalance = iValue;
+
+    mAccountSettings->setValue(brightPendingBalanceSetting(), mBrightPendingBalance.toString());
+    mAccountSettings->sync();
 }
 
 void UserAccount::removeBrightWallets(QString iAmount)
@@ -337,7 +363,7 @@ void UserAccount::removeBrightWallets(QString iAmount)
     mAccountSettings->setValue(brightWalletsSetting(), lWallets);
     mAccountSettings->sync();
 
-    updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+    updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
 }
 
 void UserAccount::updateFromBrightComplete(bool iSuccess)
@@ -360,17 +386,60 @@ bool UserAccount::accountContainsWallet(QString iWalletId)
 
 void UserAccount::updateBrightBalanceFromBlockchain()
 {
-    //testing feature
-    mBitcoinBlockchainInterface->estimateMinerFee(2, 10);
-
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
-    updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+
+    if (mBrightBalance == mBrightPendingBalance) {
+        updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+    } else {
+        updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
+    }
+
     emit updateBrightBalanceComplete(true);
 }
 
-void UserAccount::getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations = 1)
+bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
 {
-    mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, oTxids, oValues, oVouts, iConfirmations);
+    QStringList         lTxids;
+    QStringList         lValues;
+    QStringList         lVouts;
+    QList<QByteArray>   lPrivateKeys;
+    QByteArray          lRawTransaction = QByteArray();
+    QByteArray          lSignedHex = QByteArray();
+
+    BitcoinWallet       lTempToWallet;
+
+    lTempToWallet.setAddress(iToAddress.toUtf8());
+    lTempToWallet.setValue(QStringMath(iAmount).toString());
+    lTempToWallet.setChain(currentChain());
+
+    if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lPrivateKeys)) {
+        // Estimate fee and create raw transaction
+        QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), 2, false);
+        lTempToWallet.setValue((QStringMath(lTempToWallet.value()) - lMinerFee).toString()); // correct output for fee
+
+        lRawTransaction = mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, QList<BitcoinWallet>() << lTempToWallet, lMinerFee, lPrivateKeys);
+        if (lRawTransaction != QByteArray()) {
+            // sign transaction
+            if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lTxids, lValues, lVouts, lPrivateKeys)) {
+                qDebug() << "Transaction signed!";
+                if (mBitcoinBlockchainInterface->sendRawTransaction(lSignedHex)) {
+                    qDebug() << "Transaction sent!";
+                    mBrightBalance = mBrightBalance - iAmount;
+                    updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+                    return true;
+                }
+            } else {
+                qDebug() << "Failed to sign transaction";
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
 void UserAccount::loadFromSettings()
@@ -389,6 +458,7 @@ void UserAccount::loadFromSettings()
     }
 
     mEmail = mAccountSettings->value(emailSetting()).toString();
+    mBrightPendingBalance = mAccountSettings->value(brightPendingBalanceSetting()).toString();
 
     if (!mAccountSettings->contains(brightWalletsSetting())) {
         //create new wallet
@@ -449,7 +519,7 @@ void UserAccount::loadFromSettings()
         QList<BitcoinWallet> lNewWallets;
 
         for (int i = 0; i <20; i++) {
-            BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+            BitcoinWallet lNewWallet = BitcoinWallet::createNewBitcoinWallet(currentChain());
             QString lNewWalletId = QString::number(QDateTime::currentMSecsSinceEpoch()).append(lNewWallet.address());
             lNewWallet.setOwner(mUsername);
             lNewWallet.setValue("0.1");
@@ -468,7 +538,7 @@ void UserAccount::loadFromSettings()
 
     }
 
-    emit updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
 }
 
 bool UserAccount::greaterThanWallet(BitcoinWallet iLHS, BitcoinWallet iRHS)

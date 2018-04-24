@@ -63,7 +63,7 @@ void NotificationsAndSettingsView::on_notificationTableWidget_cellClicked(int ro
 
 void NotificationsAndSettingsView::on_addPushButton_pressed()
 {
-    BitcoinWallet lNewBright = BitcoinWallet::createNewBitcoinWallet(BitcoinWallet::ChainType::TestNet);
+    BitcoinWallet lNewBright = BitcoinWallet::createNewBitcoinWallet(currentChain());
     lNewBright.setValue(ui->amountLineEdit->text());
     lNewBright.setOwner(mActiveUser->getUsername());
     lNewBright.setIsMicroWallet(false);

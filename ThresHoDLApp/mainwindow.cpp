@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mActiveUser = new UserAccount;
     mPendingImport = "";
 
-    connect (mActiveUser, &UserAccount::updateBalancesForMainWindow, this, &MainWindow::updateBalances);
+    connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &MainWindow::updateBalances);
     connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
 
     if (mActiveUser->isNewAccount()) {
@@ -158,7 +158,6 @@ void MainWindow::on_brightButton_pressed()
 
     connect (mBrightWalletView, &BrightWallet::brightToDarkCompletedSignal, this, &MainWindow::brightToDarkCompleted);
 
-    mBrightWalletView->setAddress(mActiveUser->getBrightWallet().address());
     mBrightWalletView->setActiveUser(*mActiveUser);
     mBrightWalletView->show();
     mBrightWalletView->showMaximized();

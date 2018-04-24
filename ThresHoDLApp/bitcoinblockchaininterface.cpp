@@ -14,9 +14,12 @@ extern "C" {
 
 #include <btc/tool.h>
 #include <btc/bip32.h>
+
+#include <btc/base58.h>
 }
 
 #include <QEventLoop>
+#include <QUrl>
 
 BitcoinBlockchainInterface::BitcoinBlockchainInterface(QObject *parent) : QObject(parent)
 {
@@ -39,41 +42,39 @@ bool BitcoinBlockchainInterface::updateBrightWalletBalances(int iConfirmations)
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
     for (BitcoinWallet &w : mActiveUser->getBrightWallets()) {
-        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addrs/%2/balance").arg(BLOCKCYPER_API_URL).arg(QString(w.address())))));
+        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2/balance").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
         lMyEventLoop.exec();
 
         if (lReply->error() == QNetworkReply::NoError) {
             QByteArray      lReplyText = lReply->readAll();
-            QJsonDocument   lJsonReponse = QJsonDocument::fromJson(lReplyText);
-            QJsonObject     lJsonObject = lJsonReponse.object();
-            QVariantMap     lMap = lJsonObject.toVariantMap();
             BitcoinWallet   lNewWallet = w;
-            QStringMath     lBalance = QStringMath::btcFromSatoshi(QString::number(lMap["balance"].toInt()));
+            QStringMath     lBalance = QStringMath::btcFromSatoshi(QString(lReplyText));
             lNewWallet.setValue(lBalance.toString());
             lNewWallets.append(lNewWallet);
             lBrightBalance = lBrightBalance + lBalance;
+            qDebug() << lBrightBalance.toString();
+            qDebug() << "Balance updated";
         } else {
-            qDebug() << "Error.... ";
+            qDebug() << "Error.... Can not update bright wallet balance...";
             lSuccess = false;
             lNewWallets.append(w);
         }
     }
 
     mActiveUser->setBrightWallets(lNewWallets);
-
     return lSuccess;
 }
 
-bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations)
+bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, QList<QByteArray> &oPrivateKeys, int iConfirmations)
 {
-    QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
     bool                    lSuccess = true;
+    QEventLoop              lMyEventLoop;
 
-    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+    for (auto w : iWallets) {
+        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addrs/%2?unspentOnly=true?confirmations=%3?token=6e703c9fa20f425287194adb4aedd364").arg(BLOCKCYPER_API_URL).arg(QString(w.address())).arg(iConfirmations))));
 
-    for (auto w : mActiveUser->getBrightWallets()) {
-        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addrs/%2?unspentOnly=true?confirmations=%3").arg(BLOCKCYPER_API_URL).arg(QString(w.address())).arg(iConfirmations))));
+        connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
         lMyEventLoop.exec();
 
         if (lReply->error() == QNetworkReply::NoError) {
@@ -86,12 +87,14 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
             oTxids.clear();
             oValues.clear();
             oVouts.clear();
+            oPrivateKeys.clear();
 
-            for (auto w : lTxList) {
-                auto lTempMap = w.toMap();
+            for (auto tx : lTxList) {
+                auto lTempMap = tx.toMap();
                 oTxids.append(lTempMap["tx_hash"].toString());
-                oValues.append(lTempMap["value"].toString());
+                oValues.append(QStringMath::btcFromSatoshi(QString::number(lTempMap["value"].toInt())).toString());
                 oVouts.append(lTempMap["tx_output_n"].toString());
+                oPrivateKeys.append(w.wif());
             }
             lSuccess = true;
         } else {
@@ -103,12 +106,95 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
     return lSuccess;
 }
 
-void BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> iInputWallet, QList<BitcoinWallet> iOuputs)
+QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> iInputWallets, QList<BitcoinWallet> iOutputs, QString iMinerFee, QList<QByteArray> &oPrivateKeys)
 {
+    QStringList         lTxids;
+    QStringList         lValues;
+    QStringList         lVouts;
+    QList<QByteArray>   lPrivateKeys;
+    QList<int>          lIndices;
+    QStringMath         lOutputTotal;
+    QStringMath         lOutputBalance;
+    QStringMath         lInputCounter = QStringMath("0.0");
 
+    QString             lTransactionParams = "";
+    QString             lInputParams = "";
+    QString             lOutputParams = "";
+
+    if (iInputWallets.size() == 0 || iOutputs.size() == 0) {
+        qDebug() << "Error, no inputs or outputs";
+        return QByteArray();
+    }
+
+    if (!getUnspentTransactions(iInputWallets, lTxids, lValues, lVouts, lPrivateKeys)) {
+        qDebug() << "Error getting unspent transactions";
+        return QByteArray();
+    }
+
+    for (int i = 0; i < lTxids.size(); i++) {
+        if (QStringMath(lValues.at(i)) < lOutputTotal + iMinerFee) {
+            lIndices.append(i);
+            oPrivateKeys.append(lPrivateKeys.at(i));
+            lInputCounter = lInputCounter + lValues.at(i);
+        } else if (QStringMath(lValues.at(i)) > lOutputTotal + iMinerFee) {
+            lIndices.append(i);
+            oPrivateKeys.append(lPrivateKeys.at(i));
+            lInputCounter = lInputCounter + lValues.at(i);
+            break;
+        }
+    }
+
+    if (lInputCounter < lOutputTotal + iMinerFee) {
+        qDebug() << "Not enough bitcoin...";
+        return QByteArray();
+    }
+
+    for (auto outs : iOutputs) {
+        lOutputTotal = lOutputTotal + outs.value();
+        lOutputParams.append(QString("\"%1\":%2,").arg(QString(outs.address())).arg(outs.value()));
+    }
+
+    lOutputBalance = lInputCounter -  (lOutputTotal + iMinerFee);
+    lOutputParams.append(QString("\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
+
+    for (int i = 0; i < lIndices.size(); i++) {
+        QJsonObject lTxin;
+        lTxin["txid"] = lTxids[i];
+        lTxin["vout"] = lVouts[i];
+
+        lInputParams.append(QString("{\"txid\":\"%1\",\"vout\":%2},").arg(lTxids[i]).arg(lVouts[i]));
+    }
+    lInputParams.remove(lInputParams.size()-1,1);
+
+    lTransactionParams = QString("[[%1],{%2}]").arg(lInputParams).arg(lOutputParams);
+
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QByteArray lUrlData = QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"createrawtransaction\",\"params\":%1}").arg(lTransactionParams).toUtf8();
+
+    lReply = mNetworkAccessManager->post(lRequest, lUrlData);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lResult = lReply->readAll();
+        QJsonDocument   lJsonReponse = QJsonDocument::fromJson(lResult);
+        QJsonObject     lJsonObject = lJsonReponse.object();
+        QVariantMap     lMap = lJsonObject.toVariantMap();
+
+        return lMap["result"].toByteArray();
+    } else {
+        qDebug() << "Error.... Failed to create raw transaction";
+        return QByteArray();
+    }
+
+    return lTransactionParams.toUtf8();
 }
 
-QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs)
+QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs, bool iRoundUp)
 {
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
@@ -117,7 +203,7 @@ QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs)
 
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
-    lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1").arg(BLOCKCYPER_API_URL))));
+    lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1?token=6e703c9fa20f425287194adb4aedd364").arg(BLOCKCYPER_API_URL))));
     lMyEventLoop.exec();
 
     if (lReply->error() == QNetworkReply::NoError) {
@@ -129,7 +215,12 @@ QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs)
         double lMediumMinerFeesRate = lMap["medium_fee_per_kb"].toDouble();
         double lTransactionSizeEstimateInBytes = ((iInputs * 180) + (iOutputs * 34) + 10 );
         double lTransactionFee = lMediumMinerFeesRate * (lTransactionSizeEstimateInBytes/1000);
-        lEstimatedFee = QStringMath::roundUpToNearest0001(QStringMath::btcFromSatoshi(QString::number(lTransactionFee)).toString()).toString();
+
+        if (iRoundUp) {
+            lEstimatedFee = QStringMath::roundUpToNearest0001(QStringMath::btcFromSatoshi(QString::number(lTransactionFee)).toString()).toString();
+        } else {
+            lEstimatedFee = QStringMath::btcFromSatoshi(QString::number(lTransactionFee)).toString();
+        }
 
         qDebug() << "lMediumMinerFeesRate: " << lMediumMinerFeesRate;
         qDebug() << "lTransactionSizeEstimateInBytes: " << lTransactionSizeEstimateInBytes;
@@ -141,6 +232,79 @@ QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs)
     }
 
     return lEstimatedFee.toString();
+}
+
+bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, QByteArray &oSignedHex, QStringList iTxids, QStringList iValues, QStringList iVouts, QList<QByteArray> iPrivateKeys)
+{
+    BitcoinWallet           lTempWallet = mActiveUser->getBrightWallet();
+    bool                    lCompleteSigning = false;
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QString lPrivateKeys = "";
+    for (auto pv : iPrivateKeys) {
+        lPrivateKeys.append(QString("\"%1\",").arg(QString(pv)));
+    }
+    lPrivateKeys.remove(lPrivateKeys.size()-1,1);
+
+    qDebug() << "lPrivateKey String: " << lPrivateKeys;
+
+    QString lParameters = QString("[\"%1\",[],[%2]]").arg(QString(iRawTransaction)).arg(lPrivateKeys);
+    QByteArray lUrlData = (QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"signrawtransaction\",\"params\":%1}").arg(lParameters)).toUtf8();
+
+    lReply = mNetworkAccessManager->post(lRequest, lUrlData);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lResult = lReply->readAll();
+        QJsonDocument   lJsonReponse = QJsonDocument::fromJson(lResult);
+        QJsonObject     lJsonObject = lJsonReponse.object();
+        QVariantMap     lMap = lJsonObject.toVariantMap();
+        QVariantMap     lResultMap = lMap["result"].toMap();
+
+        oSignedHex = lResultMap["hex"].toByteArray();
+        lCompleteSigning = lResultMap["complete"].toBool();
+    } else {
+        qDebug() << "Error.... Failed to create raw transaction";
+        return false;
+    }
+
+    return lCompleteSigning;
+}
+
+bool BitcoinBlockchainInterface::sendRawTransaction(QByteArray iSignedHex)
+{
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QByteArray lUrlData = (QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"sendrawtransaction\",\"params\":[\"%1\"]}").arg(QString(iSignedHex))).toUtf8();
+
+    lReply = mNetworkAccessManager->post(lRequest, lUrlData);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lResult = lReply->readAll();
+        QJsonDocument   lJsonReponse = QJsonDocument::fromJson(lResult);
+        QJsonObject     lJsonObject = lJsonReponse.object();
+        QVariantMap     lMap = lJsonObject.toVariantMap();
+//        QVariantMap     lResultMap = lMap["result"].toMap();
+        QByteArray      lResultFromSend = lMap["result"].toByteArray();
+
+        if (lResultFromSend.isEmpty() || lResultFromSend.isNull()) {
+            return false;
+        }
+    } else {
+        qDebug() << "Error.... Failed to create raw transaction";
+        return false;
+    }
+
+    return true;
 }
 
 void BitcoinBlockchainInterface::replyFinished(QNetworkReply *iReply)

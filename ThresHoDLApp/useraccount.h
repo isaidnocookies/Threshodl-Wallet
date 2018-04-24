@@ -37,6 +37,7 @@ public:
     BitcoinWallet           getBrightWallet(int iIndex = 0);
     QStringMath             getDarkBalance()                    { return mDarkBalance; }
     QStringMath             getBrightBalance()                  { return mBrightBalance; }
+    QStringMath             getBrightPendingBalance()           { return mBrightPendingBalance; }
     QList<BitcoinWallet>    getPendingToSendDarkWallets();
 
     void setUsername(QString iUsername);
@@ -53,19 +54,20 @@ public:
     void removeMicroWallet(BitcoinWallet iWallet);
     void setBrightWallets(QList<BitcoinWallet> iWallets);
     void setDarkWallets(QList<BitcoinWallet> iWallets);
-    void setBrightBalance(QStringMath iValue)                        { mBrightBalance = iValue; }
-    void setDarkBalance(QStringMath iValue)                          { mDarkBalance = iValue; }
+    void setBrightBalance(QStringMath iValue)                           { mBrightBalance = iValue; }
+    void setBrightPendingBalance(QStringMath iValue);
+    void setDarkBalance(QStringMath iValue)                             { mDarkBalance = iValue; }
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
     void updateBrightBalanceFromBlockchain();
-    void getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations);
+    bool sendBrightTransaction(QString iToAddress, QString iAmount);
     void removeBrightWallets(QString iAmount); //for testing...
 
 public slots:
     void updateFromBrightComplete(bool iSuccess);
 
 signals:
-    void updateBalancesForMainWindow(QString iBright, QString iDark);
+    void updateBalancesForViews(QString iBright, QString iDark);
     void updateBrightBalanceComplete(bool oSuccess);
 
 private:
@@ -79,6 +81,7 @@ private:
 
     QList<BitcoinWallet>                    mBrightWallet;
     QStringMath                             mBrightBalance;
+    QStringMath                             mBrightPendingBalance;
     QList<BitcoinWallet>                    mDarkWallet;
     QStringMath                             mDarkBalance;
 

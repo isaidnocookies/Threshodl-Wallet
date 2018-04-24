@@ -29,6 +29,7 @@ public:
 public slots:
     void saveAddresses(QString iEmail, QString iAddress);
     void updateBalance();
+    void updateBalancesForViews(QString iBright, QString iDark);
 
 private slots:
     void on_closeWindowButton_pressed();
@@ -51,12 +52,14 @@ private:
     QString                 mEmailAddress;
     QString                 mThreshodlAddress;
     UserAccount             *mActiveUser;
+    QFont                   mMainBalanceFont;
 
     void createQrCode();
     void checkToCreateQr();
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
 
+    void updateBalanceLabel();
 };
 
 #endif // DARKWALLET_H
