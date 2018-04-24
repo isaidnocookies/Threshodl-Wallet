@@ -152,7 +152,7 @@ bool DBInterfaceV1::initDB()
             // "CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob, UNIQUE(rid, address) )"
             try {
                 QSqlQuery   lQuery(lDB);
-                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL UNIQUE, key blob )") ) )
+                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL UNIQUE, key text )") ) )
                     throw __LINE__;
 
                 if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( rid integer PRIMARY KEY, walletid text NOT NULL UNIQUE )") ) )
@@ -217,7 +217,7 @@ bool DBInterfaceV1::addressCreate(const QString iAddress, const QByteArray iPubl
 
                 lInsertUserQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey)") );
                 lInsertUserQuery.bindValue( QStringLiteral(":iAddress"), _sanitizeAccountName(iAddress) );
-                lInsertUserQuery.bindValue( QStringLiteral(":iPublicKey"), iPublicKey );
+                lInsertUserQuery.bindValue( QStringLiteral(":iPublicKey"), QString::fromUtf8(iPublicKey) );
 
 
                 if( lInsertUserQuery.exec() && lCreateTableQuery.exec() ) {
@@ -251,7 +251,7 @@ bool DBInterfaceV1::addressValidate(const QString iAddress, const QByteArray iPu
                     int         lKeyNo      = lQuery.record().indexOf(QStringLiteral("key"));
 
                     if( lQuery.first() ) {
-                        if( lQuery.value(lAddressNo).toString() == lAddress && lQuery.value(lKeyNo).toByteArray() == iPublicKey ) {
+                        if( lQuery.value(lAddressNo).toString() == lAddress && lQuery.value(lKeyNo) == QString::fromUtf8(iPublicKey) ) {
                             lRet = true;
                         } else {
                             // It does not exist, however we can not use it because there is a record using the name partially?
@@ -310,7 +310,7 @@ QByteArray DBInterfaceV1::publicKeyForAddress(const QString iAddress)
                     int         lKeyNo      = lQuery.record().indexOf(QStringLiteral("key"));
 
                     if( lQuery.first() ) {
-                        lRet = lQuery.value(lKeyNo).toByteArray();
+                        lRet = lQuery.value(lKeyNo).toString().toUtf8();
                     }
                 }
                 _commitTransactionUnlockTable(lDB, QStringLiteral("addresses"));
