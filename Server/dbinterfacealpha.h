@@ -63,6 +63,8 @@ public:
     bool microWalletExists( const QString iMicroWalletId ) override;
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
+    bool microWalletChangeOwnership( const QStringList iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override
+    { Q_UNUSED(iMicroWalletId) Q_UNUSED(iFromAddress) Q_UNUSED(iToAddress) return false; } // This was added after ALPHA
     bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override;
     QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override;

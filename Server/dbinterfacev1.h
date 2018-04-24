@@ -23,6 +23,14 @@ protected:
     quint16     mPort                           = 5432;
 
 protected:
+    enum EscrowRecordState {
+        Invalid     = 0x0,
+        Unlocked    = 0x1,
+        Locked      = 0x2
+    };
+
+    typedef enum EscrowRecordState EscrowRecordState;
+
     inline quint64 _nextConnectionCounter()
     { QMutexLocker l{&mConnectionCounterLock}; return ++mConnectionCounter; }
 
@@ -44,9 +52,9 @@ protected:
 
     QString lastConnectionCounterString() const;
 
-    static QString _sanitizeAccountName(const QString iAccountName);
-    static QString _escrowTableNameForAccount(const QString iAccountName);
-    static QSqlQuery _createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase);
+    QString _sanitizeAccountName(const QString iAccountName);
+    QString _escrowTableNameForAccount(const QString iAccountName);
+    QSqlQuery _createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase);
 
 public:
     DBInterfaceV1( const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort = 5432 );
@@ -65,6 +73,7 @@ public:
     bool microWalletExists( const QString iMicroWalletId ) override;
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
+    bool microWalletChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override;
     bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override {return false;}
     QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override {return QByteArray();}
     bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override {return false;}
