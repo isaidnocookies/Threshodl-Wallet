@@ -2,6 +2,7 @@
 #define RPCMESSAGECREATEMICROWALLETPACKAGEREQUEST_H
 
 #include "rpcmessage.h"
+#include "bitcoinwallet.h"
 
 class RPCMessageCreateMicroWalletPackageRequest : public RPCMessage
 {
@@ -24,17 +25,20 @@ public:
     static QString voutKey();
     static QString outputBalanceAddressKey();
     static QString outputBalanceKey();
+    static QString chainTypeKey();
+
     QString txId() const;
     QString vout() const;
     QString outputBalanceAddress() const;
     QString outputBalance() const;
+    BitcoinWallet::ChainType chainType() const;
 
     static QString create(
             const QString iCryptoTypeShortName, const QString iCryptoValue, const QString iTransactionId,
             const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
             );
 
-    static QString createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout,
+    static QString createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const BitcoinWallet::ChainType iChainType,
             const QString iTransactionId,
             const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress = QStringLiteral(""), const QString iOutputBalance = QStringLiteral("0.0"), RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
             );
