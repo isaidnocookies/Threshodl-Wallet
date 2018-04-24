@@ -50,7 +50,7 @@ bool DBInterfaceV1::_beginTransactionLockTable(QSqlDatabase &iDatabase, const QS
     if( _beginTransaction(iDatabase) ) {
         if(
             mSqlType != QStringLiteral("QPSQL") ||
-            QSqlQuery(lDB).exec(QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
+            QSqlQuery(iDatabase).exec(QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
                            .arg(iTableName)
                            .arg( iLockExclusive ? QStringLiteral("EXCLUSIVE") : QStringLiteral("SHARE") )
                                 )
@@ -70,7 +70,7 @@ bool DBInterfaceV1::_beginTransactionLockTables(QSqlDatabase &iDatabase, const Q
         if( mSqlType != QStringLiteral("QPSQL") ) return true;
 
         for( QString lTN : iTableNames ) {
-            if( ! QSqlQuery(lDB).exec(
+            if( ! QSqlQuery(iDatabase).exec(
                         QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
                         .arg( lTN )
                         .arg( iLockExclusive ? QStringLiteral("EXCLUSIVE") : QStringLiteral("SHARE") )
