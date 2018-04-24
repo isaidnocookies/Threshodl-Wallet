@@ -274,6 +274,48 @@ QString QStringMath::toString() {
 double QStringMath::toDouble() { return mValue.toDouble(); }
 double QStringMath::toInt() { return mValue.toInt(); }
 
+QStringMath QStringMath::roundUpToNearest0001(QString iBtc)
+{
+    QString lBtcAmount = iBtc;
+    if (!lBtcAmount.contains(".")) {
+        lBtcAmount.append(".0000");
+        return QStringMath(lBtcAmount);
+    } else if ((lBtcAmount.size() - 1) - lBtcAmount.indexOf(".") <= 5) {
+        while ((lBtcAmount.size() - 1) - lBtcAmount.indexOf(".") <= 5) {
+            lBtcAmount.append("0");
+        }
+    }
+
+    int l0001Value = QString(lBtcAmount.at(lBtcAmount.indexOf(".") + 4)).toInt();
+    int l00001Value = QString(lBtcAmount.at(lBtcAmount.indexOf(".") + 5)).toInt();
+
+    if (l00001Value >= 5) {
+        l0001Value = l0001Value + 1;
+    }
+
+    lBtcAmount.replace(lBtcAmount.indexOf(".") + 4, 1, QString::number(l0001Value));
+    lBtcAmount.remove(lBtcAmount.indexOf(".") + 5, (lBtcAmount.size()) - lBtcAmount.indexOf(".") + 5);
+
+    return lBtcAmount;
+}
+
+QStringMath QStringMath::btcFromSatoshi(QString iSatoshis)
+{
+    QString     lBtcValue = iSatoshis;
+    int         lSizeOfString = iSatoshis.size();
+
+    if (lSizeOfString <= 8) {
+        for (int i = lSizeOfString; i <= 8; i++) {
+            lBtcValue.prepend("0");
+        }
+        lBtcValue.insert(1, ".");
+    } else {
+        lBtcValue.insert(lSizeOfString - 7, ".");
+    }
+
+    return QStringMath(lBtcValue);
+}
+
 void QStringMath::standardizeStrings(const QString iValue1, const QString iValue2, QString &oValue1Out, QString &oValue2Out)
 {
     QString lValue1 = iValue1;

@@ -32,15 +32,15 @@ public slots:
     void completePendingImport(bool iComplete);
     void addNotificationToSettings (QString iDate, QString iNotification);
     void updateBalances(QString iBrightBalance, QString iDarkBalances);
-
     void walletWindowDeleted();
+    void brightWalletUpdateComplete(bool iSuccess);
 
 private slots:
     void on_brightButton_pressed();
     void on_darkButton_pressed();
     void on_notificationPushButton_pressed();
-
     void brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
+    void on_refreshWalletsButton_pressed();
 
 private:
     Ui::MainWindow                  *ui;
@@ -54,6 +54,8 @@ private:
     QFont                           mMainBalanceFont;
 
     void setUI();
+    void stopProgressBarAndEnable();
+    void startProgressBarAndDisable();
 };
 
 #endif // MAINWINDOW_H

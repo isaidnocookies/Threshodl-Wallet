@@ -46,10 +46,12 @@ public:
     double toDouble();
     double toInt();
 
-    static void standardizeStrings(const QString iValue1, const QString iValue2, QString &oValue1Out, QString &oValue2Out);
+    static QStringMath roundUpToNearest0001(QString iBtc);
+    static QStringMath btcFromSatoshi (QString iSatoshis);
 
 private:
     QString mValue;
+    static void standardizeStrings(const QString iValue1, const QString iValue2, QString &oValue1Out, QString &oValue2Out);
 };
 
 #endif // QSTRINGMATH_H

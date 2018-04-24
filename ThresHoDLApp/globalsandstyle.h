@@ -4,10 +4,13 @@
 #include <QString>
 #include <QStringLiteral>
 
-//#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
-//#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
+#define BLOCKCYPER_API_URL "https://api.blockcypher.com/v1/btc/test3"
 
-#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
+//#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
+#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
+//#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
+
+#define BITCOIN_NODE_IP_ADDRESS "http://test:test@10.10.0.158:8332"
 
 inline QString theOrganization() {              return QString("ThreeB"); }
 inline QString theApplicationName() {           return QString("Threshodl"); }

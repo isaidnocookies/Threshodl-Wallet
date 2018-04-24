@@ -30,17 +30,13 @@ public slots:
     void saveAddresses(QString iEmail, QString iAddress);
     void updateBalance();
 
-private:
-    void createQrCode();
-    void checkToCreateQr();
-
 private slots:
     void on_closeWindowButton_pressed();
     void on_sendButton_pressed();
     void on_withdrawToBrightWalletButton_pressed();
     void on_qrPushButton_pressed();
-
     void on_balancePushButton_pressed();
+    void on_refreshWalletButton_pressed();
 
 signals:
     void saveAddressSettings(QString oEmail, QString oAddress);
@@ -52,11 +48,15 @@ private:
     DarkReceiveView         *mDarkReceiveView;
     DarkMicroWalletView     *mDarkMicroWalletView;
     QImage                  *mQrImage;
-
     QString                 mEmailAddress;
     QString                 mThreshodlAddress;
-
     UserAccount             *mActiveUser;
+
+    void createQrCode();
+    void checkToCreateQr();
+    void startProgressBarAndDisable();
+    void stopProgressBarAndEnable();
+
 };
 
 #endif // DARKWALLET_H

@@ -3,6 +3,7 @@
 
 #include "bitcoinwallet.h"
 #include "qstringmath.h"
+#include "bitcoinblockchaininterface.h"
 
 #include <QString>
 #include <QVector>
@@ -14,6 +15,8 @@
 #include <algorithm>
 #include <QObject>
 #include <QSet>
+
+class BitcoinBlockchainInterface;
 
 class UserAccount : public QObject
 {
@@ -52,29 +55,34 @@ public:
     void setDarkWallets(QList<BitcoinWallet> iWallets);
     void setBrightBalance(QStringMath iValue)                        { mBrightBalance = iValue; }
     void setDarkBalance(QStringMath iValue)                          { mDarkBalance = iValue; }
-
-    void removeBrightWallets(QString iAmount); //for testing...
-
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
+    void updateBrightBalanceFromBlockchain();
+    void getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations);
+    void removeBrightWallets(QString iAmount); //for testing...
+
+public slots:
+    void updateFromBrightComplete(bool iSuccess);
 
 signals:
     void updateBalancesForMainWindow(QString iBright, QString iDark);
+    void updateBrightBalanceComplete(bool oSuccess);
 
 private:
-    QSettings                       *mAccountSettings;
-    QString                         mUsername;
-    QByteArray                      mPublicKey;
-    QByteArray                      mPrivateKey;
-    QList<QString>                  mNotifications;
-    QString                         mEmail;
+    QSettings                               *mAccountSettings;
+    BitcoinBlockchainInterface              *mBitcoinBlockchainInterface;
+    QString                                 mUsername;
+    QByteArray                              mPublicKey;
+    QByteArray                              mPrivateKey;
+    QList<QString>                          mNotifications;
+    QString                                 mEmail;
 
-    QList<BitcoinWallet>            mBrightWallet;
-    QStringMath                     mBrightBalance;
-    QList<BitcoinWallet>            mDarkWallet;
-    QStringMath                     mDarkBalance;
+    QList<BitcoinWallet>                    mBrightWallet;
+    QStringMath                             mBrightBalance;
+    QList<BitcoinWallet>                    mDarkWallet;
+    QStringMath                             mDarkBalance;
 
-    QSet<QString>                   mAllWallets;
+    QSet<QString>                           mAllWallets;
 
     void loadFromSettings();
     bool greaterThanWallet (BitcoinWallet iLHS, BitcoinWallet iRHS);

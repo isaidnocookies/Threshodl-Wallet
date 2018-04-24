@@ -65,7 +65,8 @@ SOURCES += \
     notificationsandsettingsview.cpp \
     darkwalletimportview.cpp \
     serializer.cpp \
-    breakdownmicrowallet.cpp
+    breakdownmicrowallet.cpp \
+    bitcoinblockchaininterface.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -99,7 +100,8 @@ HEADERS += \
     notificationsandsettingsview.h \
     darkwalletimportview.h \
     serializer.h \
-    breakdownmicrowallet.h
+    breakdownmicrowallet.h \
+    bitcoinblockchaininterface.h
 
 FORMS += \
     mainwindow.ui \

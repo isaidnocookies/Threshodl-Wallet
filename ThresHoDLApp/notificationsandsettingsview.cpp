@@ -15,6 +15,9 @@ NotificationsAndSettingsView::NotificationsAndSettingsView(QWidget *parent) :
     ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
     ui->addPushButton->setStyleSheet(lightBackgroundStyleSheet());
 
+    ui->addPushButton->setVisible(false);
+    ui->amountLineEdit->setVisible(false);
+
     QScroller::grabGesture(ui->notificationTableWidget, QScroller::LeftMouseButtonGesture);
 }
 

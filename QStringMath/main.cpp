@@ -6,15 +6,14 @@
 void test1();
 void test2();
 void test3();
+void test4();
 
 int main(int argc, char *argv[])
 {
     Q_UNUSED (argc)
     Q_UNUSED (argv)
 
-    test1();
-    test2();
-    test3();
+    test4();
 }
 
 void test1() {
@@ -35,7 +34,7 @@ void test2() {
     QString lValue1s;
     QString lValue2s;
 
-    QStringMath::standardizeStrings(lValue1, lValue2, lValue1s, lValue2s);
+//    QStringMath::standardizeStrings(lValue1, lValue2, lValue1s, lValue2s);
 
     qDebug() << lValue1s << "       " << lValue2s;
 }
@@ -48,4 +47,15 @@ void test3() {
     QStringMath lV1 (lValue1);
 
     qDebug() << lValue1 << " - " << lValue2 << "  =  " << (lV1 - lValue2).toString();
+}
+
+void test4() {
+    qDebug() << "\n\n" << "Test4 - Round to nearest 0.0001\n";
+    QString lValue1 = "10.00012";
+    QString lValue2 = "1";
+    QString lValue3 = "0.00015999";
+
+    qDebug() << lValue1 << " ---> " << QStringMath::roundUpToNearest0001(lValue1).toString();
+    qDebug() << lValue2 << " ---> " << QStringMath::roundUpToNearest0001(lValue2).toString();
+    qDebug() << lValue3 << " ---> " << QStringMath::roundUpToNearest0001(lValue3).toString();
 }

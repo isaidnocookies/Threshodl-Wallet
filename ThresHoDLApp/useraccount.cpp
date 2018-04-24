@@ -14,6 +14,8 @@ UserAccount::UserAccount(QObject *parent)
     QCoreApplication::setOrganizationName(theOrganization());
 
     mAccountSettings = new QSettings;
+    mBitcoinBlockchainInterface = new BitcoinBlockchainInterface;
+    mBitcoinBlockchainInterface->setActiveUser(this);
 
     loadFromSettings();
 }
@@ -338,6 +340,11 @@ void UserAccount::removeBrightWallets(QString iAmount)
     updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
 }
 
+void UserAccount::updateFromBrightComplete(bool iSuccess)
+{
+    emit updateBrightBalanceComplete(iSuccess);
+}
+
 bool UserAccount::isNewAccount()
 {
     if (mUsername == "") {
@@ -349,6 +356,21 @@ bool UserAccount::isNewAccount()
 bool UserAccount::accountContainsWallet(QString iWalletId)
 {
     return mAllWallets.contains(iWalletId);
+}
+
+void UserAccount::updateBrightBalanceFromBlockchain()
+{
+    //testing feature
+    mBitcoinBlockchainInterface->estimateMinerFee(2, 10);
+
+    mBitcoinBlockchainInterface->updateBrightWalletBalances();
+    updateBalancesForMainWindow(mBrightBalance.toString(), mDarkBalance.toString());
+    emit updateBrightBalanceComplete(true);
+}
+
+void UserAccount::getBrightUnspentTransactions(QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations = 1)
+{
+    mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, oTxids, oValues, oVouts, iConfirmations);
 }
 
 void UserAccount::loadFromSettings()

@@ -11,6 +11,7 @@
 #include <QMainWindow>
 
 #include "useraccount.h"
+#include "bitcoinblockchaininterface.h"
 
 namespace Ui {
 class BrightWallet;
@@ -31,6 +32,7 @@ public:
 public slots:
     void updateBrightBalance (QStringMath lAmount);
     void brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAmount, QList<QByteArray> iDarkWallets);
+    void updateBrightBalanceFromBlockchain(QString iWalletId, QString iValue);
 
 private slots:
     void on_closeWindowButton_pressed();
@@ -44,13 +46,14 @@ signals:
     void brightToDarkCompletedSignal(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
 
 private:
-    Ui::BrightWallet    *ui;
-    BrightSendView      *mBrightSendView;
-    SendToDarkView      *mSendToDarkView;
-    QImage              *mQrImage;
-    QByteArray          mPublicAddress;
-    QStringMath         mBalance;
-    UserAccount         *mActiveUser;
+    Ui::BrightWallet            *ui;
+    BrightSendView              *mBrightSendView;
+    SendToDarkView              *mSendToDarkView;
+    QImage                      *mQrImage;
+    QByteArray                  mPublicAddress;
+    QStringMath                 mBalance;
+    UserAccount                 *mActiveUser;
+    BitcoinBlockchainInterface  *mBlockchainInterface;
 
     void setQrCode();
 };
