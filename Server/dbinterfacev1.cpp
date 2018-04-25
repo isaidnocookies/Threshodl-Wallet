@@ -7,6 +7,9 @@
 #include <QSqlDatabase>
 #include <QSqlRecord>
 #include <QSqlQuery>
+#include <QSqlError>
+
+#include <stdio.h>
 
 bool DBInterfaceV1::_connected()
 {
@@ -115,14 +118,10 @@ QString DBInterfaceV1::_sanitizeAccountName(const QString iAccountName)
 QString DBInterfaceV1::_escrowTableNameForAccount(const QString iAccountName)
 { return QStringLiteral("escrow_%1").arg(_sanitizeAccountName(iAccountName)); }
 
-QSqlQuery DBInterfaceV1::_createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase)
+QString DBInterfaceV1::_createEscrowTableSqlQueryForAccount(const QString iAccountName)
 {
-    return QSqlQuery(
-                QStringLiteral("CREATE TABLE %1( rid %2 PRIMARY KEY, walletid text NOT NULL UNIQUE, state integer, payload text )")
-                .arg(_escrowTableNameForAccount(iAccountName))
-                .arg(mSqlType == QStringLiteral("QPSQL") ? QStringLiteral("SERIAL") : QStringLiteral("integer")),
-                iDatabase
-                );
+    return QStringLiteral("CREATE TABLE %1 ( rid SERIAL PRIMARY KEY, walletid text NOT NULL UNIQUE, state integer, payload text );")
+                .arg(_escrowTableNameForAccount(iAccountName));
 }
 
 DBInterfaceV1::DBInterfaceV1(const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort)
@@ -151,10 +150,10 @@ bool DBInterfaceV1::initDB()
             // "CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob, UNIQUE(rid, address) )"
             try {
                 QSqlQuery   lQuery(lDB);
-                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL UNIQUE, key text )") ) )
+                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid SERIAL PRIMARY KEY, address text NOT NULL UNIQUE, key text )") ) )
                     throw __LINE__;
 
-                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( rid integer PRIMARY KEY, walletid text NOT NULL UNIQUE )") ) )
+                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( rid SERIAL PRIMARY KEY, walletid text NOT NULL UNIQUE )") ) )
                     throw __LINE__;
 
                 lRet = true;
@@ -212,17 +211,22 @@ bool DBInterfaceV1::addressCreate(const QString iAddress, const QByteArray iPubl
         if( _connectOrReconnectToDB(lDB) ) {
             if( _beginTransactionLockTable(lDB,QStringLiteral("addresses"),true) ) {
                 QSqlQuery   lInsertUserQuery(lDB);
-                QSqlQuery   lCreateTableQuery = _createEscrowTableSqlQueryForAccount(iAddress,lDB);
+                QSqlQuery   lCreateTableQuery(lDB);
 
-                lInsertUserQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey)") );
+                lInsertUserQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey);") );
                 lInsertUserQuery.bindValue( QStringLiteral(":iAddress"), _sanitizeAccountName(iAddress) );
                 lInsertUserQuery.bindValue( QStringLiteral(":iPublicKey"), QString::fromUtf8(iPublicKey) );
 
 
-                if( lInsertUserQuery.exec() && lCreateTableQuery.exec() ) {
+                if( lInsertUserQuery.exec() && lCreateTableQuery.exec(_createEscrowTableSqlQueryForAccount(iAddress)) ) {
                     lRet = true;
                     _commitTransactionUnlockTable(lDB, QStringLiteral("addresses") );
                 }else{
+                    // qWarning() << lCreateTableQuery.executedQuery() << lCreateTableQuery.lastError();
+
+                    fprintf( stderr, "%s\n%s\n", lCreateTableQuery.executedQuery().toUtf8().constData(), lCreateTableQuery.lastError().databaseText().toUtf8().constData() );
+                    fflush(stderr);
+
                     _rollbackTransaction(lDB);
                 }
             }
