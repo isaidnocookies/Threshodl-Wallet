@@ -407,45 +407,67 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                     QString     lWalletId                   = lEntry.toLower();
 
                     QSqlQuery   lUpdateStateInFROM(lDB);
-                    lUpdateStateInFROM.prepare(
-                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
-                                .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
-                                );
-                    lUpdateStateInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
+//                    lUpdateStateInFROM.prepare(
+//                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
+//                                .arg(lFromTable)
+//                                .arg(static_cast<int>(EscrowRecordState::Locked))
+//                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
+//                                );
+//                    lUpdateStateInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
                     QSqlQuery   lCopyRecordInTO(lDB);
-                    lCopyRecordInTO.prepare(
-                                QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = :iMicroWalletId")
-                                .arg(lToTable)
-                                .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lCopyRecordInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
+//                    lCopyRecordInTO.prepare(
+//                                QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = :iMicroWalletId")
+//                                .arg(lToTable)
+//                                .arg(lFromTable)
+//                                .arg(static_cast<int>(EscrowRecordState::Locked))
+//                                );
+//                    lCopyRecordInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
                     QSqlQuery   lDeleteRecordInFROM(lDB);
-                    lDeleteRecordInFROM.prepare(
-                                QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = :iMicroWalletId")
-                                .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lDeleteRecordInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
+//                    lDeleteRecordInFROM.prepare(
+//                                QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = :iMicroWalletId")
+//                                .arg(lFromTable)
+//                                .arg(static_cast<int>(EscrowRecordState::Locked))
+//                                );
+//                    lDeleteRecordInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
                     QSqlQuery   lUpdateStateInTO(lDB);
-                    lUpdateStateInTO.prepare(
-                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
-                                .arg(lToTable)
-                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lUpdateStateInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
+//                    lUpdateStateInTO.prepare(
+//                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
+//                                .arg(lToTable)
+//                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
+//                                .arg(static_cast<int>(EscrowRecordState::Locked))
+//                                );
+//                    lUpdateStateInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
-                    if( lUpdateStateInFROM.exec() && lUpdateStateInFROM.numRowsAffected() == 1 ) {
+                    if( lUpdateStateInFROM.exec(
+                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = '%4' AND state = %3")
+                                .arg(lFromTable)
+                                .arg(static_cast<int>(EscrowRecordState::Locked))
+                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                                .arg(lWalletId)
+                                ) && lUpdateStateInFROM.numRowsAffected() == 1 ) {
                         // Now execute the copy
-                        if( lCopyRecordInTO.exec() ) {
-                            if( lDeleteRecordInFROM.exec() ) {
-                                if( lUpdateStateInTO.exec() && lUpdateStateInTO.numRowsAffected() == 1 ) {
+                        if( lCopyRecordInTO.exec(QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = '%4'")
+                                                 .arg(lToTable)
+                                                 .arg(lFromTable)
+                                                 .arg(static_cast<int>(EscrowRecordState::Locked))
+                                                 .arg(lWalletId)
+                                                 ) ) {
+                            if( lDeleteRecordInFROM.exec(
+                                        QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = '%3'")
+                                        .arg(lFromTable)
+                                        .arg(static_cast<int>(EscrowRecordState::Locked))
+                                        .arg(lWalletId)
+                                        ) ) {
+                                if( lUpdateStateInTO.exec(
+                                            QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = '%4' AND state = %3")
+                                            .arg(lToTable)
+                                            .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                                            .arg(static_cast<int>(EscrowRecordState::Locked))
+                                            .arg(lWalletId)
+                                            ) && lUpdateStateInTO.numRowsAffected() == 1 ) {
                                     // Finished!
                                     lCompletedWalletsCount++;
                                 } else {
