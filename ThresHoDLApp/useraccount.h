@@ -62,6 +62,10 @@ public:
     void updateBrightBalanceFromBlockchain();
     bool sendBrightTransaction(QString iToAddress, QString iAmount);
     void removeBrightWallets(QString iAmount); //for testing...
+    void clearAllSavedData();
+
+    bool backupAccount(QString iEmail);
+    bool importAccount(QByteArray iData);
 
 public slots:
     void updateFromBrightComplete(bool iSuccess);
@@ -69,6 +73,7 @@ public slots:
 signals:
     void updateBalancesForViews(QString iBright, QString iDark);
     void updateBrightBalanceComplete(bool oSuccess);
+    void clearAllSavedDataComplete();
 
 private:
     QSettings                               *mAccountSettings;

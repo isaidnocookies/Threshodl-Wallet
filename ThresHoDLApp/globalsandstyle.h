@@ -8,7 +8,6 @@
 
 #define BLOCKCYPER_API_URL "https://api.blockcypher.com/v1/btc/test3"
 
-//#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
 #define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
 //#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
 

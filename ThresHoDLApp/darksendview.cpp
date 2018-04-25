@@ -260,6 +260,7 @@ bool DarkSendView::getAttachmentPackage(QByteArray &oData)
     mActiveUser->setDarkWallets(lRemainingWallets);
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
 
+    lJson.insert("Action", "Import");
     lJson.insert("Amount", ui->amountLineEdit->text());
     lJson.insert("TransactionId", mTransactionID);
     lJson.insert("Notes", "Bitcoin dark transaction.");

@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->logoLabel->setPixmap(ui->logoLabel->pixmap()->scaledToWidth(QApplication::desktop()->screenGeometry().width(),Qt::SmoothTransformation));
 
     mActiveUser = new UserAccount;
+    connect (mActiveUser, &UserAccount::clearAllSavedDataComplete, this, &MainWindow::clearAllDataAndLogout);
     mPendingImport = "";
 
     connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &MainWindow::updateBalances);
@@ -83,6 +84,13 @@ void MainWindow::handleFileUrlReceived(const QUrl &url)
             lPackageArray = lPackage.readAll();
             QJsonDocument lDoc = QJsonDocument::fromJson(lPackageArray);
             QJsonObject lObject = lDoc.object();
+
+            if (lObject["Action"].toString() == "ImportAccount") {
+                mActiveUser->importAccount(lPackageArray);
+                clearAllDataAndLogout();
+                return;
+            }
+
             QJsonArray lArray = lObject["Wallets"].toArray();
 
             mDarkImportView = new DarkWalletImportView;
@@ -184,6 +192,7 @@ void MainWindow::on_notificationPushButton_pressed()
     ui->warningLabel->setText("");
 
     mNotificationView = new NotificationsAndSettingsView;
+    connect (mNotificationView, &NotificationsAndSettingsView::deleteAccountAndClearData, this, &MainWindow::startClearAllDataAndLogout);
 
     mNotificationView->setActiveUser(*mActiveUser);
     mNotificationView->hide();
@@ -243,10 +252,44 @@ void MainWindow::brightWalletUpdateComplete(bool iSuccess)
     ui->warningLabel->setText("Wallets updated!");
 }
 
+void MainWindow::clearAllDataAndLogout()
+{
+//    ui->centralWidget->setGeometry(QApplication::desktop()->screenGeometry());
+//    this->showMaximized();
+    mActiveUser->deleteLater();
+    mActiveUser = nullptr;
+
+    mActiveUser = new UserAccount;
+    connect (mActiveUser, &UserAccount::clearAllSavedDataComplete, this, &MainWindow::clearAllDataAndLogout);
+    connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &MainWindow::updateBalances);
+    connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
+    mPendingImport = "";
+
+    if (mActiveUser->isNewAccount()) {
+        mCreateAccount = new CreateAccount;
+        connect(mCreateAccount, &CreateAccount::createUserAccount, this, &MainWindow::createAccountComplete);
+
+        this->showNormal();
+
+        mCreateAccount->showMaximized();
+        mCreateAccount->show();
+    }
+}
+
+void MainWindow::startClearAllDataAndLogout()
+{
+    mNotificationView->hide();
+    if (mNotificationView) {
+        mNotificationView->deleteLater();
+    }
+    mActiveUser->clearAllSavedData();
+}
+
 void MainWindow::setUI()
 {
     ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
     updateBalances(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+    makeMaximized();
 }
 
 void MainWindow::startProgressBarAndDisable()

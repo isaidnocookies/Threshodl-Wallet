@@ -13,7 +13,11 @@ NotificationsAndSettingsView::NotificationsAndSettingsView(QWidget *parent) :
     ui->setupUi(this);
 
     ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
+    ui->emailLineEdit->setStyleSheet(lightBackgroundStyleSheet());
     ui->addPushButton->setStyleSheet(lightBackgroundStyleSheet());
+
+    ui->deleteAccountButton->setStyleSheet(lightBackgroundStyleSheet());
+    ui->backupPushButton->setStyleSheet(lightBackgroundStyleSheet());
 
 //    ui->addPushButton->setVisible(false);
 //    ui->amountLineEdit->setVisible(false);
@@ -71,4 +75,45 @@ void NotificationsAndSettingsView::on_addPushButton_pressed()
     mActiveUser->addBrightWallet(lNewBright);
     ui->amountLineEdit->clear();
     ui->amountLineEdit->setPlaceholderText("Bright wallet added");
+}
+
+void NotificationsAndSettingsView::on_deleteAccountButton_released()
+{
+    if (!ui->imSureCheckBox->isChecked()) {
+        ui->imSureCheckBox->setText("I'm sure *");
+        return;
+    }
+    emit deleteAccountAndClearData();
+}
+
+void NotificationsAndSettingsView::on_backupPushButton_released()
+{
+    //backup account
+
+    if (ui->emailLineEdit->text().isEmpty()) {
+        ui->emailLineEdit->setPlaceholderText("Email Required ***");
+        return;
+    }
+
+    startProgressBarAndDisable();
+    mActiveUser->backupAccount(ui->emailLineEdit->text());
+    stopProgressBarAndEnable();
+}
+
+void NotificationsAndSettingsView::startProgressBarAndDisable()
+{
+    ui->closeWindowButton->setEnabled(false);
+    ui->addPushButton->setEnabled(false);
+    ui->deleteAccountButton->setEnabled(false);
+    ui->imSureCheckBox->setEnabled(false);
+    ui->amountLineEdit->setEnabled(false);
+}
+
+void NotificationsAndSettingsView::stopProgressBarAndEnable()
+{
+    ui->closeWindowButton->setEnabled(true);
+    ui->addPushButton->setEnabled(true);
+    ui->deleteAccountButton->setEnabled(true);
+    ui->imSureCheckBox->setEnabled(true);
+    ui->amountLineEdit->setEnabled(true);
 }
