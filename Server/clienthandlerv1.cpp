@@ -96,6 +96,24 @@ bool ClientHandlerV1::createUserAccount(ClientConnection *iConnection, RPCMessag
 
 bool ClientHandlerV1::createMicroWalletPackage(ClientConnection *iConnection, RPCMessage &iMessage)
 {
+    RPCMessageCreateMicroWalletPackageRequest           lRequest{iMessage};
+
+    if( lRequest.cryptoTypeShortName() == QStringLiteral("btc") ) {
+        return createMicroWalletPackageBTC(iConnection,iMessage);
+    }
+
+    return iConnection->sendMessage(RPCMessageCreateMicroWalletPackageReply::create(
+                                        RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType,
+                                        QList<QByteArray>(),
+                                        lRequest.transactionId(),
+                                        QStringLiteral("Threshodl"),
+                                        gApp->privateKeyPEM()
+                                        )
+                                    );
+}
+
+bool ClientHandlerV1::createMicroWalletPackageBTC(ClientConnection *iConnection, RPCMessage &iMessage)
+{
 #warning THIS IS INCOMPLETE
     // Missing BTC transaction stuff
 
