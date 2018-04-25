@@ -449,7 +449,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                                 .arg(lWalletId)
                                 ) && lUpdateStateInFROM.numRowsAffected() == 1 ) {
                         // Now execute the copy
-                        if( lCopyRecordInTO.exec(QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = '%4'")
+                        if( lCopyRecordInTO.exec(QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT walletid, state, payload FROM %2 WHERE state = %3 AND walletid = '%4'")
                                                  .arg(lToTable)
                                                  .arg(lFromTable)
                                                  .arg(static_cast<int>(EscrowRecordState::Locked))
@@ -483,6 +483,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                         } else {
                             // Copy failed
                             qWarning() << "Failed to copy the micro wallet to the new owner table. Will rollback. WalletId:" << lWalletId << "From:" << iFromAddress << "FromTable:" << lFromTable << "To:" << iToAddress << "ToTable:" << lToTable;
+                            qWarning() << lCopyRecordInTO.executedQuery() << lCopyRecordInTO.lastError();
                             break;
                         }
                     } else {
