@@ -501,23 +501,30 @@ bool DBInterfaceV1::microWalletCreate(const QString iMicroWalletId, const QStrin
     QSqlDatabase    lDB;
 
     if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && ! iPayload.isEmpty() && _connectOrReconnectToDB(lDB) ) {
-        QString lWalletId   = iMicroWalletId.toLower();
-        QString lTableName  = _escrowTableNameForAccount(iAddress);
+        QString     lWalletId       = iMicroWalletId.toLower();
+        QString     lTableName      = _escrowTableNameForAccount(iAddress);
+        QStringList lTableNames     = QStringList() << lTableName << QStringLiteral("in_use_walletids");
 
-        if( _beginTransactionLockTable(lDB,lTableName,true) ) {
-            QSqlQuery   lQuery(lDB);
-            lQuery.prepare(
+        if( _beginTransactionLockTables(lDB,lTableNames,true) ) {
+            QSqlQuery   lInsertIntoEscrow(lDB);
+            QSqlQuery   lInsertIntoInUse(lDB);
+
+            lInsertIntoInUse.prepare(
+                        QStringLiteral("INSERT INTO in_use_walletids (walletid) VALUES(:iMicroWalletId)")
+                        );
+            lInsertIntoInUse.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+
+            lInsertIntoEscrow.prepare(
                         QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES(:iMicroWalletId,%2,:iPayload)")
                         .arg(lTableName)
                         .arg(static_cast<int>(EscrowRecordState::Unlocked))
                         );
-            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
-            lQuery.bindValue(QStringLiteral(":iPayload"), QString::fromUtf8(iPayload.toBase64()) );
+            lInsertIntoEscrow.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+            lInsertIntoEscrow.bindValue(QStringLiteral(":iPayload"), QString::fromUtf8(iPayload.toBase64()) );
 
-
-            if( lQuery.exec() && lQuery.numRowsAffected() == 1 ) {
+            if( lInsertIntoInUse.exec() && lInsertIntoEscrow.exec() && lInsertIntoInUse.numRowsAffected() == 1 && lInsertIntoEscrow.numRowsAffected() == 1 ) {
                 lRet = true;
-                _commitTransactionUnlockTable(lDB,lTableName);
+                _commitTransactionUnlockTables(lDB,lTableNames);
             }else{
                 _rollbackTransaction(lDB);
             }
