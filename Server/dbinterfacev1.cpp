@@ -9,8 +9,6 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-#include <stdio.h>
-
 bool DBInterfaceV1::_connected()
 {
     QMutexLocker l{&mConnectionCounterLock};
@@ -222,11 +220,6 @@ bool DBInterfaceV1::addressCreate(const QString iAddress, const QByteArray iPubl
                     lRet = true;
                     _commitTransactionUnlockTable(lDB, QStringLiteral("addresses") );
                 }else{
-                    // qWarning() << lCreateTableQuery.executedQuery() << lCreateTableQuery.lastError();
-
-                    fprintf( stderr, "%s\n%s\n", lCreateTableQuery.executedQuery().toUtf8().constData(), lCreateTableQuery.lastError().databaseText().toUtf8().constData() );
-                    fflush(stderr);
-
                     _rollbackTransaction(lDB);
                 }
             }
