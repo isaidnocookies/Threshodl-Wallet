@@ -545,7 +545,7 @@ QByteArray DBInterfaceV1::microWalletCopyPayload(const QString iMicroWalletId, c
 
             QSqlQuery   lQuery(lDB);
             lQuery.prepare(
-                        QStringLiteral("SELECT payload FROM %1 WHERE walletid = :iMicroWalletId AND state = %1")
+                        QStringLiteral("SELECT payload FROM %1 WHERE walletid = :iMicroWalletId AND state = %2")
                         .arg(lTableName)
                         .arg(static_cast<int>(EscrowRecordState::Unlocked))
                         );
