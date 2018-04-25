@@ -296,7 +296,55 @@ QStringMath QStringMath::roundUpToNearest0001(QString iBtc)
     lBtcAmount.replace(lBtcAmount.indexOf(".") + 4, 1, QString::number(l0001Value));
     lBtcAmount.remove(lBtcAmount.indexOf(".") + 5, (lBtcAmount.size()) - lBtcAmount.indexOf(".") + 5);
 
-    return lBtcAmount;
+    if (QStringMath(lBtcAmount) == "0.0") {
+        return QStringMath("0.0001");
+    }
+
+    return QStringMath(lBtcAmount);
+}
+
+bool QStringMath::isMultipleOf(QString iValue, QString iFormat)
+{
+    // Format should be in the form of "0.0001" or "0.01" to dictate
+    // if the iValue has more decimals than desired. This means that the
+    // format should have one non-zero digit == '1'
+    // Example: is 10.0031 a multiple of "0.1"? --> False
+    // Example: is 10.0031 a multiple of "0.0001"? --> True
+
+    QString lSFormat;
+    QString lSValue;
+
+    standardizeStrings(iValue, iFormat, lSValue, lSFormat);
+
+    // Check iFormat has only 1 non-zero digit
+    int lDigitCounter = 0;
+    for (auto c : lSFormat) {
+        if (c != "." && c != "0") {
+            if (c != "1") {
+                return false;
+            }
+            lDigitCounter++;
+            if (lDigitCounter > 1) {
+                return false;
+            }
+        }
+    }
+
+    for (int i = lSValue.size() - 1; i >= 0; i--) {
+        if (lSFormat.at(i) == "0" && lSValue.at(i) == "0") {
+            continue;
+        } else {
+            if (lSFormat.at(i) == "1" && lSValue.at(i) == "0") {
+                return true;
+            } else if (lSFormat.at(i) == "1" && lSValue.at(i) != "0") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 QStringMath QStringMath::btcFromSatoshi(QString iSatoshis)
@@ -310,7 +358,7 @@ QStringMath QStringMath::btcFromSatoshi(QString iSatoshis)
         }
         lBtcValue.insert(1, ".");
     } else {
-        lBtcValue.insert(lSizeOfString - 7, ".");
+        lBtcValue.insert(lSizeOfString - 8, ".");
     }
 
     return QStringMath(lBtcValue);

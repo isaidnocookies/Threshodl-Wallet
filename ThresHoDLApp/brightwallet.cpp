@@ -3,6 +3,10 @@
 
 #include "globalsandstyle.h"
 
+#include <QDesktopWidget>
+#include <QCoreApplication>
+#include <QDesktopServices>
+
 BrightWallet::BrightWallet(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BrightWallet)
@@ -12,6 +16,7 @@ BrightWallet::BrightWallet(QWidget *parent) :
 
     ui->sendButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->sendToDarkWalletButton->setStyleSheet(lightBackgroundStyleSheet());
+    mMainBalanceFont = ui->totalLabel->font();
 }
 
 BrightWallet::~BrightWallet()
@@ -19,21 +24,15 @@ BrightWallet::~BrightWallet()
     delete ui;
 }
 
-void BrightWallet::setAddress(QByteArray iPublicAddress)
-{
-    mPublicAddress = iPublicAddress;
-}
-
-void BrightWallet::setBalance(QStringMath iAmount)
-{
-    mBalance = iAmount;
-}
-
 void BrightWallet::setActiveUser(UserAccount &iUserAccount)
 {
     mActiveUser = &iUserAccount;
+    mBalance = mActiveUser->getBrightBalance();
+    mPublicAddress = mActiveUser->getBrightWallet().address();
 
-    ui->totalLabel->setText(QString("%1").arg(mActiveUser->getBrightBalance().toString()));
+    connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &BrightWallet::updateBalancesForViews);
+
+    updateBalanceLabel();
     setQrCode();
 }
 
@@ -46,14 +45,18 @@ void BrightWallet::updateBrightBalance(QStringMath lAmount)
 void BrightWallet::brightToDarkCompleted(bool iSuccessful, QStringMath lBrightAmount, QList<QByteArray> iDarkWallets)
 {
     if (iSuccessful) {
-        mActiveUser->setBrightBalance(lBrightAmount.toString());
-        for (auto w : iDarkWallets) {
-            mActiveUser->addMicroWallet(BitcoinWallet(w));
-            qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
-        }
-        updateBrightBalance(mActiveUser->getBrightBalance());
-        mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
 
+        // moved to sendtodarkview...
+//        mActiveUser->setBrightBalance(lBrightAmount.toString());
+//        for (auto w : iDarkWallets) {
+//            mActiveUser->addMicroWallet(BitcoinWallet(w));
+//            qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+//        }
+
+//        mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+        mActiveUser->updateBrightBalanceFromBlockchain();
+
+        updateBrightBalance(mActiveUser->getBrightBalance());
         emit brightToDarkCompletedSignal(iSuccessful, lBrightAmount.toString(), iDarkWallets);
     } else {
         //failed
@@ -65,6 +68,11 @@ void BrightWallet::updateBrightBalanceFromBlockchain(QString iWalletId, QString 
 {
     qDebug() << "Update from blockchain!";
     ui->totalLabel->setText(iValue);
+}
+
+void BrightWallet::updateBalancesForViews(QString iBright, QString iDark)
+{
+    updateBalanceLabel();
 }
 
 void BrightWallet::on_closeWindowButton_pressed()
@@ -102,4 +110,25 @@ void BrightWallet::setQrCode()
     ui->qrCodeLabel->setPixmap(QPixmap::fromImage(*mQrImage));
     ui->qrAddressLabel->setText(QString("Address: %1").arg(QString(mPublicAddress)));
     ui->qrCodeLabel->setFixedSize(ui->qrAddressLabel->width() * 2, ui->qrAddressLabel->width() * 2);
+}
+
+void BrightWallet::updateBalanceLabel()
+{
+    QString lTotalBalance = mActiveUser->getBrightBalance().toString();
+
+    bool    lFontFits = false;
+    QFont   lFont = mMainBalanceFont;
+
+    while (!lFontFits) {
+        QFontMetrics lFm(lFont);
+        QRect lBound = lFm.boundingRect(0,0, ui->totalLabel->width(), ui->totalLabel->height(), Qt::TextWordWrap | Qt::AlignCenter, lTotalBalance);
+
+        if (lBound.width() <= QApplication::desktop()->screenGeometry().width() - 20)
+            lFontFits = true;
+        else
+            lFont.setPointSize(lFont.pointSize() - 2);
+    }
+
+    ui->totalLabel->setText(QString("%1").arg(lTotalBalance));
+    ui->totalLabel->setFont(lFont);
 }

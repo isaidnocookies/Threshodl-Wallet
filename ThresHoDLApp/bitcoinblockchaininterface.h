@@ -24,16 +24,15 @@ public:
     void setActiveUser (UserAccount *iActiveUser);
 
     bool updateBrightWalletBalances(int iConfirmations = 1);
-    bool getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, int iConfirmations = 1);
-    void createBitcoinTransaction(QList<BitcoinWallet> iInputWallet, QList<BitcoinWallet> iOuputs);
-    QString estimateMinerFee(int iInputs, int iOutputs);
+    bool getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, QList<QByteArray> &oPrivateKeys, int iConfirmations = 1);
+    QByteArray createBitcoinTransaction(QList<BitcoinWallet> iInputWallets, QList<BitcoinWallet> iOutputs, QString iMinerFee, QList<QByteArray> &oPrivateKeys);
+    QString estimateMinerFee(int iInputs, int iOutputs, bool iRoundUp = true, int iBlocksToBeConfirmed = 3);
+    bool signRawTransaction(QByteArray iRawTransaction, QByteArray &oSignedHex, QList<QByteArray> iPrivateKeys);
+    bool sendRawTransaction(QByteArray iSignedHex);
 
 signals:
     void updateWalletBalance (QString iWalletID, QString iBalance);
     void brightWalletUpdateComplete (bool iSuccess);
-
-private slots:
-    void replyFinished(QNetworkReply *iReply);
 
 private:
     QNetworkAccessManager   *mNetworkAccessManager;

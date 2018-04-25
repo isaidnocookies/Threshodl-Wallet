@@ -72,6 +72,11 @@ void SendToDarkView::on_convertButton_pressed()
         return;
     }
 
+    if (lValue >= "0.0" && !QStringMath::isMultipleOf(lValue.toString(), "0.0001")) {
+        ui->warningLabel->setText("The value must be a multiple of 0.0001");
+        return;
+    }
+
     if (ui->confirmCheckBox->isChecked()) {
         // Allow transfer
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
@@ -87,7 +92,7 @@ void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",mTransactionId,mUsername,mPrivateKey));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",currentChain(),mTransactionId,mUsername,mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -137,7 +142,7 @@ void SendToDarkView::receivedMessage()
 
         switch(lReply.replyCode()) {
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-            parseBitcoinPackage(lReply.microWalletsData());
+            completeToDarkTransaction(lReply.microWalletsData(),"");
             ui->warningLabel->setText("Conversion Complete!");
             ui->amountLineEdit->clear();
             break;
@@ -194,13 +199,24 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->confirmCheckBox->setEnabled(true);
 }
 
-void SendToDarkView::parseBitcoinPackage(QList<QByteArray> iData)
+void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount)
 {
-    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+//    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+
     QString lTotalBrightCoin = (mBalance - ui->amountLineEdit->text()).toString();
+    mActiveUser->setBrightPendingBalance(lTotalBrightCoin);
 
     mBalance = QStringMath(lTotalBrightCoin);
     ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
+
+//    mActiveUser->setBrightBalance(lTotalBrightCoin);
+
+    for (auto w : iData) {
+        mActiveUser->addMicroWallet(BitcoinWallet(w));
+        qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+    }
+
+    mActiveUser->updateBrightBalanceFromBlockchain();
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);

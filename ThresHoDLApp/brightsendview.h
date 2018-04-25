@@ -23,8 +23,7 @@ public:
 private slots:
     void on_closePushButton_pressed();
     void on_scanQrPushButton_pressed();
-
-    void on_sendTransactionButton_pressed();
+    void on_sendTransactionButton_released();
 
 public slots:
     void getCameraCode(QString iCode);
@@ -33,6 +32,10 @@ private:
     Ui::BrightSendView  *ui;
     QrReader            *mQrReaderView;
     UserAccount         *mActiveUser;
+
+    void stopProgressBarAndEnable();
+    void startProgressBarAndDisable();
+    bool sendTransaction(QString iAddress, QString iAmount);
 };
 
 #endif // BRIGHTSENDVIEW_H

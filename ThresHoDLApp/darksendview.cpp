@@ -260,6 +260,7 @@ bool DarkSendView::getAttachmentPackage(QByteArray &oData)
     mActiveUser->setDarkWallets(lRemainingWallets);
     mActiveUser->savePendingToSendDarkWallets(lWalletsToSend);
 
+    lJson.insert("Action", "Import");
     lJson.insert("Amount", ui->amountLineEdit->text());
     lJson.insert("TransactionId", mTransactionID);
     lJson.insert("Notes", "Bitcoin dark transaction.");
@@ -374,7 +375,7 @@ void DarkSendView::receivedMessage()
         sentConfirmation(false);
         break;
     case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError2:
-        // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark
+        // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark - FAIL IT TODO:
         qDebug() << "FUCK 6";
         sentConfirmation(false);
         break;
@@ -434,6 +435,6 @@ void DarkSendView::sentConfirmation(bool iSuccess)
     mActiveUser->clearPendingToSendDarkWallets();
 
     ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     emit updateBalance();
 }

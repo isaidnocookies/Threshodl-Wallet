@@ -47,6 +47,7 @@ public:
     double toInt();
 
     static QStringMath roundUpToNearest0001(QString iBtc);
+    static bool isMultipleOf(QString iValue, QString iFormat);
     static QStringMath btcFromSatoshi (QString iSatoshis);
 
 private:

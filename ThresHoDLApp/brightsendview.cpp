@@ -12,6 +12,8 @@ BrightSendView::BrightSendView(QWidget *parent) :
     ui->sendTransactionButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->addressLineEdit->setStyleSheet(lightBackgroundStyleSheet());
     ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
+
+    ui->progressBar->setVisible(false);
 }
 
 BrightSendView::~BrightSendView()
@@ -47,7 +49,49 @@ void BrightSendView::getCameraCode(QString iCode)
     // possibly do some checking of the code before a send is initiated
 }
 
-void BrightSendView::on_sendTransactionButton_pressed()
+bool BrightSendView::sendTransaction(QString iAddress, QString iAmount)
 {
-    ui->warningLabel->setText("Feature coming! Check out our Dark features!");
+    return mActiveUser->sendBrightTransaction(iAddress, iAmount);
+}
+
+void BrightSendView::startProgressBarAndDisable()
+{
+    ui->progressBar->setVisible(true);
+    ui->closePushButton->setEnabled(false);
+    ui->sendTransactionButton->setEnabled(false);
+    ui->scanQrPushButton->setEnabled(false);
+    ui->amountLineEdit->setEnabled(false);
+    ui->addressLineEdit->setEnabled(false);
+}
+
+void BrightSendView::stopProgressBarAndEnable()
+{
+    ui->progressBar->setVisible(false);
+    ui->closePushButton->setEnabled(true);
+    ui->sendTransactionButton->setEnabled(true);
+    ui->scanQrPushButton->setEnabled(true);
+    ui->amountLineEdit->setEnabled(true);
+    ui->addressLineEdit->setEnabled(true);
+}
+
+void BrightSendView::on_sendTransactionButton_released()
+{
+    if (ui->amountLineEdit->text().isEmpty() || ui->addressLineEdit->text().isEmpty()) {
+        ui->warningLabel->setText("Please complete all fields");
+        return;
+    } else if (!ui->checkBox->isChecked()){
+        ui->warningLabel->setText("Please check the checkbox!");
+        return;
+    }
+
+    startProgressBarAndDisable();
+
+    if (sendTransaction(ui->addressLineEdit->text(), ui->amountLineEdit->text())) {
+        ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightBalance().toString()));
+        ui->warningLabel->setText("Transaction Sent!");
+    } else {
+        ui->warningLabel->setText("Transaction Failed!");
+    }
+
+    stopProgressBarAndEnable();
 }

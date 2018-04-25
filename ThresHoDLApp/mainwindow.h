@@ -34,6 +34,8 @@ public slots:
     void updateBalances(QString iBrightBalance, QString iDarkBalances);
     void walletWindowDeleted();
     void brightWalletUpdateComplete(bool iSuccess);
+    void clearAllDataAndLogout();
+    void startClearAllDataAndLogout();
 
 private slots:
     void on_brightButton_pressed();

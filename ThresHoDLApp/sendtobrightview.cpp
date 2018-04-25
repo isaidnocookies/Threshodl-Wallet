@@ -65,6 +65,11 @@ void SendToBrightView::on_convertButton_pressed()
         return;
     }
 
+    if (lValue >= "0.0" && !QStringMath::isMultipleOf(lValue.toString(), "0.0001")) {
+        ui->warningLabel->setText("The value must be a multiple of 0.0001");
+        return;
+    }
+
     if (!ui->confirmCheckBox->isChecked()) {
         ui->warningLabelForCheck->setText(QString("*Confirm to continue"));
     } else {
@@ -251,7 +256,7 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
         mActiveUser->addBrightWallet(lWallet);
     }
 
-    mActiveUser->updateBalancesForMainWindow(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     mActiveUser->clearPendingToSendDarkWallets();
     emit updateDarkBalanceOnDarkWallet();
     ui->confirmationLabel->setText(QString("Conversion Complete!"));

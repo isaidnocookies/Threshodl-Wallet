@@ -127,7 +127,7 @@
      <item>
       <widget class="QLineEdit" name="amountLineEdit">
        <property name="text">
-        <string/>
+        <string>1</string>
        </property>
       </widget>
      </item>
@@ -144,7 +144,7 @@
      <item>
       <widget class="QLineEdit" name="addressLineEdit">
        <property name="text">
-        <string/>
+        <string>chris</string>
        </property>
       </widget>
      </item>
@@ -161,7 +161,7 @@
      <item>
       <widget class="QLineEdit" name="emailAddressLineEdit">
        <property name="text">
-        <string/>
+        <string>isaidnocookies@gmail.com</string>
        </property>
       </widget>
      </item>
@@ -288,6 +288,22 @@
         <string>Send Transaction</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
