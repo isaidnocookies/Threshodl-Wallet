@@ -374,7 +374,7 @@ void DarkSendView::receivedMessage()
         sentConfirmation(false);
         break;
     case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError2:
-        // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark
+        // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark - FAIL IT TODO:
         qDebug() << "FUCK 6";
         sentConfirmation(false);
         break;

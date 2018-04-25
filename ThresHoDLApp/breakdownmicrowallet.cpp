@@ -52,7 +52,7 @@ void BreakdownMicroWallet::connectedToServer()
         lWalletList.append(mBitcoinWalletToComplete.walletId());
         mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
     } else if (mCurrentAction == ActionCommands::BreakdownWallet) {
-        mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(mBitcoinWalletToComplete.value(), "", "", mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+        mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(mBitcoinWalletToComplete.value(), "", "", currentChain(), mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
     }
 }
 

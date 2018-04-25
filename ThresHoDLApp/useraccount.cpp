@@ -389,9 +389,9 @@ void UserAccount::updateBrightBalanceFromBlockchain()
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
 
     if (mBrightBalance == mBrightPendingBalance) {
-        updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+        emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
     } else {
-        updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
+        emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
     }
 
     emit updateBrightBalanceComplete(true);

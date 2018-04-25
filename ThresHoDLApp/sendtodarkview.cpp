@@ -87,7 +87,7 @@ void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",mTransactionId,mUsername,mPrivateKey));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",currentChain(),mTransactionId,mUsername,mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -137,7 +137,7 @@ void SendToDarkView::receivedMessage()
 
         switch(lReply.replyCode()) {
         case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-            completeToDarkTransaction(lReply.microWalletsData());
+            completeToDarkTransaction(lReply.microWalletsData(),"");
             ui->warningLabel->setText("Conversion Complete!");
             ui->amountLineEdit->clear();
             break;
@@ -194,7 +194,7 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->confirmCheckBox->setEnabled(true);
 }
 
-void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData)
+void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount)
 {
 //    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
 
@@ -204,12 +204,14 @@ void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData)
     mBalance = QStringMath(lTotalBrightCoin);
     ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
 
-    mActiveUser->setBrightBalance(lTotalBrightCoin);
+//    mActiveUser->setBrightBalance(lTotalBrightCoin);
+
     for (auto w : iData) {
         mActiveUser->addMicroWallet(BitcoinWallet(w));
         qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
     }
-    mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
+
+    mActiveUser->updateBrightBalanceFromBlockchain();
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);

@@ -127,7 +127,7 @@
      <item>
       <widget class="QLineEdit" name="amountLineEdit">
        <property name="text">
-        <string/>
+        <string>1</string>
        </property>
       </widget>
      </item>
@@ -144,7 +144,7 @@
      <item>
       <widget class="QLineEdit" name="addressLineEdit">
        <property name="text">
-        <string/>
+        <string>chris</string>
        </property>
       </widget>
      </item>
@@ -161,7 +161,7 @@
      <item>
       <widget class="QLineEdit" name="emailAddressLineEdit">
        <property name="text">
-        <string/>
+        <string>isaidnocookies@gmail.com</string>
        </property>
       </widget>
      </item>
