@@ -21,14 +21,14 @@ public:
     QString transactionId() const;
 
     // For Bitcoin
-    static QString txIdKey();
-    static QString voutKey();
+    static QString inputCountKey();
+    static QString outputCountKey();
     static QString outputBalanceAddressKey();
     static QString outputBalanceKey();
     static QString chainTypeKey();
 
-    QString txId() const;
-    QString vout() const;
+    int inputCount() const;
+    int outputCount() const;
     QString outputBalanceAddress() const;
     QString outputBalance() const;
     BitcoinWallet::ChainType chainType() const;
@@ -38,7 +38,7 @@ public:
             const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
             );
 
-    static QString createBtc(const QString iCryptoValue, const QString iTxId, const QString iVout, const BitcoinWallet::ChainType iChainType,
+    static QString createBtc(const QString iCryptoValue, int iInputCount, int iOutputCount, const BitcoinWallet::ChainType iChainType,
             const QString iTransactionId,
             const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress = QStringLiteral(""), const QString iOutputBalance = QStringLiteral("0.0"), RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
             );

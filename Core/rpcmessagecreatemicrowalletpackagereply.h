@@ -30,8 +30,18 @@ public:
     QString transactionId() const;
     QList<QByteArray> microWalletsData() const;
 
+    // For Bitcoin
+    static QString estimatedFeesKey();
+    QString estimatedFees() const;
+
     static QString create(
             const ReplyCode iReplyCode, const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId,
+            const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
+            );
+
+    static QString createBtc(
+            const ReplyCode iReplyCode, const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId,
+            const QString iEstimatedFees,
             const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding = KeyEncoding::SHA512
             );
 };
