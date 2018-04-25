@@ -405,11 +405,8 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
             if( _beginTransactionLockTables(lDB, lTables, true) ) {
                 for( QString lEntry : iMicroWalletIds ) {
                     QString     lWalletId                   = lEntry.toLower();
-                    QSqlQuery   lUpdateStateInFROM(lDB);
-                    QSqlQuery   lCopyRecordInTO(lDB);
-                    QSqlQuery   lDeleteRecordInFROM(lDB);
-                    QSqlQuery   lUpdateStateInTO(lDB);
 
+                    QSqlQuery   lUpdateStateInFROM(lDB);
                     lUpdateStateInFROM.prepare(
                                 QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
                                 .arg(lFromTable)
@@ -418,6 +415,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                                 );
                     lUpdateStateInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
+                    QSqlQuery   lCopyRecordInTO(lDB);
                     lCopyRecordInTO.prepare(
                                 QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = :iMicroWalletId")
                                 .arg(lToTable)
@@ -426,6 +424,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                                 );
                     lCopyRecordInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
+                    QSqlQuery   lDeleteRecordInFROM(lDB);
                     lDeleteRecordInFROM.prepare(
                                 QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = :iMicroWalletId")
                                 .arg(lFromTable)
@@ -433,6 +432,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                                 );
                     lDeleteRecordInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
+                    QSqlQuery   lUpdateStateInTO(lDB);
                     lUpdateStateInTO.prepare(
                                 QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
                                 .arg(lToTable)
