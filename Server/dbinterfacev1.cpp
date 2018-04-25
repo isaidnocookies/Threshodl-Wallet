@@ -319,28 +319,71 @@ QByteArray DBInterfaceV1::publicKeyForAddress(const QString iAddress)
 
 bool DBInterfaceV1::microWalletExists(const QString iMicroWalletId)
 {
+    return microWalletExists(QStringList() << iMicroWalletId);
+//    bool            lRet            = false;
+//    QSqlDatabase    lDB;
+
+//    if( ! iMicroWalletId.isEmpty() ) {
+//        if( _connectOrReconnectToDB(lDB) ) {
+//            if( _beginTransactionLockTable(lDB, QStringLiteral("in_use_walletids"), false) ) {
+//                QSqlQuery   lQuery(lDB);
+//                QString     lMicroWalletId    = iMicroWalletId.toLower();
+//                lQuery.prepare( QStringLiteral("SELECT walletid FROM in_use_walletids WHERE walletid = :iMicroWalletId") );
+//                lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
+
+//                if( lQuery.exec() ) {
+//                    int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+//                    if( lQuery.first() ) {
+//                        if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
+//                            lRet = true;
+//                        } else {
+//                            // It does not exist, however we can not use it because there is a record using the name partially?
+//                            qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+//                        }
+//                    }
+//                }
+//                _commitTransactionUnlockTable(lDB, QStringLiteral("in_use_walletids"));
+//            }
+//        }
+//    }
+
+//    return lRet;
+}
+
+bool DBInterfaceV1::microWalletExists(const QStringList iMicroWalletId)
+{
     bool            lRet            = false;
     QSqlDatabase    lDB;
 
     if( ! iMicroWalletId.isEmpty() ) {
         if( _connectOrReconnectToDB(lDB) ) {
             if( _beginTransactionLockTable(lDB, QStringLiteral("in_use_walletids"), false) ) {
-                QSqlQuery   lQuery(lDB);
-                QString     lMicroWalletId    = iMicroWalletId.toLower();
-                lQuery.prepare( QStringLiteral("SELECT walletid FROM in_use_walletids WHERE walletid = :iMicroWalletId") );
-                lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
+                int lFoundCount = 0;
+                for( QString lEntry : iMicroWalletId ) {
+                    QSqlQuery   lQuery(lDB);
+                    QString     lMicroWalletId    = lEntry.toLower();
 
-                if( lQuery.exec() ) {
-                    int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
-                    if( lQuery.first() ) {
-                        if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
-                            lRet = true;
-                        } else {
-                            // It does not exist, however we can not use it because there is a record using the name partially?
-                            qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                    if( lQuery.exec(
+                        QStringLiteral("SELECT walletid FROM in_use_walletids WHERE walletid = '%1'")
+                        .arg(lMicroWalletId)
+                            )
+                    ) {
+                        int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+                        if( lQuery.first() ) {
+                            if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
+                                lQuery.finish();
+                                lFoundCount++;
+                            } else {
+                                // It does not exist, however we can not use it because there is a record using the name partially?
+                                qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                            }
                         }
                     }
                 }
+
+                if( lFoundCount == iMicroWalletId.count() )
+                    lRet = true;
+
                 _commitTransactionUnlockTable(lDB, QStringLiteral("in_use_walletids"));
             }
         }
@@ -351,31 +394,76 @@ bool DBInterfaceV1::microWalletExists(const QString iMicroWalletId)
 
 bool DBInterfaceV1::microWalletOwnershipCheck(const QString iMicroWalletId, const QString iAddress)
 {
+    return microWalletOwnershipCheck(QStringList() << iMicroWalletId, iAddress);
+//    bool            lRet            = false;
+//    QSqlDatabase    lDB;
+
+//    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() ) {
+//        if( _connectOrReconnectToDB(lDB) ) {
+//            QString lTableName = _escrowTableNameForAccount(iAddress);
+//            if( _beginTransactionLockTable(lDB, lTableName, false) ) {
+//                QSqlQuery   lQuery(lDB);
+//                QString     lMicroWalletId    = iMicroWalletId.toLower();
+//                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND state = %2").arg(lTableName).arg(static_cast<int>(EscrowRecordState::Unlocked)));
+//                lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
+
+//                if( lQuery.exec() ) {
+//                    int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+//                    if( lQuery.first() ) {
+//                        if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
+//                            lRet = true;
+//                        } else {
+//                            // It does not exist, however we can not use it because there is a record using the name partially?
+//                            qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+//                        }
+//                    }
+//                } else {
+//                    qWarning() << lQuery.executedQuery() << lQuery.lastError();
+//                }
+
+//                _commitTransactionUnlockTable(lDB, lTableName);
+//            }
+//        }
+//    }
+
+//    return lRet;
+}
+
+bool DBInterfaceV1::microWalletOwnershipCheck(const QStringList iMicroWalletIds, const QString iAddress)
+{
     bool            lRet            = false;
     QSqlDatabase    lDB;
 
-    if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() ) {
+    if( ! iMicroWalletIds.isEmpty() && ! iAddress.isEmpty() ) {
         if( _connectOrReconnectToDB(lDB) ) {
             QString lTableName = _escrowTableNameForAccount(iAddress);
             if( _beginTransactionLockTable(lDB, lTableName, false) ) {
-                QSqlQuery   lQuery(lDB);
-                QString     lMicroWalletId    = iMicroWalletId.toLower();
-                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND state = %2").arg(lTableName).arg(static_cast<int>(EscrowRecordState::Unlocked)));
-                lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
+                int lFoundCount = 0;
+                for( QString lEntry : iMicroWalletIds )
+                {
+                    QSqlQuery   lQuery(lDB);
+                    QString     lMicroWalletId    = lEntry.toLower();
 
-                if( lQuery.exec() ) {
-                    int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
-                    if( lQuery.first() ) {
-                        if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
-                            lRet = true;
-                        } else {
-                            // It does not exist, however we can not use it because there is a record using the name partially?
-                            qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                    if( lQuery.exec(
+                            QStringLiteral("SELECT walletid FROM %1 WHERE walletid = '%3' AND state = %2").arg(lTableName).arg(static_cast<int>(EscrowRecordState::Unlocked)).arg(lMicroWalletId)
+                    ) ) {
+                        int         lWalletIdNo  = lQuery.record().indexOf(QStringLiteral("walletid"));
+                        if( lQuery.first() ) {
+                            if( lQuery.value(lWalletIdNo).toString() == lMicroWalletId ) {
+                                lQuery.finish();
+                                lFoundCount++;
+                            } else {
+                                // It does not exist, however we can not use it because there is a record using the name partially?
+                                qWarning() << "The database returned a record for wallet id" << iMicroWalletIds << ", howere an internal string check returned that the wallet id does not match what were looking for.";
+                            }
                         }
+                    } else {
+                        qWarning() << lQuery.executedQuery() << lQuery.lastError();
                     }
-                } else {
-                    qWarning() << lQuery.executedQuery() << lQuery.lastError();
                 }
+
+                if( lFoundCount == iMicroWalletIds.count() )
+                    lRet = true;
 
                 _commitTransactionUnlockTable(lDB, lTableName);
             }

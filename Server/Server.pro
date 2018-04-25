@@ -48,9 +48,10 @@ HEADERS += \
     dbinterfacealpha.h \
     rpcserverhandler.h \
     clientconnection.h \
-    clientalphahandler.h \
     walletgrinderalpha.h \
-    dbinterfacev1.h
+    dbinterfacev1.h \
+    clienthandlerv1.h \
+    clienthandleralpha.h
 
 
 SOURCES += \
@@ -65,9 +66,10 @@ SOURCES += \
     dbinterfacealpha.cpp \
     rpcserverhandler.cpp \
     clientconnection.cpp \
-    clientalphahandler.cpp \
     walletgrinderalpha.cpp \
-    dbinterfacev1.cpp
+    dbinterfacev1.cpp \
+    clienthandlerv1.cpp \
+    clienthandleralpha.cpp
 
 OTHER_FILES += \
     bitcoininterface.cpp \

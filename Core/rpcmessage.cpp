@@ -5,6 +5,7 @@
 #include <QVariantMap>
 #include <QJsonDocument>
 
+#define     kRPCVersionKey          "ver"
 #define     kUsernameKey            "user"
 #define     kSignatureKey           "sig"
 #define     kSignatureEncodingKey   "sige"
@@ -31,6 +32,7 @@ RPCMessage::RPCMessage(const QString iMessage)
 
     QVariantMap lOutterMap = QJsonDocument::fromJson(lUtf8Message,&lJsonParseError).toVariant().toMap();
     if( lJsonParseError.error == QJsonParseError::NoError ) {
+        mRPCVersion         = lOutterMap[kRPCVersionKey].toString();
         mUsername           = lOutterMap[kUsernameKey].toString();
         mSignature          = QByteArray::fromBase64(lOutterMap[kSignatureKey].toByteArray());
         mSignatureEncoding  = lOutterMap[kSignatureEncodingKey].toInt();
@@ -93,6 +95,7 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPrivate
         mSignature = Digest::sign(iPrivateKey,mDataForSignature,lHashType);
     }
 
+    lOutterMap[kRPCVersionKey]          = mRPCVersion;
     lOutterMap[kUsernameKey]            = mUsername;
     lOutterMap[kSignatureKey]           = mSignature.toBase64();
     lOutterMap[kSignatureEncodingKey]   = mSignatureEncoding;
@@ -100,6 +103,9 @@ QString RPCMessage::toMessage(const QString iUsername, const QByteArray iPrivate
 
     return QString::fromUtf8( QJsonDocument::fromVariant(lOutterMap).toJson(QJsonDocument::Compact) );
 }
+
+QString RPCMessage::rpcVersion() const
+{ return mRPCVersion; }
 
 QString RPCMessage::username() const
 { return mUsername; }
@@ -129,6 +135,7 @@ QString RPCMessage::toMessage(QList<RPCField> iFields, const QString iUsername, 
 void RPCMessage::_copy(const RPCMessage &iOther)
 {
     if( &iOther != this ) {
+        mRPCVersion         = iOther.mRPCVersion;
         mUsername           = iOther.mUsername;
         mSignature          = iOther.mSignature;
         mSignatureEncoding  = iOther.mSignatureEncoding;

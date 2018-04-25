@@ -5,7 +5,9 @@
 
 #include <QList>
 
-#define kFieldKey_Command   "command"
+#define kRPCVersionV1           "1"
+#define kRPCVersionCurrent      kRPCVersionV1   /* Empty for Alpha */
+#define kFieldKey_Command       "command"
 
 class RPCMessage
 {
@@ -28,6 +30,7 @@ public:
 
     QString toMessage(const QString iUsername, const QByteArray iPrivateKey, KeyEncoding iKeyEncoding = KeyEncoding::SHA512);
 
+    QString     rpcVersion() const;             // Immutable
     QString     username() const;
     QByteArray  signature() const;              // Only valid if constructed from a message or signed
     KeyEncoding signatureKeyEncoding() const;   // Only valid if constructed from a message or signed
@@ -41,10 +44,11 @@ public:
 protected:
     void _copy(const RPCMessage &iOther);
 
+    QString             mRPCVersion         = QStringLiteral(kRPCVersionCurrent);
     QString             mUsername;                  // Only valid if constructed from a message
     QByteArray          mSignature;                 // Only valid if constructed from a message
     QByteArray          mDataForSignature;          // Only valid if constructed from a message
-    int                 mSignatureEncoding = 0x0;   // Only valid if constructed from a message or signed
+    int                 mSignatureEncoding  = 0x0;  // Only valid if constructed from a message or signed
     QList< RPCField >   mFields;
 };
 
