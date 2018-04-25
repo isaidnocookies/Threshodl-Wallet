@@ -54,7 +54,7 @@ protected:
 
     QString _sanitizeAccountName(const QString iAccountName);
     QString _escrowTableNameForAccount(const QString iAccountName);
-    QSqlQuery _createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase);
+    QString _createEscrowTableSqlQueryForAccount(const QString iAccountName);
 
 public:
     DBInterfaceV1( const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort = 5432 );

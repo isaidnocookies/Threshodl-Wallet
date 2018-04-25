@@ -265,7 +265,8 @@ bool App::doInit()
                 return false;
         }
 
-        mDBInterface = new DBInterfaceAlpha(mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort);
+//        mDBInterface = new DBInterfaceAlpha(mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort);
+        mDBInterface = new DBInterfaceV1(mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort);
         mDBInterface->setSqlType(mDBType);
         return mDBInterface->initDB();
     }
@@ -382,7 +383,8 @@ void App::start()
     connect( mDownloaderThread, &QThread::started, mDownloader, &Downloader::threadStarted );
     connect( mDownloader, &Downloader::downloaded, mRecordsManager, &RecordsManager::handleDownloadedUrlData );
 
-    mDBInterface = new DBInterfaceAlpha{mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort};
+//    mDBInterface = new DBInterfaceAlpha{mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort};
+    mDBInterface = new DBInterfaceV1{mDBUserName,mDBPassword,mDBName,mDBHostName,mDBPort};
     mDBInterface->setSqlType(mDBType);
 
     mLogsManagerThread->start();

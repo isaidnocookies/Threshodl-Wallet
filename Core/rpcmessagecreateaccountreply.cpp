@@ -33,5 +33,5 @@ QString RPCMessageCreateAccountReply::create(const RPCMessageCreateAccountReply:
                 << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)}
                 << RPCField{replyUsernameKey(), iReplyUsername}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
-                iReplyUsername, iPrivateKey, iKeyEncoding );
+                iUsername, iPrivateKey, iKeyEncoding );
 }

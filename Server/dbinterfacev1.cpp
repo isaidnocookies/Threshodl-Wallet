@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 #include <QSqlRecord>
 #include <QSqlQuery>
+#include <QSqlError>
 
 bool DBInterfaceV1::_connected()
 {
@@ -50,11 +51,10 @@ bool DBInterfaceV1::_beginTransactionLockTable(QSqlDatabase &iDatabase, const QS
     if( _beginTransaction(iDatabase) ) {
         if(
             mSqlType != QStringLiteral("QPSQL") ||
-            QSqlQuery(
-                    QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
-                    .arg(iTableName)
-                    .arg( iLockExclusive ? QStringLiteral("EXCLUSIVE") : QStringLiteral("SHARE") )
-                    ).exec()
+            QSqlQuery(iDatabase).exec(QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
+                           .arg(iTableName)
+                           .arg( iLockExclusive ? QStringLiteral("EXCLUSIVE") : QStringLiteral("SHARE") )
+                                )
         ) {
             return true;
         }else{
@@ -71,11 +71,11 @@ bool DBInterfaceV1::_beginTransactionLockTables(QSqlDatabase &iDatabase, const Q
         if( mSqlType != QStringLiteral("QPSQL") ) return true;
 
         for( QString lTN : iTableNames ) {
-            if( ! QSqlQuery(
+            if( ! QSqlQuery(iDatabase).exec(
                         QStringLiteral( "LOCK TABLE %1 IN %2 MODE" )
                         .arg( lTN )
                         .arg( iLockExclusive ? QStringLiteral("EXCLUSIVE") : QStringLiteral("SHARE") )
-                        ).exec()
+                        )
             ) {
                 // Need to close the transaction and abort the lock;
                 _commitTransaction(iDatabase);
@@ -116,14 +116,10 @@ QString DBInterfaceV1::_sanitizeAccountName(const QString iAccountName)
 QString DBInterfaceV1::_escrowTableNameForAccount(const QString iAccountName)
 { return QStringLiteral("escrow_%1").arg(_sanitizeAccountName(iAccountName)); }
 
-QSqlQuery DBInterfaceV1::_createEscrowTableSqlQueryForAccount(const QString iAccountName, QSqlDatabase iDatabase)
+QString DBInterfaceV1::_createEscrowTableSqlQueryForAccount(const QString iAccountName)
 {
-    return QSqlQuery(
-                QStringLiteral("CREATE TABLE %1( rid %2 PRIMARY KEY, walletid text NOT NULL UNIQUE, state integer, payload text )")
-                .arg(_escrowTableNameForAccount(iAccountName))
-                .arg(mSqlType == QStringLiteral("QPSQL") ? QStringLiteral("SERIAL") : QStringLiteral("integer")),
-                iDatabase
-                );
+    return QStringLiteral("CREATE TABLE %1 ( rid SERIAL PRIMARY KEY, walletid text NOT NULL UNIQUE, state integer, payload text );")
+                .arg(_escrowTableNameForAccount(iAccountName));
 }
 
 DBInterfaceV1::DBInterfaceV1(const QString iUserName, const QString iPassword, const QString iDatabaseName, const QString iHostName, quint16 iPort)
@@ -152,10 +148,10 @@ bool DBInterfaceV1::initDB()
             // "CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL, key blob, UNIQUE(rid, address) )"
             try {
                 QSqlQuery   lQuery(lDB);
-                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid integer PRIMARY KEY, address text NOT NULL UNIQUE, key blob )") ) )
+                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS addresses( rid SERIAL PRIMARY KEY, address text NOT NULL UNIQUE, key text )") ) )
                     throw __LINE__;
 
-                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( rid integer PRIMARY KEY, walletid text NOT NULL UNIQUE )") ) )
+                if( ! lQuery.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( rid SERIAL PRIMARY KEY, walletid text NOT NULL UNIQUE )") ) )
                     throw __LINE__;
 
                 lRet = true;
@@ -213,14 +209,14 @@ bool DBInterfaceV1::addressCreate(const QString iAddress, const QByteArray iPubl
         if( _connectOrReconnectToDB(lDB) ) {
             if( _beginTransactionLockTable(lDB,QStringLiteral("addresses"),true) ) {
                 QSqlQuery   lInsertUserQuery(lDB);
-                QSqlQuery   lCreateTableQuery = _createEscrowTableSqlQueryForAccount(iAddress,lDB);
+                QSqlQuery   lCreateTableQuery(lDB);
 
-                lInsertUserQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey)") );
+                lInsertUserQuery.prepare( QStringLiteral("INSERT INTO addresses (address, key) VALUES (:iAddress,:iPublicKey);") );
                 lInsertUserQuery.bindValue( QStringLiteral(":iAddress"), _sanitizeAccountName(iAddress) );
-                lInsertUserQuery.bindValue( QStringLiteral(":iPublicKey"), iPublicKey );
+                lInsertUserQuery.bindValue( QStringLiteral(":iPublicKey"), QString::fromUtf8(iPublicKey) );
 
 
-                if( lInsertUserQuery.exec() && lCreateTableQuery.exec() ) {
+                if( lInsertUserQuery.exec() && lCreateTableQuery.exec(_createEscrowTableSqlQueryForAccount(iAddress)) ) {
                     lRet = true;
                     _commitTransactionUnlockTable(lDB, QStringLiteral("addresses") );
                 }else{
@@ -251,7 +247,7 @@ bool DBInterfaceV1::addressValidate(const QString iAddress, const QByteArray iPu
                     int         lKeyNo      = lQuery.record().indexOf(QStringLiteral("key"));
 
                     if( lQuery.first() ) {
-                        if( lQuery.value(lAddressNo).toString() == lAddress && lQuery.value(lKeyNo).toByteArray() == iPublicKey ) {
+                        if( lQuery.value(lAddressNo).toString() == lAddress && lQuery.value(lKeyNo) == QString::fromUtf8(iPublicKey) ) {
                             lRet = true;
                         } else {
                             // It does not exist, however we can not use it because there is a record using the name partially?
@@ -310,7 +306,7 @@ QByteArray DBInterfaceV1::publicKeyForAddress(const QString iAddress)
                     int         lKeyNo      = lQuery.record().indexOf(QStringLiteral("key"));
 
                     if( lQuery.first() ) {
-                        lRet = lQuery.value(lKeyNo).toByteArray();
+                        lRet = lQuery.value(lKeyNo).toString().toUtf8();
                     }
                 }
                 _commitTransactionUnlockTable(lDB, QStringLiteral("addresses"));
@@ -364,7 +360,7 @@ bool DBInterfaceV1::microWalletOwnershipCheck(const QString iMicroWalletId, cons
             if( _beginTransactionLockTable(lDB, lTableName, false) ) {
                 QSqlQuery   lQuery(lDB);
                 QString     lMicroWalletId    = iMicroWalletId.toLower();
-                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND owner = :iAddress").arg(lTableName) );
+                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND state = %2").arg(lTableName).arg(static_cast<int>(EscrowRecordState::Unlocked)));
                 lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
 
                 if( lQuery.exec() ) {
@@ -377,6 +373,8 @@ bool DBInterfaceV1::microWalletOwnershipCheck(const QString iMicroWalletId, cons
                             qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
                         }
                     }
+                } else {
+                    qWarning() << lQuery.executedQuery() << lQuery.lastError();
                 }
 
                 _commitTransactionUnlockTable(lDB, lTableName);
@@ -392,6 +390,8 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QString iMicroWalletId, con
 
 bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress)
 {
+    if( iFromAddress == iToAddress ) return true;
+
     bool            lRet        = false;
     QSqlDatabase    lDB;
 
@@ -405,47 +405,39 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
             if( _beginTransactionLockTables(lDB, lTables, true) ) {
                 for( QString lEntry : iMicroWalletIds ) {
                     QString     lWalletId                   = lEntry.toLower();
+
                     QSqlQuery   lUpdateStateInFROM(lDB);
                     QSqlQuery   lCopyRecordInTO(lDB);
                     QSqlQuery   lDeleteRecordInFROM(lDB);
                     QSqlQuery   lUpdateStateInTO(lDB);
 
-                    lUpdateStateInFROM.prepare(
-                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
+                    if( lUpdateStateInFROM.exec(
+                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = '%4' AND state = %3")
                                 .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lUpdateStateInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
-
-                    lCopyRecordInTO.prepare(
-                                QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT wallet, state, payload FROM %2 WHERE state = %3 AND walletid = :iMicroWalletId")
-                                .arg(lToTable)
-                                .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lCopyRecordInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
-
-                    lDeleteRecordInFROM.prepare(
-                                QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = :iMicroWalletId")
-                                .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
-                                );
-                    lDeleteRecordInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
-
-                    lUpdateStateInTO.prepare(
-                                QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
-                                .arg(lToTable)
                                 .arg(static_cast<int>(EscrowRecordState::Locked))
                                 .arg(static_cast<int>(EscrowRecordState::Unlocked))
-                                );
-                    lUpdateStateInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
-
-                    if( lUpdateStateInFROM.exec() && lUpdateStateInFROM.numRowsAffected() == 1 ) {
+                                .arg(lWalletId)
+                                ) && lUpdateStateInFROM.numRowsAffected() == 1 ) {
                         // Now execute the copy
-                        if( lCopyRecordInTO.exec() ) {
-                            if( lDeleteRecordInFROM.exec() ) {
-                                if( lUpdateStateInTO.exec() && lUpdateStateInTO.numRowsAffected() == 1 ) {
+                        if( lCopyRecordInTO.exec(QStringLiteral("INSERT INTO %1 (walletid, state, payload) SELECT walletid, state, payload FROM %2 WHERE state = %3 AND walletid = '%4'")
+                                                 .arg(lToTable)
+                                                 .arg(lFromTable)
+                                                 .arg(static_cast<int>(EscrowRecordState::Locked))
+                                                 .arg(lWalletId)
+                                                 ) ) {
+                            if( lDeleteRecordInFROM.exec(
+                                        QStringLiteral("DELETE FROM %1 WHERE state = %2 AND walletid = '%3'")
+                                        .arg(lFromTable)
+                                        .arg(static_cast<int>(EscrowRecordState::Locked))
+                                        .arg(lWalletId)
+                                        ) ) {
+                                if( lUpdateStateInTO.exec(
+                                            QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = '%4' AND state = %3")
+                                            .arg(lToTable)
+                                            .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                                            .arg(static_cast<int>(EscrowRecordState::Locked))
+                                            .arg(lWalletId)
+                                            ) && lUpdateStateInTO.numRowsAffected() == 1 ) {
                                     // Finished!
                                     lCompletedWalletsCount++;
                                 } else {
@@ -461,11 +453,13 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                         } else {
                             // Copy failed
                             qWarning() << "Failed to copy the micro wallet to the new owner table. Will rollback. WalletId:" << lWalletId << "From:" << iFromAddress << "FromTable:" << lFromTable << "To:" << iToAddress << "ToTable:" << lToTable;
+                            qWarning() << lCopyRecordInTO.executedQuery() << lCopyRecordInTO.lastError();
                             break;
                         }
                     } else {
                         // Record not locked
                         qWarning() << "Unable to update the micro wallet internal state on the original owner table. Will rollback. WalletId:" << lWalletId << "From:" << iFromAddress << "FromTable:" << lFromTable << "To:" << iToAddress << "ToTable:" << lToTable;
+                        qWarning() << lUpdateStateInFROM.executedQuery() << lUpdateStateInFROM.lastError();
                         break;
                     }
 
@@ -505,23 +499,30 @@ bool DBInterfaceV1::microWalletCreate(const QString iMicroWalletId, const QStrin
     QSqlDatabase    lDB;
 
     if( ! iMicroWalletId.isEmpty() && ! iAddress.isEmpty() && ! iPayload.isEmpty() && _connectOrReconnectToDB(lDB) ) {
-        QString lWalletId   = iMicroWalletId.toLower();
-        QString lTableName  = _escrowTableNameForAccount(iAddress);
+        QString     lWalletId       = iMicroWalletId.toLower();
+        QString     lTableName      = _escrowTableNameForAccount(iAddress);
+        QStringList lTableNames     = QStringList() << lTableName << QStringLiteral("in_use_walletids");
 
-        if( _beginTransactionLockTable(lDB,lTableName,true) ) {
-            QSqlQuery   lQuery(lDB);
-            lQuery.prepare(
+        if( _beginTransactionLockTables(lDB,lTableNames,true) ) {
+            QSqlQuery   lInsertIntoEscrow(lDB);
+            QSqlQuery   lInsertIntoInUse(lDB);
+
+            lInsertIntoInUse.prepare(
+                        QStringLiteral("INSERT INTO in_use_walletids (walletid) VALUES(:iMicroWalletId)")
+                        );
+            lInsertIntoInUse.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+
+            lInsertIntoEscrow.prepare(
                         QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES(:iMicroWalletId,%2,:iPayload)")
                         .arg(lTableName)
                         .arg(static_cast<int>(EscrowRecordState::Unlocked))
                         );
-            lQuery.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
-            lQuery.bindValue(QStringLiteral(":iPayload"), QString::fromUtf8(iPayload.toBase64()) );
+            lInsertIntoEscrow.bindValue(QStringLiteral(":iMicroWalletId"), lWalletId);
+            lInsertIntoEscrow.bindValue(QStringLiteral(":iPayload"), QString::fromUtf8(iPayload.toBase64()) );
 
-
-            if( lQuery.exec() && lQuery.numRowsAffected() == 1 ) {
+            if( lInsertIntoInUse.exec() && lInsertIntoEscrow.exec() && lInsertIntoInUse.numRowsAffected() == 1 && lInsertIntoEscrow.numRowsAffected() == 1 ) {
                 lRet = true;
-                _commitTransactionUnlockTable(lDB,lTableName);
+                _commitTransactionUnlockTables(lDB,lTableNames);
             }else{
                 _rollbackTransaction(lDB);
             }
@@ -544,7 +545,7 @@ QByteArray DBInterfaceV1::microWalletCopyPayload(const QString iMicroWalletId, c
 
             QSqlQuery   lQuery(lDB);
             lQuery.prepare(
-                        QStringLiteral("SELECT payload FROM %1 WHERE walletid = :iMicroWalletId AND state = %1")
+                        QStringLiteral("SELECT payload FROM %1 WHERE walletid = :iMicroWalletId AND state = %2")
                         .arg(lTableName)
                         .arg(static_cast<int>(EscrowRecordState::Unlocked))
                         );
