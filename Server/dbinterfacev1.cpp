@@ -360,7 +360,7 @@ bool DBInterfaceV1::microWalletOwnershipCheck(const QString iMicroWalletId, cons
             if( _beginTransactionLockTable(lDB, lTableName, false) ) {
                 QSqlQuery   lQuery(lDB);
                 QString     lMicroWalletId    = iMicroWalletId.toLower();
-                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND owner = :iAddress").arg(lTableName) );
+                lQuery.prepare( QStringLiteral("SELECT walletid FROM %1 WHERE walletid = :iMicroWalletId AND state = %2").arg(lTableName).arg(static_cast<int>(EscrowRecordState::Unlocked)));
                 lQuery.bindValue( QStringLiteral(":iMicroWalletId"), lMicroWalletId );
 
                 if( lQuery.exec() ) {
@@ -373,6 +373,8 @@ bool DBInterfaceV1::microWalletOwnershipCheck(const QString iMicroWalletId, cons
                             qWarning() << "The database returned a record for wallet id" << iMicroWalletId << ", howere an internal string check returned that the wallet id does not match what were looking for.";
                         }
                     }
+                } else {
+                    qWarning() << lQuery.executedQuery() << lQuery.lastError();
                 }
 
                 _commitTransactionUnlockTable(lDB, lTableName);
@@ -388,6 +390,8 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QString iMicroWalletId, con
 
 bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress)
 {
+    if( iFromAddress == iToAddress ) return true;
+
     bool            lRet        = false;
     QSqlDatabase    lDB;
 
@@ -409,8 +413,8 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                     lUpdateStateInFROM.prepare(
                                 QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
                                 .arg(lFromTable)
-                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
                                 .arg(static_cast<int>(EscrowRecordState::Locked))
+                                .arg(static_cast<int>(EscrowRecordState::Unlocked))
                                 );
                     lUpdateStateInFROM.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
@@ -432,8 +436,8 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                     lUpdateStateInTO.prepare(
                                 QStringLiteral("UPDATE %1 SET state = %2 WHERE walletid = :iMicroWalletId AND state = %3")
                                 .arg(lToTable)
-                                .arg(static_cast<int>(EscrowRecordState::Locked))
                                 .arg(static_cast<int>(EscrowRecordState::Unlocked))
+                                .arg(static_cast<int>(EscrowRecordState::Locked))
                                 );
                     lUpdateStateInTO.bindValue( QStringLiteral(":iMicroWalletId"), lWalletId );
 
@@ -462,6 +466,7 @@ bool DBInterfaceV1::microWalletChangeOwnership(const QStringList iMicroWalletIds
                     } else {
                         // Record not locked
                         qWarning() << "Unable to update the micro wallet internal state on the original owner table. Will rollback. WalletId:" << lWalletId << "From:" << iFromAddress << "FromTable:" << lFromTable << "To:" << iToAddress << "ToTable:" << lToTable;
+                        qWarning() << lUpdateStateInFROM.executedQuery() << lUpdateStateInFROM.lastError();
                         break;
                     }
 
