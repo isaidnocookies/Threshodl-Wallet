@@ -6,12 +6,13 @@
 #include "downloader.h"
 #include "logsmanager.h"
 #include "recordsmanager.h"
+#include "dbinterface.h"
 // #include "dbinterfacealpha.h"
-#include "dbinterfacev1.h"
 #include "httplistener.h"
 #include "resthandler.h"
 #include "rpcserver.h"
 #include "rpcserverhandler.h"
+#include "walletgrinder.h"
 
 #include <QMutex>
 #include <QByteArray>
@@ -99,6 +100,7 @@ public:
     RPCServer *         rpcServer() const;
 
     quint64             getNextWalletId(quint32 iAdvance = 1);
+    WalletGrinder *     walletGrinder() const;
 
 public slots:
     void                eventLoopStarted();
@@ -162,6 +164,7 @@ protected:
     RPCServerHandler *  mRPCServerHandler           = nullptr;
 
     QMutex              mNextWalletIdLock;
+    WalletGrinder *     mWalletGrinder              = nullptr;
 };
 
 #endif // APP_H

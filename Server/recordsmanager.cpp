@@ -1,9 +1,36 @@
 #include "recordsmanager.h"
+#include "app.h"
 
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QDateTime>
+#include <QJsonDocument>
+
+void RecordsManager::_recordFileAndStoreLocalVariable(const QString iPath, const QString iFilename, const QByteArray iData, QByteArray &oLocalVariable)
+{
+    QDir        lDir{iPath};
+    QFile       lFile{iFilename};
+
+    if( ! lDir.exists() ) {
+        if( ! lDir.mkpath(iPath) ) {
+            QByteArray lF = iFilename.toLocal8Bit(); QByteArray lD = iPath.toLocal8Bit();
+            qFatal( "Unable to create storage path for record for file '%s' ('%s')", lF.constData(), lD.constData() );
+        }
+    }
+
+    if( lFile.open(QIODevice::WriteOnly) ) {
+        if( lFile.write(iData) != iData.size() ) {
+            qCritical() << "Possible corrupt write operation occurred when recording record file" << iFilename;
+        }else{
+            oLocalVariable = iData;
+        }
+        lFile.close();
+    }else{
+        QByteArray lF = iFilename.toLocal8Bit();
+        qFatal( "Failed to open record file '%s' for writting!", lF.constData() );
+    }
+}
 
 RecordsManager::RecordsManager(const QString &iRecordsPath, QObject * iParent)
     : QObject( iParent )
@@ -32,6 +59,11 @@ QByteArray RecordsManager::lastDataETHBTC() const
     return mDataETHBTC;
 }
 
+QByteArray RecordsManager::testNetEstimateFee() const
+{
+    return mTestNetEstimateFee;
+}
+
 void RecordsManager::threadStarted()
 {
 
@@ -48,88 +80,50 @@ void RecordsManager::handleDownloadedUrlData(const QString iUrl, const QByteArra
     } else if( iUrl == QStringLiteral("https://apiv2.bitcoinaverage.com/indices/crypto/ticker/ETHBTC") ) {
         saveDataETHBTC(QStringLiteral("bitcoinaverage-apiv2"),iData);
         return;
+    } else if( iUrl.startsWith(QStringLiteral("https://test-insight.bitpay.com/api/utils/estimatefee?nbBlocks=")) ) {
+        saveDataBTCTestNetBlockChainStats("test-insight.bitpay.com_api_utils_estimatefee",iData);
+        return;
     }
 
     // Ignore it, not for us
+}
+
+void RecordsManager::saveDataBTCTestNetBlockChainStats(const QString iSource, const QByteArray iData)
+{
+    QString     lDirname    = QString("%1%2BTCUSD%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);
+    QString     lFilename   = QString("%1%2%3.%4.testnet_estimatefee").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch()).arg(iSource);
+    _recordFileAndStoreLocalVariable( lDirname, lFilename, iData, mTestNetEstimateFee );
+
+    // Now process the record and notify the Wallet Grinder
+    WalletGrinder * lWG;
+    if( gApp && (lWG = gApp->walletGrinder()) ) {
+        QVariantMap lMap = QJsonDocument::fromJson(iData).toVariant().toMap();
+        QStringList lKeys = lMap.keys();
+        if( ! lKeys.isEmpty() ) {
+            double lFeesPerByte = lMap[lKeys.first()].toDouble();
+            lWG->setCurrentNetworkFees( QString::number(lFeesPerByte * 10.0f), QString::number(lFeesPerByte * 34.0f), QStringLiteral("BTC-TestNet-Out") );
+            lWG->setCurrentNetworkFees( QString::number(lFeesPerByte * 10.0f), QString::number(lFeesPerByte * 180.0f), QStringLiteral("BTC-TestNet-In") );
+        }
+    }
 }
 
 void RecordsManager::saveDataBTCUSD(const QString iSource, const QByteArray iData)
 {
     QString     lDirname    = QString("%1%2BTCUSD%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);
     QString     lFilename   = QString("%1%2%3.%4.BTCUSD").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch()).arg(iSource);
-    QDir        lDir{lDirname};
-    QFile       lFile{lFilename};
-
-    if( ! lDir.exists() ) {
-        if( ! lDir.mkpath(lDirname) ) {
-            QByteArray lF = lFilename.toLocal8Bit(); QByteArray lD = lDirname.toLocal8Bit();
-            qFatal( "Unable to create storage path for record for file '%s' ('%s')", lF.constData(), lD.constData() );
-        }
-    }
-
-    if( lFile.open(QIODevice::WriteOnly) ) {
-        if( lFile.write(iData) != iData.size() ) {
-            qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
-        }else{
-            mDataBTCUSD = iData;
-        }
-        lFile.close();
-    }else{
-        QByteArray lF = lFilename.toLocal8Bit();
-        qFatal( "Failed to open record file '%s' for writting!", lF.constData() );
-    }
+    _recordFileAndStoreLocalVariable( lDirname, lFilename, iData, mDataBTCUSD );
 }
 
 void RecordsManager::saveDataETHUSD(const QString iSource, const QByteArray iData)
 {
     QString     lDirname    = QString("%1%2ETHUSD%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);
     QString     lFilename   = QString("%1%2%3.%4.ETHUSD").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch()).arg(iSource);
-    QDir        lDir{lDirname};
-    QFile       lFile{lFilename};
-
-    if( ! lDir.exists() ) {
-        if( ! lDir.mkpath(lDirname) ) {
-            QByteArray lF = lFilename.toLocal8Bit(); QByteArray lD = lDirname.toLocal8Bit();
-            qFatal( "Unable to create storage path for record for file '%s' ('%s')", lF.constData(), lD.constData() );
-        }
-    }
-
-    if( lFile.open(QIODevice::WriteOnly) ) {
-        if( lFile.write(iData) != iData.size() ) {
-            qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
-        }else{
-            mDataETHUSD = iData;
-        }
-        lFile.close();
-    }else{
-        QByteArray lF = lFilename.toLocal8Bit();
-        qFatal( "Failed to open record file '%s' for writting!", lF.constData() );
-    }
+    _recordFileAndStoreLocalVariable( lDirname, lFilename, iData, mDataETHUSD );
 }
 
 void RecordsManager::saveDataETHBTC(const QString iSource, const QByteArray iData)
 {
     QString     lDirname    = QString("%1%2ETHBTC%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);
     QString     lFilename   = QString("%1%2%3.%4.ETHBTC").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch()).arg(iSource);
-    QDir        lDir{lDirname};
-    QFile       lFile{lFilename};
-
-    if( ! lDir.exists() ) {
-        if( ! lDir.mkpath(lDirname) ) {
-            QByteArray lF = lFilename.toLocal8Bit(); QByteArray lD = lDirname.toLocal8Bit();
-            qFatal( "Unable to create storage path for record for file '%s' ('%s')", lF.constData(), lD.constData() );
-        }
-    }
-
-    if( lFile.open(QIODevice::WriteOnly) ) {
-        if( lFile.write(iData) != iData.size() ) {
-            qCritical() << "Possible corrupt write operation occurred when recording record file" << lFilename;
-        }else{
-            mDataETHBTC = iData;
-        }
-        lFile.close();
-    }else{
-        QByteArray lF = lFilename.toLocal8Bit();
-        qFatal( "Failed to open record file '%s' for writting!", lF.constData() );
-    }
+    _recordFileAndStoreLocalVariable( lDirname, lFilename, iData, mDataETHBTC );
 }
