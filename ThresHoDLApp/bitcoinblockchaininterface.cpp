@@ -293,10 +293,6 @@ bool BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> i
     }
     lOutputParams.remove(lOutputParams.size() - 1,1);
 
-//    if (lOutputBalance > "0.0") {
-//        lOutputParams.append(QString(",\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
-//    }
-
     for (int i = 0; i < lTxids.size(); i++) {
         oPrivateKeys << lPrivateKeys[i];
         oTxids << lTxids[i];
@@ -311,6 +307,13 @@ bool BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> i
         }
     }
     lInputParams.remove(lInputParams.size()-1,1); // remove last comma
+
+    // add output for balance back to brightWallet;
+    if (lInputCounter > lOutputTotal + iMinerFee) {
+        lOutputBalance = lInputCounter - (lOutputTotal + iMinerFee);
+        lOutputParams.append(QString(",\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
+    }
+
     lTransactionParams = QString("[[%1],{%2}]").arg(lInputParams).arg(lOutputParams);
 
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

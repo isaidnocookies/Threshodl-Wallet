@@ -100,6 +100,11 @@ void DarkSendView::on_sendTransactionButton_pressed()
         return;
     }
 
+    if (!mActiveUser->isDarkWalletsSettled()) {
+        ui->sendWarningLabel->setWordWrap(true);
+        ui->sendWarningLabel->setText("Please wait for dark wallet to be confirmed");
+    }
+
     if (lAmount == "0.0" || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
     } else if (lAmount > mActiveUser->getDarkBalance()) {
@@ -350,8 +355,6 @@ void DarkSendView::receivedMessage()
         return;
     }
 
-    stopProgressBarAndEnable();
-
     switch(lReply.replyCode()) {
     case RPCMessageReassignMicroWalletsReply::ReplyCode::Success:
         qDebug() << "FUCK YEAH!!!";
@@ -396,6 +399,8 @@ void DarkSendView::receivedMessage()
             sentConfirmation(false);
         break;
     }
+
+    stopProgressBarAndEnable();
 }
 
 void DarkSendView::socketError(QAbstractSocket::SocketError iError)
@@ -410,12 +415,12 @@ void DarkSendView::sslErrors(const QList<QSslError> iErrors)
     qDebug() << "Ssl Errors:";
 
     int lIndex = 0;
-    stopProgressBarAndEnable();
-
     for( auto lError : iErrors ) {
         qDebug() << lIndex++ << lError.errorString();
         ui->sendWarningLabel->setText("[4] Error, please try again!");
     }
+
+    stopProgressBarAndEnable();
 }
 
 void DarkSendView::sentConfirmation(bool iSuccess)
@@ -444,4 +449,6 @@ void DarkSendView::sentConfirmation(bool iSuccess)
     ui->availableBalanceLabel->setText(QString("Available Balance: %1").arg(mActiveUser->getDarkBalance().toString()));
     mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     emit updateBalance();
+
+    stopProgressBarAndEnable();
 }

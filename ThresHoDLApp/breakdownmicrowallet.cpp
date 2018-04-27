@@ -59,9 +59,7 @@ void BreakdownMicroWallet::connectedToServer()
                         currentChain(),
                         mTransactionID,
                         mActiveUser->getUsername(),
-                        mActiveUser->getPrivateKey(),
-                        "Output balance addresses",
-                        "Output Balance Amounts"));
+                        mActiveUser->getPrivateKey()));
     }
 }
 
