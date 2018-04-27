@@ -1,5 +1,7 @@
 #include "walletgrinderv1.h"
 
+#include <QDebug>
+
 bool WalletGrinderV1::_normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative)
 {
     oIsNegative = false;
@@ -134,7 +136,8 @@ QStringList WalletGrinderV1::_sortNumberedQStringList(const QStringList iList)
 
 QStringList WalletGrinderV1::_grindValueOnePass(const QString iValue, WalletGrinderV1::GrindingConstraintsRef iConstraints)
 {
-
+    Q_UNUSED(iValue) Q_UNUSED(iConstraints)
+    return QStringList();
 }
 
 WalletGrinderV1::WalletGrinderV1()
