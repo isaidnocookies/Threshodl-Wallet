@@ -23,7 +23,6 @@ public:
 private slots:
     void on_closeWindowButton_pressed();
     void on_microWalletTableWidget_cellPressed(int row, int column);
-
     void on_refreshPushButton_pressed();
 
 private:

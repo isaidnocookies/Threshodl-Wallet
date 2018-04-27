@@ -289,7 +289,7 @@
       <string notr="true">color:white;</string>
      </property>
      <property name="text">
-      <string/>
+      <string>Amount</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -302,13 +302,16 @@
       <string notr="true">color:white;</string>
      </property>
      <property name="text">
-      <string/>
+      <string>Address</string>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -318,7 +321,7 @@
       <string notr="true">color:white;</string>
      </property>
      <property name="text">
-      <string/>
+      <string>Wallet Id</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

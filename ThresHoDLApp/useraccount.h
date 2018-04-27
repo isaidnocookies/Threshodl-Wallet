@@ -57,10 +57,14 @@ public:
     void setBrightBalance(QStringMath iValue)                           { mBrightBalance = iValue; }
     void setBrightPendingBalance(QStringMath iValue);
     void setDarkBalance(QStringMath iValue)                             { mDarkBalance = iValue; }
+    void setDarkWalletsSettled(bool iIsSettled)                         { mDarkWalletSettled = iIsSettled; }
+    bool isDarkWalletsSettled()                                         { return mDarkWalletSettled; }
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
     void updateBrightBalanceFromBlockchain();
     bool sendBrightTransaction(QString iToAddress, QString iAmount);
+    bool fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWalletTotal, QString iFeeEstimate);
+    bool sendDarkWalletsToBrightWallet(QList<BitcoinWallet> iWallets);
     void removeBrightWallets(QString iAmount); //for testing...
     void clearAllSavedData();
 
@@ -91,6 +95,8 @@ private:
     QStringMath                             mDarkBalance;
 
     QSet<QString>                           mAllWallets;
+
+    bool                                    mDarkWalletSettled;
 
     void loadFromSettings();
     bool greaterThanWallet (BitcoinWallet iLHS, BitcoinWallet iRHS);

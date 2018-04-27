@@ -65,7 +65,47 @@ bool BitcoinBlockchainInterface::updateBrightWalletBalances(int iConfirmations)
     return lSuccess;
 }
 
-bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, QList<QByteArray> &oPrivateKeys, int iConfirmations)
+bool BitcoinBlockchainInterface::updateDarkWalletBalances(int iConfirmations)
+{
+    Q_UNUSED (iConfirmations)
+
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QStringMath             lDarkBalance = QStringMath();
+    QStringMath             lPendingDarkBalance = QStringMath();
+    QList<BitcoinWallet>    lNewWallets;
+    bool                    lSuccess = true;
+
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    for (BitcoinWallet &w : mActiveUser->getDarkWallets()) {
+        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2/balance").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
+        lMyEventLoop.exec();
+
+        if (lReply->error() == QNetworkReply::NoError) {
+            QByteArray      lReplyText = lReply->readAll();
+            QStringMath     lBalance = QStringMath::btcFromSatoshi(QString(lReplyText));
+            lDarkBalance = lDarkBalance + lBalance;
+            lPendingDarkBalance = lPendingDarkBalance + w.value();
+        } else {
+            qDebug() << "Error.... Can not update dark wallet balance...";
+            lSuccess = false;
+        }
+    }
+
+    if (lPendingDarkBalance == lDarkBalance) {
+        mActiveUser->setDarkWalletsSettled(true);
+    } else {
+        mActiveUser->setDarkWalletsSettled(false);
+    }
+
+    qDebug() << "PendingDarkBalance: " << lPendingDarkBalance.toString();
+    qDebug() << "lDarkBalance: " << lDarkBalance.toString();
+
+    return lSuccess;
+}
+
+bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWallets, QStringList &oTxids, QStringList &oValues, QStringList &oVouts, QStringList &oScriptPubKey, QList<QByteArray> &oPrivateKeys, int iConfirmations)
 {
     QNetworkReply           *lReply;
     bool                    lSuccess = true;
@@ -80,6 +120,7 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
         lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2/utxo").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
         connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
         lMyEventLoop.exec();
+        bool lAddedTx = false;
 
         if (lReply->error() == QNetworkReply::NoError) {
             QByteArray      lReplyText = lReply->readAll();
@@ -89,16 +130,18 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
                 auto lTempMap = utxo.toMap();
 
 //                qDebug() << lTempMap["address"].toString();
-//                qDebug() << lTempMap["scriptPubKey"].toString();
 
                 if (lTempMap["confirmations"].toInt() >= iConfirmations) {
-                    oValues.append(lTempMap["amount"].toString());
-                    oTxids.append(lTempMap["txid"].toString());
-                    oVouts.append(lTempMap["vout"].toString());
-                    oPrivateKeys.append(w.wif());
+                    oValues << lTempMap["amount"].toString();
+                    oTxids << lTempMap["txid"].toString();
+                    oVouts << lTempMap["vout"].toString();
+                    oScriptPubKey << lTempMap["scriptPubKey"].toString();
+                    lAddedTx = true;
                 }
             }
-
+            if (lAddedTx) {
+                oPrivateKeys << w.wif();
+            }
             lSuccess = true;
         } else {
             qDebug() << "Error getting unspent transactions!";
@@ -108,11 +151,12 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
     return lSuccess;
 }
 
-QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> iInputWallets, QList<BitcoinWallet> iOutputs, QString iMinerFee, QList<QByteArray> &oPrivateKeys)
+QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> iInputWallets, QList<BitcoinWallet> iOutputs, QString iMinerFee, QList<QByteArray> &oPrivateKeys, QStringList &oTxids, QStringList &oVouts, QStringList &oScriptPubKey)
 {
     QStringList         lTxids;
     QStringList         lValues;
     QStringList         lVouts;
+    QStringList         lScriptPublicKey;
     QList<QByteArray>   lPrivateKeys;
     QList<int>          lIndices;
     QStringMath         lOutputTotal;
@@ -123,31 +167,18 @@ QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWal
     QString             lInputParams = "";
     QString             lOutputParams = "";
 
+    oPrivateKeys.clear();
+    oVouts.clear();
+    oTxids.clear();
+    oScriptPubKey.clear();
+
     if (iInputWallets.size() == 0 || iOutputs.size() == 0) {
         qDebug() << "Error, no inputs or outputs";
         return QByteArray();
     }
 
-    if (!getUnspentTransactions(iInputWallets, lTxids, lValues, lVouts, lPrivateKeys)) {
+    if (!getUnspentTransactions(iInputWallets, lTxids, lValues, lVouts, lScriptPublicKey, lPrivateKeys)) {
         qDebug() << "Error getting unspent transactions";
-        return QByteArray();
-    }
-
-    for (int i = 0; i < lTxids.size(); i++) {
-        if (QStringMath(lValues.at(i)) < lOutputTotal + iMinerFee) {
-            lIndices.append(i);
-            oPrivateKeys.append(lPrivateKeys.at(i));
-            lInputCounter = lInputCounter + lValues.at(i);
-        } else if (QStringMath(lValues.at(i)) > lOutputTotal + iMinerFee) {
-            lIndices.append(i);
-            oPrivateKeys.append(lPrivateKeys.at(i));
-            lInputCounter = lInputCounter + lValues.at(i);
-            break;
-        }
-    }
-
-    if (lInputCounter < lOutputTotal + iMinerFee) {
-        qDebug() << "Not enough bitcoin...";
         return QByteArray();
     }
 
@@ -155,9 +186,32 @@ QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWal
         lOutputTotal = lOutputTotal + outs.value();
         lOutputParams.append(QString("\"%1\":%2,").arg(QString(outs.address())).arg(outs.value()));
     }
+    lOutputParams.remove(lOutputParams.size() - 1,1);
 
-    lOutputBalance = lInputCounter -  (lOutputTotal + iMinerFee);
-    lOutputParams.append(QString("\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
+    for (int i = 0; i < lTxids.size(); i++) {
+        if (QStringMath(lValues.at(i)) < lOutputTotal + iMinerFee) {
+            lIndices.append(i);
+            oPrivateKeys.append(lPrivateKeys.at(i));
+            oTxids.append(lTxids.at(i));
+            oVouts.append(lVouts.at(i));
+            oScriptPubKey.append(lScriptPublicKey.at(i));
+            lInputCounter = lInputCounter + lValues.at(i);
+        } else if (QStringMath(lValues.at(i)) > lOutputTotal + iMinerFee) {
+            lIndices.append(i);
+            oPrivateKeys.append(lPrivateKeys.at(i));
+            oTxids.append(lTxids.at(i));
+            oVouts.append(lVouts.at(i));
+            oScriptPubKey.append(lScriptPublicKey.at(i));
+            lInputCounter = lInputCounter + lValues.at(i);
+            break;
+        }
+    }
+
+    lOutputBalance = lInputCounter - (lOutputTotal + iMinerFee);
+
+    if (lOutputBalance > "0.0") {
+        lOutputParams.append(QString(",\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
+    }
 
     for (int i = 0; i < lIndices.size(); i++) {
         QJsonObject lTxin;
@@ -178,6 +232,9 @@ QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWal
 
     QByteArray lUrlData = QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"createrawtransaction\",\"params\":%1}").arg(lTransactionParams).toUtf8();
 
+
+    qDebug() << QString(lUrlData).toUtf8().constData();
+
     lReply = mNetworkAccessManager->post(lRequest, lUrlData);
     lMyEventLoop.exec();
 
@@ -194,6 +251,88 @@ QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWal
     }
 
     return lTransactionParams.toUtf8();
+}
+
+bool BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> iInputWallets, QMap<QString, QString> iOutputs, QString iMinerFee, QList<QByteArray> &oPrivateKeys, QStringList &oTxids, QStringList &oVouts, QStringList &oScriptPubKey, QByteArray &oRawTransaction)
+{
+    QEventLoop          lMyEventLoop;
+    QNetworkReply       *lReply;
+    QNetworkRequest     lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    QByteArray          lUrlData;
+    QStringList         lTxids;
+    QStringList         lValues;
+    QStringList         lVouts;
+    QStringList         lScriptPublicKey;
+    QList<QByteArray>   lPrivateKeys;
+    QList<int>          lIndices;
+    QStringMath         lOutputBalance;
+    QStringMath         lInputCounter;
+
+    QString             lTransactionParams = "";
+    QString             lInputParams = "";
+    QString             lOutputParams = "";
+
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    oRawTransaction.clear();
+    oPrivateKeys.clear();
+    oVouts.clear();
+    oTxids.clear();
+    oScriptPubKey.clear();
+
+    if (!getUnspentTransactions(iInputWallets, lTxids, lValues, lVouts, lScriptPublicKey, lPrivateKeys)) {
+        qDebug() << "Error getting unspent transactions";
+        return false;
+    }
+
+    if (lTxids.count() == 0) {
+        qDebug() << "Error, no unspent transactions";
+        return false;
+    }
+
+    QStringMath lOutputTotal;
+    for (auto lOutputKey : iOutputs.keys()) {
+        lOutputTotal = lOutputTotal + iOutputs[lOutputKey];
+        lOutputParams.append(QString("\"%1\":%2,").arg(lOutputKey).arg(iOutputs[lOutputKey]));
+    }
+    lOutputParams.remove(lOutputParams.size() - 1,1);
+
+    for (int i = 0; i < lTxids.size(); i++) {
+        oPrivateKeys << lPrivateKeys[i];
+        oTxids << lTxids[i];
+        oVouts << lVouts[i];
+        oScriptPubKey << lScriptPublicKey[i];
+
+        lInputCounter = lInputCounter + lValues.at(i);
+        lInputParams.append(QString("{\"txid\":\"%1\",\"vout\":%2},").arg(lTxids[i]).arg(lVouts[i]));
+
+        if (lInputCounter >= lOutputTotal + iMinerFee) {
+            break;
+        }
+    }
+    lInputParams.remove(lInputParams.size()-1,1); // remove last comma
+    lTransactionParams = QString("[[%1],{%2}]").arg(lInputParams).arg(lOutputParams);
+
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    lUrlData = QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"createrawtransaction\",\"params\":%1}").arg(lTransactionParams).toUtf8();
+    lReply = mNetworkAccessManager->post(lRequest, lUrlData);
+    lMyEventLoop.exec();
+
+    qDebug() << QString(lUrlData).toUtf8().constData();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lResult = lReply->readAll();
+        QJsonDocument   lJsonReponse = QJsonDocument::fromJson(lResult);
+        QJsonObject     lJsonObject = lJsonReponse.object();
+        QVariantMap     lMap = lJsonObject.toVariantMap();
+
+        oRawTransaction = lMap["result"].toByteArray();
+    } else {
+        qDebug() << "Error.... Failed to create raw transaction : " << lReply->errorString();
+        return false;
+    }
+
+    return true;
 }
 
 QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs, bool iRoundUp, int iBlocksToBeConfirmed)
@@ -231,7 +370,7 @@ QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs, 
     return lEstimatedFee.toString();
 }
 
-bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, QByteArray &oSignedHex, QList<QByteArray> iPrivateKeys)
+bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, QByteArray &oSignedHex, QList<QByteArray> iPrivateKeys, QStringList iTxids, QStringList iVouts, QStringList iScriptPubKey)
 {
     BitcoinWallet           lTempWallet = mActiveUser->getBrightWallet();
     bool                    lCompleteSigning = false;
@@ -247,8 +386,19 @@ bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, 
     }
     lPrivateKeys.remove(lPrivateKeys.size()-1,1);
 
-    QString lParameters = QString("[\"%1\",[],[%2]]").arg(QString(iRawTransaction)).arg(lPrivateKeys);
+    QString lDependencies = "";
+    for (int i = 0; i < iTxids.count(); i++) {
+        lDependencies.append(QString("{\"txid\":\"%1\",\"vout\":%2,\"scriptPubKey\":\"%3\"},").arg(iTxids.at(i)).arg(iVouts.at(i)).arg(iScriptPubKey.at(i)));
+    }
+    lDependencies.remove(lDependencies.size()-1,1);
+
+    //check without dependencies...
+    lDependencies = "";
+
+    QString lParameters = QString("[\"%1\",[%2],[%3]]").arg(QString(iRawTransaction)).arg(lDependencies).arg(lPrivateKeys);
     QByteArray lUrlData = (QString("{\"jsonrpc\":\"1.0\",\"id\":\"getinfo\",\"method\":\"signrawtransaction\",\"params\":%1}").arg(lParameters)).toUtf8();
+
+    qDebug() << QString(lUrlData).toUtf8().constData();
 
     lReply = mNetworkAccessManager->post(lRequest, lUrlData);
     lMyEventLoop.exec();
@@ -262,8 +412,13 @@ bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, 
 
         oSignedHex = lResultMap["hex"].toByteArray();
         lCompleteSigning = lResultMap["complete"].toBool();
+
+        if (!lCompleteSigning) {
+            qDebug() << "Transaction signing was not complete... : \n" << lResultMap["errors"].toByteArray() << "\n";
+            return false;
+        }
     } else {
-        qDebug() << "Error.... Failed to create raw transaction";
+        qDebug() << "Error.... Failed to sign raw transaction : " << lReply->errorString();
         return false;
     }
 
@@ -291,10 +446,11 @@ bool BitcoinBlockchainInterface::sendRawTransaction(QByteArray iSignedHex)
         QByteArray      lResultFromSend = lMap["result"].toByteArray();
 
         if (lResultFromSend.isEmpty() || lResultFromSend.isNull()) {
+            qDebug() << "Error.... Failed to send raw transaction : no result or result from send...";
             return false;
         }
     } else {
-        qDebug() << "Error.... Failed to create raw transaction";
+        qDebug() << "Error.... Failed to send raw transaction : " << lReply->errorString();
         return false;
     }
 

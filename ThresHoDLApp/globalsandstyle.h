@@ -13,6 +13,7 @@
 
 #define BITCOIN_NODE_IP_ADDRESS "http://test:test@10.10.0.158:8332"
 #define TEST_INSIGHT_BITCORE_IP_ADDRESS "https://test-insight.bitpay.com/api"
+#define BLOCKEXPLORER_ADDRESS_LINK_BASE "https://testnet.blockexplorer.com/address/"
 
 inline BitcoinWallet::ChainType currentChain() {    return BitcoinWallet::ChainType::TestNet;}
 

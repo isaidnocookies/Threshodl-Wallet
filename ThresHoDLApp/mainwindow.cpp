@@ -224,7 +224,12 @@ void MainWindow::updateBalances(QString iBrightBalance, QString iDarkBalances)
     QFont   lFont = mMainBalanceFont;
 
     ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(iBrightBalance));
-    ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC").arg(iDarkBalances));
+
+    if (mActiveUser->isDarkWalletsSettled()) {
+        ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC (Confirmed)").arg(iDarkBalances));
+    } else {
+        ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC (Unconfirmed)").arg(iDarkBalances));
+    }
 
     while (!lFontFits) {
         QFontMetrics lFm(lFont);
