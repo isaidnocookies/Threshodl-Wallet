@@ -29,7 +29,7 @@ QString RPCMessageCompleteMicroWalletsReply::transactionId() const
 
 QMap<QString, QByteArray> RPCMessageCompleteMicroWalletsReply::walletPartialKeys() const
 {
-    QVariantMap                 lVMap = fieldValue(transactionIdKey()).toMap();
+    QVariantMap                 lVMap = fieldValue(walletPartialKeysKey()).toMap();
     QMap<QString, QByteArray>   lRet;
 
     for( QString lKey : lVMap.keys() )

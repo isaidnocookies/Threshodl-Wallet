@@ -132,7 +132,6 @@ bool ClientHandlerV1::createMicroWalletPackageBTC(ClientConnection *iConnection,
                 QStringList             lWalletValues;
                 QList<BitcoinWallet>    lBTCWallets;
 
-
                 if( lValuesPtr ) {
                     lValues = *lValuesPtr;
 

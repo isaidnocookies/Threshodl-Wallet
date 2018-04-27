@@ -19,9 +19,8 @@ DEFINES += ENABLE_RPCSERVER
 
 include(QtWebApp/logging/logging.pri)
 include(QtWebApp/httpserver/httpserver.pri)
-#include($$PWD/../CertLib/CertLib.pri)
-#include($$PWD/../RPC/RPC.pri)
 include($$PWD/../Core/Core.pri)
+include($$PWD/../QStringMath/QStringMath.pri)
 
 linux | macos {
     INCLUDEPATH += -I $$PWD/../libbtc/include
@@ -51,7 +50,9 @@ HEADERS += \
     walletgrinderalpha.h \
     dbinterfacev1.h \
     clienthandlerv1.h \
-    clienthandleralpha.h
+    clienthandleralpha.h \
+    walletgrinderv1.h \
+    walletgrinder.h
 
 
 SOURCES += \
@@ -69,7 +70,8 @@ SOURCES += \
     walletgrinderalpha.cpp \
     dbinterfacev1.cpp \
     clienthandlerv1.cpp \
-    clienthandleralpha.cpp
+    clienthandleralpha.cpp \
+    walletgrinderv1.cpp
 
 OTHER_FILES += \
     bitcoininterface.cpp \
