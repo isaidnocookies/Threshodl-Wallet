@@ -58,6 +58,11 @@ void SendToBrightView::on_closeButton_pressed()
 
 void SendToBrightView::on_convertButton_pressed()
 {
+    if (!mActiveUser->isDarkWalletsSettled()) {
+        ui->warningLabel->setWordWrap(true);
+        ui->warningLabel->setText("Please wait for dark wallet to be confirmed");
+    }
+
     QStringMath lValue = ui->amountLineEdit->text();
     ui->warningLabel->clear();
     if (lValue <= "0.0" || lValue > mActiveUser->getDarkBalance()) {
@@ -237,7 +242,9 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
 {
     // parse out wallet parts
     QList<BitcoinWallet> lPartialWallets = mActiveUser->getPendingToSendDarkWallets();
-    qDebug() << iData.keys().size() << " Private keys back from server to complete";
+    qDebug() << iData.keys() << " keys back from server to complete";
+    QList<BitcoinWallet> lCompletedWallets;
+    QStringMath lCompletedWalletTotalBalance;
 
     for (auto w: lPartialWallets) {
         BitcoinWallet lWallet = w;
@@ -249,12 +256,26 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
             mActiveUser->addMicroWallet(lWallet);
         }
 
+        qDebug() << "Partial private key from server : " << iData[w.walletId()];
+        qDebug() << "Partial wallet id : " << w.walletId();
         lWallet.setPrivateKey(w.privateKey().append(iData[w.walletId()]));
         lWallet.setOwner(mActiveUser->getUsername());
         lWallet.setIsMicroWallet(false);
-        lWallet.setWif(BitcoinWallet::generateWifFromPrivateKey(w.privateKey()));
-        mActiveUser->addBrightWallet(lWallet);
+        lWallet.setWif(BitcoinWallet::generateWifFromPrivateKey(lWallet.privateKey(),currentChain()));
+        lCompletedWallets.append(lWallet);
+        lCompletedWalletTotalBalance = lCompletedWalletTotalBalance + lWallet.value();
+
+        qDebug() << "Wallet Address: " << lWallet.address();
+        qDebug() << "Wallet Private Key (Encoded): " << lWallet.wif();
+        qDebug() << "Wallet Private Key (Hex): " << lWallet.privateKey();
+        qDebug() << "Wallet Private Key RIGHT SIDE (Hex): " << w.privateKey();
     }
+
+    if (mActiveUser->sendDarkWalletsToBrightWallet(lCompletedWallets)) {
+        qDebug() << "Send dark to bright complete. Check blockchain shit";
+    }
+
+    mActiveUser->setBrightBalance(mActiveUser->getBrightBalance() + lCompletedWalletTotalBalance);
 
     mActiveUser->updateBalancesForViews(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
     mActiveUser->clearPendingToSendDarkWallets();

@@ -202,21 +202,31 @@ void SendToDarkView::stopProgressBarAndEnable()
 void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount)
 {
 //    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
+//    mActiveUser->setBrightPendingBalance(lTotalBrightCoin);
+    QStringList             lTxids;
+    QStringList             lValues;
+    QStringList             lVouts;
+    QList<QByteArray>       lPrivateKeys;
+    QByteArray              lRawTransaction = QByteArray();
+    QByteArray              lSignedHex = QByteArray();
+    QList<BitcoinWallet>    lNewDarkWallets;
 
     QString lTotalBrightCoin = (mBalance - ui->amountLineEdit->text()).toString();
-    mActiveUser->setBrightPendingBalance(lTotalBrightCoin);
 
     mBalance = QStringMath(lTotalBrightCoin);
     ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
 
-//    mActiveUser->setBrightBalance(lTotalBrightCoin);
+    mActiveUser->setBrightBalance(lTotalBrightCoin);
 
+    QStringMath lDarkWalletTotal;
     for (auto w : iData) {
         mActiveUser->addMicroWallet(BitcoinWallet(w));
+        lNewDarkWallets.append(BitcoinWallet(w));
         qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+        lDarkWalletTotal = lDarkWalletTotal + BitcoinWallet(w).value();
     }
 
-    mActiveUser->updateBrightBalanceFromBlockchain();
+    mActiveUser->fillDarkWallets(lNewDarkWallets, lDarkWalletTotal.toString(), iFeeAmount);
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);

@@ -41,6 +41,7 @@ UserAccount::UserAccount(QObject *parent)
     mAccountSettings = new QSettings;
     mBitcoinBlockchainInterface = new BitcoinBlockchainInterface;
     mBitcoinBlockchainInterface->setActiveUser(this);
+    mDarkWalletSettled = true;
 
     loadFromSettings();
 }
@@ -527,6 +528,7 @@ bool UserAccount::accountContainsWallet(QString iWalletId)
 void UserAccount::updateBrightBalanceFromBlockchain()
 {
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
+    mBitcoinBlockchainInterface->updateDarkWalletBalances();
 
 //    if (mBrightBalance == mBrightPendingBalance) {
     emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
@@ -542,6 +544,7 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
     QStringList         lTxids;
     QStringList         lValues;
     QStringList         lVouts;
+    QStringList         lScriptPubKey;
     QList<QByteArray>   lPrivateKeys;
     QByteArray          lRawTransaction = QByteArray();
     QByteArray          lSignedHex = QByteArray();
@@ -552,20 +555,21 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
     lTempToWallet.setValue(QStringMath(iAmount).toString());
     lTempToWallet.setChain(currentChain());
 
-    if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lPrivateKeys)) {
+    if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lScriptPubKey, lPrivateKeys)) {
         // Estimate fee and create raw transaction
         QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), 2, false);
         lTempToWallet.setValue((QStringMath(lTempToWallet.value()) - lMinerFee).toString()); // correct output for fee
 
-        lRawTransaction = mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, QList<BitcoinWallet>() << lTempToWallet, lMinerFee, lPrivateKeys);
+        lRawTransaction = mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, QList<BitcoinWallet>() << lTempToWallet, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey);
         if (lRawTransaction != QByteArray()) {
             // sign transaction
-            if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys)) {
+            if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys, lTxids, lVouts, lScriptPubKey)) {
                 qDebug() << "Transaction signed!";
                 if (mBitcoinBlockchainInterface->sendRawTransaction(lSignedHex)) {
                     qDebug() << "Transaction sent!";
                     mBrightBalance = mBrightBalance - iAmount;
-                    updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+                    setBrightPendingBalance(mBrightBalance.toString());
+                    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
                     return true;
                 }
             } else {
@@ -578,7 +582,95 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
     } else {
         return false;
     }
+    return true;
+}
 
+bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWalletTotal, QString iFeeEstimate)
+{
+    QStringList         lTxids;
+    QStringList         lValues;
+    QStringList         lVouts;
+    QStringList         lScriptPubKey;
+    QList<QByteArray>   lPrivateKeys;
+    QByteArray          lRawTransaction = QByteArray();
+    QByteArray          lSignedHex = QByteArray();
+
+    //UNTIL RPC, FEE WILL BE TAKEN FROM BRIGHT WALLETS on top of the dark wallets from server.
+
+    if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lScriptPubKey, lPrivateKeys)) {
+        // Estimate fee and create raw transaction
+        QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), iWallets.count(), true);
+//        QString lMinerFee = iFeeEstimate;
+
+        lRawTransaction = mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, iWallets, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey);
+        if (lRawTransaction != QByteArray()) {
+            // sign transaction
+            if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys, lTxids, lVouts, lScriptPubKey)) {
+                qDebug() << "Transaction signed!";
+                if (mBitcoinBlockchainInterface->sendRawTransaction(lSignedHex)) {
+                    qDebug() << "Transaction sent!";
+                    mBrightBalance = mBrightBalance - iDarkWalletTotal;
+                    setBrightPendingBalance(mBrightBalance.toString());
+                    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+                    return true;
+                }
+            } else {
+                qDebug() << "Failed to sign transaction";
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    return true;
+}
+
+bool UserAccount::sendDarkWalletsToBrightWallet(QList<BitcoinWallet> iWallets)
+{
+    QStringList             lTxids;
+    QStringList             lValues;
+    QStringList             lVouts;
+    QStringList             lScriptPubKeys;
+    QList<QByteArray>       lPrivateKeys;
+    QByteArray              lRawTransaction = QByteArray();
+    QByteArray              lSignedHex = QByteArray();
+    QStringMath             lWalletTotalBalance;
+    QMap<QString, QString>  lOutputs;
+
+    for (auto w : iWallets) {
+        lWalletTotalBalance = lWalletTotalBalance + w.value();
+    }
+
+    if (mBitcoinBlockchainInterface->getUnspentTransactions(iWallets, lTxids, lValues, lVouts, lScriptPubKeys, lPrivateKeys)) {
+        QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), 2, false);
+
+        QStringMath lBalance = (lWalletTotalBalance - lMinerFee);
+        BitcoinWallet lBrightWallet = getBrightWallet();
+        lOutputs[lBrightWallet.address()] = lBalance.toString();
+
+        if (mBitcoinBlockchainInterface->createBitcoinTransaction(iWallets, lOutputs, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKeys, lRawTransaction)) {
+            qDebug() << "Transaction created!";
+            if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys, lTxids, lVouts, lScriptPubKeys)) {
+                qDebug() << "Transaction signed!";
+                if (mBitcoinBlockchainInterface->sendRawTransaction(lSignedHex)) {
+                    qDebug() << "Transaction sent!";
+                    mBrightBalance = mBrightBalance + (lWalletTotalBalance - lMinerFee);
+                    mDarkBalance = mDarkBalance - lWalletTotalBalance;
+                    setBrightPendingBalance(mBrightBalance.toString());
+                    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
     return true;
 }
 
