@@ -1,4 +1,6 @@
 #include "app.h"
+#include "dbinterfacev1.h"
+#include "walletgrinderv1.h"
 
 #include <QDebug>
 
@@ -377,6 +379,8 @@ void App::start()
     mRecordsManager->moveToThread(mRecordsManagerThread);
     connect( mRecordsManagerThread, &QThread::started, mRecordsManager, &RecordsManager::threadStarted );
 
+    mWalletGrinder = new WalletGrinderV1;
+
     mDownloaderThread = new QThread(this);
     mDownloader = new Downloader;
     mDownloader->moveToThread(mDownloaderThread);
@@ -534,6 +538,9 @@ quint64 App::getNextWalletId(quint32 iAdvance)
 
     return lValue;
 }
+
+WalletGrinder *App::walletGrinder() const
+{ return mWalletGrinder; }
 
 void App::startHTTPS()
 {

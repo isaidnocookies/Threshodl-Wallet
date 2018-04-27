@@ -36,7 +36,8 @@ int Downloader::timerInterval() const
 void Downloader::threadStarted()
 {
     mNAM    = new QNetworkAccessManager(this);
-    mURLs   << QStringLiteral("https://apiv2.bitcoinaverage.com/indices/global/ticker/BTCUSD")
+    mURLs   << QStringLiteral("https://test-insight.bitpay.com/api/utils/estimatefee?nbBlocks=3")
+            << QStringLiteral("https://apiv2.bitcoinaverage.com/indices/global/ticker/BTCUSD")
             << QStringLiteral("https://apiv2.bitcoinaverage.com/indices/global/ticker/ETHUSD")
             << QStringLiteral("https://apiv2.bitcoinaverage.com/indices/crypto/ticker/ETHBTC");
 
