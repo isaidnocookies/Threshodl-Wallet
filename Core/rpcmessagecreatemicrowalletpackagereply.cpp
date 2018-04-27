@@ -40,6 +40,12 @@ QList<QByteArray> RPCMessageCreateMicroWalletPackageReply::microWalletsData() co
     return lRet;
 }
 
+QString RPCMessageCreateMicroWalletPackageReply::estimatedFeesKey()
+{ return QStringLiteral("estimatedFees"); }
+
+QString RPCMessageCreateMicroWalletPackageReply::estimatedFees() const
+{ return fieldValue(estimatedFeesKey()).toString(); }
+
 QString RPCMessageCreateMicroWalletPackageReply::create(const ReplyCode iReplyCode, const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     QVariantList    lMicroWalletDatas;
@@ -52,6 +58,24 @@ QString RPCMessageCreateMicroWalletPackageReply::create(const ReplyCode iReplyCo
                 << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)}
                 << RPCField{microWalletsDataKey(), lMicroWalletDatas}
                 << RPCField{transactionIdKey(), iTransactionId}
+                << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
+                iUsername, iPrivateKey, iKeyEncoding
+                );
+}
+
+QString RPCMessageCreateMicroWalletPackageReply::createBtc(const RPCMessageCreateMicroWalletPackageReply::ReplyCode iReplyCode, const QList<QByteArray> iMicroWalletDatas, const QString iTransactionId, const QString iEstimatedFees, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
+{
+    QVariantList    lMicroWalletDatas;
+
+    for( QByteArray lEnt : iMicroWalletDatas )
+    { lMicroWalletDatas << lEnt.toBase64(); }
+
+    return RPCMessage::toMessage(
+                QList<RPCField>()
+                << RPCField{replyCodeKey(), static_cast<unsigned int>(iReplyCode)}
+                << RPCField{microWalletsDataKey(), lMicroWalletDatas}
+                << RPCField{transactionIdKey(), iTransactionId}
+                << RPCField{estimatedFeesKey(), iEstimatedFees}
                 << RPCField{QStringLiteral(kFieldKey_Command), commandValue()},
                 iUsername, iPrivateKey, iKeyEncoding
                 );

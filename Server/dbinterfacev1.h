@@ -71,7 +71,9 @@ public:
     QByteArray publicKeyForAddress(const QString iAddress) override;
 
     bool microWalletExists( const QString iMicroWalletId ) override;
+    bool microWalletExists( const QStringList iMicroWalletId ) override;
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
+    bool microWalletOwnershipCheck(const QStringList iMicroWalletIds, const QString iAddress ) override;
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
     bool microWalletChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override;
     bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override;

@@ -1,4 +1,4 @@
-#include "clientalphahandler.h"
+#include "clienthandleralpha.h"
 #include "rpcmessagepingrequest.h"
 #include "rpcmessagepingreply.h"
 #include "rpcmessagecreateaccountrequest.h"
@@ -20,7 +20,7 @@
 #include <QDebug>
 #include <QRegExp>
 
-bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCommand, RPCMessage &iMessage)
+bool ClientHandlerAlpha::handle(ClientConnection *iConnection, const QString iCommand, RPCMessage &iMessage)
 {
     if( iCommand == RPCMessageReassignMicroWalletsRequest::commandValue() ) {
         return reassignMicroWallets(iConnection,iMessage);
@@ -45,7 +45,7 @@ bool ClientAlphaHandler::handle(ClientConnection *iConnection, const QString iCo
     return false;
 }
 
-bool ClientAlphaHandler::authenticateMessage(RPCMessage &iMessage)
+bool ClientHandlerAlpha::authenticateMessage(RPCMessage &iMessage)
 {
     auto            lDBI        = gApp->databaseInterface();
     QByteArray      lPublicKey;
@@ -61,7 +61,7 @@ bool ClientAlphaHandler::authenticateMessage(RPCMessage &iMessage)
     return false;
 }
 
-bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMessage &iMessage)
+bool ClientHandlerAlpha::createUserAccount(ClientConnection *iConnection, RPCMessage &iMessage)
 {
     auto                                    lDBI            = gApp->databaseInterface();
     RPCMessageCreateAccountReply::ReplyCode lReplyCode      = RPCMessageCreateAccountReply::ReplyCode::UnknownFailure;
@@ -98,7 +98,7 @@ bool ClientAlphaHandler::createUserAccount(ClientConnection *iConnection, RPCMes
     return iConnection->sendMessage(lMessage);
 }
 
-bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection, RPCMessage &iMessage)
+bool ClientHandlerAlpha::createMicroWalletPackage(ClientConnection *iConnection, RPCMessage &iMessage)
 {
 #warning THIS IS INCOMPLETE
     // Missing BTC transaction stuff
@@ -186,7 +186,7 @@ bool ClientAlphaHandler::createMicroWalletPackage(ClientConnection *iConnection,
     return iConnection->sendMessage(RPCMessageCreateMicroWalletPackageReply::create(lReplyCode,lMicroWalletsData,lRequest.transactionId(),QStringLiteral("Threshodl"),gApp->privateKeyPEM()));
 }
 
-bool ClientAlphaHandler::reassignMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
+bool ClientHandlerAlpha::reassignMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
 {
     if( authenticateMessage(iMessage) ) {
         RPCMessageReassignMicroWalletsRequest               lRequest{iMessage};
@@ -260,7 +260,7 @@ bool ClientAlphaHandler::reassignMicroWallets(ClientConnection *iConnection, RPC
     return false;
 }
 
-bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
+bool ClientHandlerAlpha::checkOwnershipOfMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
 {
     if( authenticateMessage(iMessage) ) {
         auto lDBI = gApp->databaseInterface();
@@ -298,7 +298,7 @@ bool ClientAlphaHandler::checkOwnershipOfMicroWallets(ClientConnection *iConnect
     return false;
 }
 
-bool ClientAlphaHandler::completeMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
+bool ClientHandlerAlpha::completeMicroWallets(ClientConnection *iConnection, RPCMessage &iMessage)
 {
     if( authenticateMessage(iMessage) ) {
         auto lDBI = gApp->databaseInterface();

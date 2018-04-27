@@ -1,7 +1,8 @@
 #include "clientconnection.h"
 #include "rpcserverhandler.h"
 #include "rpcmessage.h"
-#include "clientalphahandler.h"
+#include "clienthandleralpha.h"
+#include "clienthandlerv1.h"
 
 //#include "rpcmessagepingrequest.h"
 //#include "rpcmessagepingreply.h"
@@ -45,26 +46,21 @@ void ClientConnection::processIncomingMessage()
         QString lRawMessage = mConnection->nextTextMessage();
         if( ! lRawMessage.isEmpty() ) {
             RPCMessage  lMessage{lRawMessage};
-            QString     lCommand = lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+            QString     lVersion    = lMessage.rpcVersion();
+            QString     lCommand    = lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
+            bool        lHandled    = false;
 
-            if( ! ClientAlphaHandler::handle(this,lCommand,lMessage) ) {
+            if( lVersion == QStringLiteral(kRPCVersionV1) ) {
+                lHandled = ClientHandlerV1::handle(this,lCommand,lMessage);
+            }else{
+                // Default
+                lHandled = ClientHandlerAlpha::handle(this,lCommand,lMessage);
+            }
+
+            if( ! lHandled ) {
                 qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
                 mConnection->close();
             }
-
-//            if( lCommand == RPCMessagePingRequest::commandValue() ) {
-//                RPCMessagePingRequest   lPingReq{lMessage};
-//                QString lReply = RPCMessagePingReply::create(lPingReq.payload(),QStringLiteral("Threshodl"));
-//                if( ! lReply.isEmpty() ) {
-//                    mConnection->sendTextMessage(lReply);
-//                }else{
-//                    qWarning() << "Failed to generate a reply message, this is a coding issue!";
-//                }
-//            }else if( lCommand == RPCMessageCreateAccountRequest::commandValue() ) {
-
-//            }else{
-//                qWarning() << "Unknown RPC command received from client, this could be a hack attempt or a corrupt message!" << lMessage.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
-//            }
         }
     }
 }

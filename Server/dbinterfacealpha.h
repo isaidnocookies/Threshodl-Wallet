@@ -61,10 +61,14 @@ public:
     QByteArray publicKeyForAddress(const QString iAddress) override;
 
     bool microWalletExists( const QString iMicroWalletId ) override;
+    bool microWalletExists(const QStringList iMicroWalletId) override
+    { Q_UNUSED(iMicroWalletId) return false; } // This was added after ALPHA
     bool microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress ) override;
+    bool microWalletOwnershipCheck( const QStringList iMicroWalletIds, const QString iAddress ) override
+    { Q_UNUSED(iMicroWalletIds) Q_UNUSED(iAddress) return false; } // This was added after ALPHA
     bool microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
-    bool microWalletChangeOwnership( const QStringList iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override
-    { Q_UNUSED(iMicroWalletId) Q_UNUSED(iFromAddress) Q_UNUSED(iToAddress) return false; } // This was added after ALPHA
+    bool microWalletChangeOwnership( const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override
+    { Q_UNUSED(iMicroWalletIds) Q_UNUSED(iFromAddress) Q_UNUSED(iToAddress) return false; } // This was added after ALPHA
     bool microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override;
     QByteArray microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override;
     bool microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override;
