@@ -38,12 +38,6 @@ QString RPCMessageCreateMicroWalletPackageRequest::inputCountKey()
 QString RPCMessageCreateMicroWalletPackageRequest::outputCountKey()
 { return QStringLiteral("outputCount"); }
 
-QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceAddressKey()
-{ return QStringLiteral("outputBalanceAddress"); }
-
-QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceKey()
-{ return QStringLiteral("outputBalance"); }
-
 QString RPCMessageCreateMicroWalletPackageRequest::chainTypeKey()
 { return QStringLiteral("chainType"); }
 
@@ -52,12 +46,6 @@ int RPCMessageCreateMicroWalletPackageRequest::inputCount() const
 
 int RPCMessageCreateMicroWalletPackageRequest::outputCount() const
 { return fieldValue(outputCountKey()).toInt(); }
-
-QString RPCMessageCreateMicroWalletPackageRequest::outputBalanceAddress() const
-{ return fieldValue(outputBalanceAddressKey()).toString(); }
-
-QString RPCMessageCreateMicroWalletPackageRequest::outputBalance() const
-{ return fieldValue(outputBalanceKey()).toString(); }
 
 BitcoinWallet::ChainType RPCMessageCreateMicroWalletPackageRequest::chainType() const
 { return static_cast<BitcoinWallet::ChainType>(fieldValue(chainTypeKey()).toUInt()); }
@@ -74,14 +62,12 @@ QString RPCMessageCreateMicroWalletPackageRequest::create(const QString iCryptoT
                 );
 }
 
-QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, int iInputCount, int iOutputCount, const BitcoinWallet::ChainType iChainType, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, const QString iOutputBalanceAddress, const QString iOutputBalance, RPCMessage::KeyEncoding iKeyEncoding)
+QString RPCMessageCreateMicroWalletPackageRequest::createBtc(const QString iCryptoValue, int iInputCount, int iOutputCount, const BitcoinWallet::ChainType iChainType, const QString iTransactionId, const QString iUsername, const QByteArray iPrivateKey, RPCMessage::KeyEncoding iKeyEncoding)
 {
     return RPCMessage::toMessage(
                 QList<RPCField>()
                 << RPCField{cryptoTypeShortNameKey(), QStringLiteral("btc")}
                 << RPCField{cryptoValueKey(), iCryptoValue}
-                << RPCField{outputBalanceAddressKey(), iOutputBalanceAddress}
-                << RPCField{outputBalanceKey(), iOutputBalance}
                 << RPCField{inputCountKey(), iInputCount}
                 << RPCField{outputCountKey(), iOutputCount}
                 << RPCField{chainTypeKey(), static_cast<unsigned int>(iChainType)}
