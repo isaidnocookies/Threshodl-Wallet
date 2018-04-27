@@ -120,7 +120,6 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
         lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2/utxo").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
         connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
         lMyEventLoop.exec();
-        bool lAddedTx = false;
 
         if (lReply->error() == QNetworkReply::NoError) {
             QByteArray      lReplyText = lReply->readAll();
@@ -136,11 +135,8 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
                     oTxids << lTempMap["txid"].toString();
                     oVouts << lTempMap["vout"].toString();
                     oScriptPubKey << lTempMap["scriptPubKey"].toString();
-                    lAddedTx = true;
+                    oPrivateKeys << w.wif();
                 }
-            }
-            if (lAddedTx) {
-                oPrivateKeys << w.wif();
             }
             lSuccess = true;
         } else {
@@ -296,6 +292,10 @@ bool BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> i
         lOutputParams.append(QString("\"%1\":%2,").arg(lOutputKey).arg(iOutputs[lOutputKey]));
     }
     lOutputParams.remove(lOutputParams.size() - 1,1);
+
+//    if (lOutputBalance > "0.0") {
+//        lOutputParams.append(QString(",\"%1\":%2").arg(QString(mActiveUser->getBrightWallet().address())).arg(lOutputBalance.toString()));
+//    }
 
     for (int i = 0; i < lTxids.size(); i++) {
         oPrivateKeys << lPrivateKeys[i];

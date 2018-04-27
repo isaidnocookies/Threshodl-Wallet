@@ -111,6 +111,13 @@ void DarkSendView::on_sendTransactionButton_pressed()
         bool lAttachmentSuccess = getAttachmentPackage(lTestMessage);
 
         if (!lAttachmentSuccess) {
+
+            // INCOMPLETE UNTIL BLOCKCHAIN STUFF IS SORTED OUT
+            ui->sendConfirmationLabel->setText("Failed because can't make change...");
+            stopProgressBarAndEnable();
+            return;
+            // INCOMPLETE...
+
             mBreakdownMicroWallet = new BreakdownMicroWallet;
             mBreakdownAttempts = 3;
             mBreakdownMicroWallet->setActiveUser(mActiveUser);

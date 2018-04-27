@@ -91,6 +91,13 @@ void SendToBrightView::connectedToServer()
     QList<BitcoinWallet> lWalletsToComplete = getWalletsToComplete(ui->amountLineEdit->text(), lSuccess);
 
     if (!lSuccess) {
+
+        // INCOMPLETE UNTIL BLOCKCHAIN STUFF IS SORTED OUT
+        ui->warningLabel->setText("Failed because can't make change...");
+        stopProgressBarAndEnable();
+        return;
+        // INCOMPLETE...
+
         mBreakdownMicroWallet = new BreakdownMicroWallet;
         mBreakdownMicroWallet->setActiveUser(mActiveUser);
 
@@ -256,19 +263,12 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
             mActiveUser->addMicroWallet(lWallet);
         }
 
-        qDebug() << "Partial private key from server : " << iData[w.walletId()];
-        qDebug() << "Partial wallet id : " << w.walletId();
         lWallet.setPrivateKey(w.privateKey().append(iData[w.walletId()]));
         lWallet.setOwner(mActiveUser->getUsername());
         lWallet.setIsMicroWallet(false);
         lWallet.setWif(BitcoinWallet::generateWifFromPrivateKey(lWallet.privateKey(),currentChain()));
         lCompletedWallets.append(lWallet);
         lCompletedWalletTotalBalance = lCompletedWalletTotalBalance + lWallet.value();
-
-        qDebug() << "Wallet Address: " << lWallet.address();
-        qDebug() << "Wallet Private Key (Encoded): " << lWallet.wif();
-        qDebug() << "Wallet Private Key (Hex): " << lWallet.privateKey();
-        qDebug() << "Wallet Private Key RIGHT SIDE (Hex): " << w.privateKey();
     }
 
     if (mActiveUser->sendDarkWalletsToBrightWallet(lCompletedWallets)) {

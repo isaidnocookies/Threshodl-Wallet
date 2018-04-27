@@ -595,6 +595,11 @@ bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWa
     QByteArray          lRawTransaction = QByteArray();
     QByteArray          lSignedHex = QByteArray();
 
+    QMap<QString, QString> lOutputMap;
+    for (auto w : iWallets) {
+        lOutputMap[w.address()] = w.value();
+    }
+
     //UNTIL RPC, FEE WILL BE TAKEN FROM BRIGHT WALLETS on top of the dark wallets from server.
 
     if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lScriptPubKey, lPrivateKeys)) {
@@ -602,8 +607,9 @@ bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWa
         QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), iWallets.count(), true);
 //        QString lMinerFee = iFeeEstimate;
 
-        lRawTransaction = mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, iWallets, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey);
-        if (lRawTransaction != QByteArray()) {
+        // add an output for the bright wallet for "balance"
+
+        if (mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, lOutputMap, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey, lRawTransaction)) {
             // sign transaction
             if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys, lTxids, lVouts, lScriptPubKey)) {
                 qDebug() << "Transaction signed!";

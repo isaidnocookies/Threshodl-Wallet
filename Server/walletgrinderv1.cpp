@@ -1,6 +1,9 @@
 #include "walletgrinderv1.h"
 
 #include <QDebug>
+#include <QString>
+#include <cmath>
+#include <algorithm>
 
 bool WalletGrinderV1::_normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative)
 {
@@ -136,8 +139,113 @@ QStringList WalletGrinderV1::_sortNumberedQStringList(const QStringList iList)
 
 QStringList WalletGrinderV1::_grindValueOnePass(const QString iValue, WalletGrinderV1::GrindingConstraintsRef iConstraints)
 {
-    Q_UNUSED(iValue) Q_UNUSED(iConstraints)
-    return QStringList();
+    Q_UNUSED(iConstraints)
+
+    double                  lLowerLimit = 0.0001;
+    int                     lLowerLimitPow = -4;
+
+    typedef struct BValue {
+        int value;
+        int multiplier;
+    } BValue;
+
+    std::vector<BValue> *   lBreaks = new std::vector<BValue>();
+    std::vector<BValue> *   lInitialValues = new std::vector<BValue>();
+    QStringList             lStringBreaks;
+    QString                 lStartValueString;
+    int                     lDecimalIndex;
+
+    auto getBreakValueFunction = [](BValue iInput) -> BValue {
+        BValue lBreakValue;
+        float lMultiplier = iInput.multiplier;
+
+        if (iInput.value == 1) {
+            lBreakValue.multiplier = static_cast<int>(lMultiplier - 1);
+            lBreakValue.value = 5;
+        } else if (iInput.value == -1) {
+            return iInput;
+        } else {
+            lBreakValue.value = iInput.value / 2;
+            lBreakValue.multiplier = iInput.multiplier;
+        }
+
+        return lBreakValue;
+    };
+
+    auto getBreakValueRemainderFunction = [getBreakValueFunction](BValue iInput) -> BValue {
+        BValue lBreakValue = getBreakValueFunction(iInput);
+        BValue lBreakValueRemainder;
+
+        if (iInput.value == 1) {
+            return lBreakValue;
+        }
+
+        lBreakValueRemainder.value = iInput.value - lBreakValue.value;
+        lBreakValueRemainder.multiplier = iInput.multiplier;
+
+        return lBreakValueRemainder;
+    };
+
+    auto getValueFromBValue = [](BValue iInput) -> double {
+        return iInput.value * (std::pow(10.0, iInput.multiplier));
+    };
+
+    lStartValueString = iValue;
+    lDecimalIndex = lStartValueString.indexOf(".");
+
+    for (int i = 0; i < lStartValueString.count(); i++) {
+        QString lSValue = lStartValueString.at(i);
+        BValue lNewValue;
+
+        if (lSValue != "." && lSValue != "0") {
+            lNewValue.value = lSValue.toInt();
+
+            int powMult = lDecimalIndex - i;
+            if (lDecimalIndex > i)
+                powMult -= 1;
+
+            lNewValue.multiplier = powMult;
+
+            lInitialValues->push_back(lNewValue);
+        }
+    }
+
+    while (!lInitialValues->empty()) {
+        BValue lCurrentValue = lInitialValues->front();
+        lInitialValues->erase(lInitialValues->begin());
+
+        if (lCurrentValue.multiplier == lLowerLimitPow && lCurrentValue.value == 1) {
+            lBreaks->push_back(lCurrentValue);
+            break;
+        }
+
+        if (lInitialValues->size() > 0) {
+            while (lCurrentValue.multiplier >= lInitialValues->front().multiplier && lCurrentValue.value >= 1) {
+                lBreaks->push_back(getBreakValueFunction(lCurrentValue));
+                lCurrentValue = getBreakValueRemainderFunction(lCurrentValue);
+                if (lCurrentValue.multiplier == lInitialValues->front().multiplier && lCurrentValue.value == 1) {
+                    lBreaks->push_back(lCurrentValue);
+                    break;
+                }
+            }
+        } else {
+            while (lCurrentValue.multiplier >= lLowerLimitPow && lCurrentValue.value >= 1) {
+                lBreaks->push_back(getBreakValueFunction(lCurrentValue));
+                lCurrentValue = getBreakValueRemainderFunction(lCurrentValue);
+
+                if (getValueFromBValue(lCurrentValue) <= lLowerLimit) {
+                    lBreaks->push_back(lCurrentValue);
+                    break;
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < lBreaks->size(); i++) {
+        lStringBreaks << QString::number(getValueFromBValue(lBreaks->at(static_cast<int>(i))));
+    }
+
+    return _sortNumberedQStringList(lStringBreaks);
 }
 
 WalletGrinderV1::WalletGrinderV1()

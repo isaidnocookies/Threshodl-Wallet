@@ -92,14 +92,16 @@ void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),"","",currentChain(),mTransactionId,mUsername,mPrivateKey));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),1,1,currentChain(),mTransactionId,mUsername,mPrivateKey,
+                    "Output balance addresses",
+                    "Output Balance Amounts"));
 }
 
 void SendToDarkView::disconnectedFromServer()
 {
     qDebug() << "Disconnected from server.";
 
-    //catastrophic failure
+    //catastrophic failures
     stopProgressBarAndEnable();
     ui->warningLabel->setText("[1] Error, please try again!");
 }
