@@ -1,13 +1,16 @@
 #include "modulelinker.h"
 
 #include <QDebug>
+#include <QList>
 #include <QReadWriteLock>
 
+#define kMaxNumberOfModules             256
 #define kMaxNumberOfLinkerPassTries     20
 
-static QReadWriteLock                   _gLock;
-static bool                             _gAllowRegistration     = true;
-static QList<ModuleLinker::ModuleInfo>  _gRegisteredModules;
+static QReadWriteLock                           _gLock;
+static bool                                     _gAllowRegistration         = true;
+static ModuleLinker::ModuleInfo *               _gRegisteredModules[kMaxNumberOfModules];
+static int                                      _gRegisteredModulesCount    = 0;
 
 bool ModuleLinker::registerModule(const QString iModuleName, ModuleLinker::staticMethodToCreator iCreator, ModuleLinker::staticMethodToDoInit iDoInit, ModuleLinker::staticMethodToStart iStart, staticMethodShouldStartInOwnThread iThreadStart)
 { return registerModuleWithDependencies(iModuleName, QStringList(), iCreator, iDoInit, iStart, iThreadStart); }
@@ -15,24 +18,24 @@ bool ModuleLinker::registerModule(const QString iModuleName, ModuleLinker::stati
 bool ModuleLinker::registerModuleWithDependencies(const QString iModuleName, const QStringList iDependencies, ModuleLinker::staticMethodToCreator iCreator, ModuleLinker::staticMethodToDoInit iDoInit, ModuleLinker::staticMethodToStart iStart, staticMethodShouldStartInOwnThread iThreadStart)
 {
     QWriteLocker l{&_gLock};
-    if( ! _gAllowRegistration )
+    if( ! _gAllowRegistration || _gRegisteredModulesCount >= kMaxNumberOfModules )
         return false;
 
-    for( auto lCInfo : _gRegisteredModules )
+    for( int lIndex = 0; lIndex < _gRegisteredModulesCount && lIndex < kMaxNumberOfModules; lIndex++ )
     {
         // Name already registered
-        if( lCInfo.Name == iModuleName )
+        if( _gRegisteredModules[lIndex]->Name == iModuleName )
             return false;
     }
 
-    ModuleLinker::ModuleInfo    lInfo;
-    lInfo.Name          = iModuleName;
-    lInfo.Dependencies  = iDependencies;
-    lInfo.Creator       = iCreator;
-    lInfo.DoInit        = iDoInit;
-    lInfo.ThreadStart   = iThreadStart;
-    lInfo.Start         = iStart;
-    _gRegisteredModules << lInfo;
+    ModuleLinker::ModuleInfo *  lInfo = new ModuleLinker::ModuleInfo;
+    lInfo->Name          = iModuleName;
+    lInfo->Dependencies  = iDependencies;
+    lInfo->Creator       = iCreator;
+    lInfo->DoInit        = iDoInit;
+    lInfo->ThreadStart   = iThreadStart;
+    lInfo->Start         = iStart;
+    _gRegisteredModules[_gRegisteredModulesCount++] = lInfo;
     return true;
 }
 
@@ -42,16 +45,20 @@ void ModuleLinker::preventNewRegistrationOfModules()
     _gAllowRegistration = false;
 }
 
-QList<ModuleLinker::ModuleInfo> ModuleLinker::registeredModules()
+QList<ModuleLinker::ModuleInfo *> ModuleLinker::registeredModules()
 {
-    QReadLocker l{&_gLock};
-    return _gRegisteredModules;
+    QReadLocker                         l{&_gLock};
+    QList<ModuleLinker::ModuleInfo *>   lResult;
+    for( int lIndex = 0; lIndex < _gRegisteredModulesCount; lIndex++ ) {
+        lResult << _gRegisteredModules[lIndex];
+    }
+    return lResult;
 }
 
-QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencies(const QList<ModuleLinker::ModuleInfo> iModules)
+QList<ModuleLinker::ModuleInfo *> ModuleLinker::sortRegisteredModulesByDependencies(const QList<ModuleLinker::ModuleInfo *> iModules)
 {
-    QList<ModuleLinker::ModuleInfo>     lResults;
-    QList<ModuleLinker::ModuleInfo>     lModules        = iModules;
+    QList<ModuleLinker::ModuleInfo *>   lResults;
+    QList<ModuleLinker::ModuleInfo *>   lModules        = iModules;
     QStringList                         lModuleNames;
     QStringList                         lInResults;
     int                                 lPassCount;
@@ -60,14 +67,14 @@ QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencie
     try{
         // Build a list of all the module names
         for( auto lE : lModules )
-        { lModuleNames << lE.Name; }
+        { lModuleNames << lE->Name; }
 
         // Now make sure we can actually satisfy all the dependencies
         for( auto lE : lModules )
         {
-            if( ! lE.Dependencies.isEmpty() )
+            if( ! lE->Dependencies.isEmpty() )
             {
-                for( auto lD : lE.Dependencies )
+                for( auto lD : lE->Dependencies )
                 {
                     if( ! lModuleNames.contains(lD) )
                         throw __LINE__;
@@ -78,10 +85,10 @@ QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencie
         // First insert all the entries that have no dependencies
         for( auto lE : lModules )
         {
-            if( lE.Dependencies.isEmpty() )
+            if( lE->Dependencies.isEmpty() )
             {
                 lResults << lE;
-                lInResults << lE.Name;
+                lInResults << lE->Name;
             }
         }
 
@@ -89,11 +96,11 @@ QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencie
         {
             for( auto lE : lModules )
             {
-                if( lE.Dependencies.isEmpty() )     continue;
-                if( lInResults.contains(lE.Name) )  continue;
+                if( lE->Dependencies.isEmpty() )     continue;
+                if( lInResults.contains(lE->Name) )  continue;
 
                 lNotFound = false;
-                for( auto lD : lE.Dependencies )
+                for( auto lD : lE->Dependencies )
                 {
                     if( ! lInResults.contains(lD) ) {
                         lNotFound = true;
@@ -104,7 +111,7 @@ QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencie
                 if( lNotFound ) continue;
 
                 lResults << lE;
-                lInResults << lE.Name;
+                lInResults << lE->Name;
             }
         }
 
@@ -113,7 +120,7 @@ QList<ModuleLinker::ModuleInfo> ModuleLinker::sortRegisteredModulesByDependencie
 
     }catch(int iLineNumber){
         qWarning() << "Module Linker error at line" << iLineNumber;
-        return QList<ModuleLinker::ModuleInfo>();
+        return QList<ModuleLinker::ModuleInfo *>();
     }
 
 

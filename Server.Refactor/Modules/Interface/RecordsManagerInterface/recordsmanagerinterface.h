@@ -1,43 +1,22 @@
-#ifndef RECORDSMANAGER_H
-#define RECORDSMANAGER_H
+#ifndef RECORDSMANAGERINTERFACE_H
+#define RECORDSMANAGERINTERFACE_H
 
-#include <QByteArray>
-#include <QString>
 #include <QObject>
 
-class RecordsManager : public QObject
+class RecordsManagerInterface : public QObject
 {
-    Q_OBJECT
 public:
-    explicit RecordsManager(const QString &iRecordsPath, QObject *iParent = nullptr);
-
-    QByteArray  lastDataBTCUSD() const;
-    QByteArray  lastDataETHUSD() const;
-    QByteArray  lastDataETHBTC() const;
-    QByteArray  testNetEstimateFee() const;
+    RecordsManagerInterface(QObject * iParent = nullptr);
+    virtual ~RecordsManagerInterface();
 
 signals:
-    void testNetEstimateFeeChanged();
+    virtual void btcTestNetEstimateFeesChanged() = 0;
+    virtual void btcMainNetEstimateFeesChanged() = 0;
 
 public slots:
-    void threadStarted();
-
-    void handleDownloadedUrlData( const QString iUrl, const QByteArray iData );
-
-protected:
-    void    saveDataBTCTestNetBlockChainStats(const QString iSource, const QByteArray iData);
-    void    saveDataBTCUSD(const QString iSource, const QByteArray iData);
-    void    saveDataETHUSD(const QString iSource, const QByteArray iData);
-    void    saveDataETHBTC(const QString iSource, const QByteArray iData);
-
-private:
-    void _recordFileAndStoreLocalVariable(const QString iPath, const QString iFilename, const QByteArray iData, QByteArray &oLocalVariable);
-
-    QString         mRecordsPath;
-    QByteArray      mTestNetEstimateFee;
-    QByteArray      mDataBTCUSD;
-    QByteArray      mDataETHUSD;
-    QByteArray      mDataETHBTC;
+    virtual bool doInit()                                                                   = 0;
+    virtual void threadStarted()                                                            = 0;
+    virtual void handleDownloadedUrlData( const QString iUrl, const QByteArray iData )      = 0;
 };
 
-#endif // RECORDSMANAGER_H
+#endif // RECORDSMANAGERINTERFACE_H

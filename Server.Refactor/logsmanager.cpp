@@ -1,5 +1,5 @@
 #include "logsmanager.h"
-#include "app.h"
+#include "main.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <syslog.h>
 
 LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
     : QObject( iParent )
@@ -23,9 +24,13 @@ LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
 
 void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
-    if( gApp && gApp->logsManager() ) {
-        gApp->logsManager()->_messageHandler(iType,iContext,iMessage);
-        return;
+//    if( gApp && gApp->logsManager() ) {
+//        gApp->logsManager()->_messageHandler(iType,iContext,iMessage);
+//        return;
+//    }
+
+    if( gApp ) {
+
     }
 
     // Fallback
@@ -34,22 +39,27 @@ void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iCon
     switch (iType) {
     case QtDebugMsg:
         fprintf(stderr, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(stderr);
         break;
     case QtInfoMsg:
         fprintf(stderr, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(stderr);
         break;
     case QtWarningMsg:
         fprintf(stderr, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(stderr);
         break;
     case QtCriticalMsg:
         fprintf(stderr, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(stderr);
         break;
     case QtFatalMsg:
         fprintf(stderr, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(stderr);
         abort();
     }
@@ -204,24 +214,29 @@ void LogsManager::_messageHandler(QtMsgType iType, const QMessageLogContext &iCo
     switch (iType) {
     case QtDebugMsg:
         fprintf(mLoggerHandle, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         mBuffered = true;
         break;
     case QtInfoMsg:
         fprintf(mLoggerHandle, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         mBuffered = true;
         break;
     case QtWarningMsg:
         fprintf(mLoggerHandle, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(mLoggerHandle);
         mBuffered = false;
         break;
     case QtCriticalMsg:
         fprintf(mLoggerHandle, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(mLoggerHandle);
         mBuffered = false;
         break;
     case QtFatalMsg:
         fprintf(mLoggerHandle, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
         fflush(mLoggerHandle);
         mBuffered = false;
         abort();

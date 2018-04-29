@@ -1,8 +1,11 @@
-!contains( WALLETSERVERMODULES_INTERFACE, RecordsManager ) {
-    WALLETSERVERMODULES_INTERFACE += RecordsManager
+!contains( WALLETSERVERMODULES, RecordsManagerInterface ) {
+    WALLETSERVERMODULES += RecordsManagerInterface
 
     INCLUDEPATH=$$PWD
 
     HEADERS += \
         $$PWD/recordsmanagerinterface.h
+
+    SOURCES += \
+        $$PWD/recordsmanagerinterface.cpp
 }

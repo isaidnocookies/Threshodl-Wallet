@@ -1,11 +1,50 @@
 #include "recordsmanager.h"
-#include "app.h"
+#include "modulelinker.h"
 
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QDateTime>
-#include <QJsonDocument>
+
+static RecordsManagerML _gRegisterModuleLinker;
+
+RecordsManagerML::RecordsManagerML()
+{
+    ModuleLinker::registerModule(QStringLiteral("RecordsManager-1"),RecordsManagerML::creator,RecordsManagerML::doInit,RecordsManagerML::start,RecordsManagerML::startInOwnThread);
+}
+
+void *RecordsManagerML::creator(void *pointerToAppObject)
+{
+    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
+    QString             lRecordsPath    = ""; // From app;
+    RecordsManager *    lRM             = new RecordsManager{lRecordsPath};
+    lRM->mApp                           = lApp;
+    return lRM;
+}
+
+bool RecordsManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    RecordsManager *    lRM = reinterpret_cast<RecordsManager *>(pointerToThis);
+    if( lRM ) {
+        return lRM->doInit();
+    }
+    return false;
+}
+
+bool RecordsManagerML::startInOwnThread()
+{ return false; }
+
+bool RecordsManagerML::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    RecordsManager *    lRM = reinterpret_cast<RecordsManager *>(pointerToThis);
+    if( lRM ) {
+        lRM->threadStarted();
+        return true;
+    }
+    return false;
+}
 
 void RecordsManager::_recordFileAndStoreLocalVariable(const QString iPath, const QString iFilename, const QByteArray iData, QByteArray &oLocalVariable)
 {
@@ -33,7 +72,7 @@ void RecordsManager::_recordFileAndStoreLocalVariable(const QString iPath, const
 }
 
 RecordsManager::RecordsManager(const QString &iRecordsPath, QObject * iParent)
-    : QObject( iParent )
+    : RecordsManagerInterface( iParent )
     , mRecordsPath(iRecordsPath)
 {
     QDir    lDir{mRecordsPath};
@@ -45,29 +84,24 @@ RecordsManager::RecordsManager(const QString &iRecordsPath, QObject * iParent)
 }
 
 QByteArray RecordsManager::lastDataBTCUSD() const
-{
-    return mDataBTCUSD;
-}
+{ return mDataBTCUSD; }
 
 QByteArray RecordsManager::lastDataETHUSD() const
-{
-    return mDataETHUSD;
-}
+{ return mDataETHUSD; }
 
 QByteArray RecordsManager::lastDataETHBTC() const
-{
-    return mDataETHBTC;
-}
+{ return mDataETHBTC; }
 
 QByteArray RecordsManager::testNetEstimateFee() const
+{ return mTestNetEstimateFee; }
+
+bool RecordsManager::doInit()
 {
-    return mTestNetEstimateFee;
+    return true;
 }
 
 void RecordsManager::threadStarted()
-{
-
-}
+{ }
 
 void RecordsManager::handleDownloadedUrlData(const QString iUrl, const QByteArray iData)
 {
@@ -93,7 +127,7 @@ void RecordsManager::saveDataBTCTestNetBlockChainStats(const QString iSource, co
     QString     lDirname    = QString("%1%2testnet_estimatefee%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);
     QString     lFilename   = QString("%1%2%3.%4.testnet_estimatefee").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch()).arg(iSource);
     _recordFileAndStoreLocalVariable( lDirname, lFilename, iData, mTestNetEstimateFee );
-    emit testNetEstimateFeeChanged();
+    emit btcTestNetEstimateFeesChanged();
 }
 
 void RecordsManager::saveDataBTCUSD(const QString iSource, const QByteArray iData)

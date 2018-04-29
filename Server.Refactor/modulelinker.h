@@ -27,8 +27,8 @@ public:
     } ModuleInfo;
 
     static void preventNewRegistrationOfModules();
-    static QList< ModuleInfo > registeredModules();
-    static QList< ModuleInfo > sortRegisteredModulesByDependencies(const QList< ModuleInfo > iModules); // On error, returns an empty list;
+    static QList<ModuleInfo *> registeredModules();
+    static QList<ModuleInfo *> sortRegisteredModulesByDependencies(const QList<ModuleInfo*> iModules); // On error, returns an empty list;
 };
 
 #endif // MODULELINKER_H
