@@ -1,0 +1,5 @@
+!contains( WALLETSERVERMODULES, MODULES ) {
+    WALLETSERVERMODULES += MODULES
+
+    include($$PWD/V1/V1.pri)
+}
