@@ -420,63 +420,63 @@ bool App::_doInit()
 void App::_loadConfigurationFile()
 {
     QJsonParseError lJsonError;
-    QVariantMap     lSettings = QJsonDocument::fromJson(_loadFile(mConfigFile),&lJsonError).toVariant().toMap();
+    QVariantMap     lConfig = QJsonDocument::fromJson(_loadFile(mConfigFile),&lJsonError).toVariant().toMap();
 
     if( lJsonError.error == QJsonParseError::NoError ) {
-        if( lSettings.contains(kConfigKey_RESTPort) ) {
-            mRESTPort = static_cast<quint16>(lSettings[kConfigKey_RESTPort].toUInt() & 0xFFFF);
+        if( lConfig.contains(kConfigKey_RESTPort) ) {
+            mRESTPort = static_cast<quint16>(lConfig[kConfigKey_RESTPort].toUInt() & 0xFFFF);
         }
 
-        if( lSettings.contains(kConfigKey_RPCPort) ) {
-            mRPCPort = static_cast<quint16>(lSettings[kConfigKey_RPCPort].toUInt() & 0xFFFF);
+        if( lConfig.contains(kConfigKey_RPCPort) ) {
+            mRPCPort = static_cast<quint16>(lConfig[kConfigKey_RPCPort].toUInt() & 0xFFFF);
         }
 
-        if( lSettings.contains(kConfigKey_ServerName) ) {
-            mServerName = lSettings[kConfigKey_ServerName].toString();
+        if( lConfig.contains(kConfigKey_ServerName) ) {
+            mServerName = lConfig[kConfigKey_ServerName].toString();
         }
 
-        if( lSettings.contains(kConfigKey_CACertFile) ) {
-            mCACertificateFilename = lSettings[kConfigKey_CACertFile].toString();
+        if( lConfig.contains(kConfigKey_CACertFile) ) {
+            mCACertificateFilename = lConfig[kConfigKey_CACertFile].toString();
         }
 
-        if( lSettings.contains(kConfigKey_PrivateKeyFile) ) {
-            mPrivateKeyFilename = lSettings[kConfigKey_PrivateKeyFile].toString();
+        if( lConfig.contains(kConfigKey_PrivateKeyFile) ) {
+            mPrivateKeyFilename = lConfig[kConfigKey_PrivateKeyFile].toString();
         }
 
-        if( lSettings.contains(kConfigKey_CertificateFile) ) {
-            mCertificateFilename = lSettings[kConfigKey_CertificateFile].toString();
+        if( lConfig.contains(kConfigKey_CertificateFile) ) {
+            mCertificateFilename = lConfig[kConfigKey_CertificateFile].toString();
         }
 
-        if( lSettings.contains(kConfigKey_LogsPath) ) {
-            mLogsPath = lSettings[kConfigKey_LogsPath].toString();
+        if( lConfig.contains(kConfigKey_LogsPath) ) {
+            mLogsPath = lConfig[kConfigKey_LogsPath].toString();
         }
 
-        if( lSettings.contains(kConfigKey_RecordsPath) ) {
-            mRecordsPath = lSettings[kConfigKey_RecordsPath].toString();
+        if( lConfig.contains(kConfigKey_RecordsPath) ) {
+            mRecordsPath = lConfig[kConfigKey_RecordsPath].toString();
         }
 
-        if( lSettings.contains(kConfigKey_DBUserName) ) {
-            mDBUserName = lSettings[kConfigKey_DBUserName].toString();
+        if( lConfig.contains(kConfigKey_DBUserName) ) {
+            mDBUserName = lConfig[kConfigKey_DBUserName].toString();
         }
 
-        if( lSettings.contains(kConfigKey_DBPassword) ) {
-            mDBPassword = lSettings[kConfigKey_DBPassword].toString();
+        if( lConfig.contains(kConfigKey_DBPassword) ) {
+            mDBPassword = lConfig[kConfigKey_DBPassword].toString();
         }
 
-        if( lSettings.contains(kConfigKey_DBName) ) {
-            mDBName = lSettings[kConfigKey_DBName].toString();
+        if( lConfig.contains(kConfigKey_DBName) ) {
+            mDBName = lConfig[kConfigKey_DBName].toString();
         }
 
-        if( lSettings.contains(kConfigKey_DBHostName) ) {
-            mDBHostName = lSettings[kConfigKey_DBHostName].toString();
+        if( lConfig.contains(kConfigKey_DBHostName) ) {
+            mDBHostName = lConfig[kConfigKey_DBHostName].toString();
         }
 
-        if( lSettings.contains(kConfigKey_DBPort) ) {
-            mDBPort = static_cast<quint16>(lSettings[kConfigKey_DBPort].toUInt() & 0xFFFF);
+        if( lConfig.contains(kConfigKey_DBPort) ) {
+            mDBPort = static_cast<quint16>(lConfig[kConfigKey_DBPort].toUInt() & 0xFFFF);
         }
 
-        if( lSettings.contains(kConfigKey_DBType) ) {
-            mDBType = lSettings[kConfigKey_DBType].toString().toUpper();
+        if( lConfig.contains(kConfigKey_DBType) ) {
+            mDBType = lConfig[kConfigKey_DBType].toString().toUpper();
         }
     }
 }
