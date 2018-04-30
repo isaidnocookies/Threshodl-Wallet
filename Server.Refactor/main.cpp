@@ -4,16 +4,16 @@
 //#include "app.h"
 
 #include <QDebug>
-#include <QCoreApplication>
+//#include <QCoreApplication>
 
 App * gApp = nullptr;
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication lApp(argc, argv);
-    lApp.setApplicationName(QStringLiteral("Threshodl"));
-    lApp.setOrganizationName(QStringLiteral("Threshodl"));
-    lApp.setOrganizationDomain(QStringLiteral("com.threshodl"));
+//    QCoreApplication lApp(argc, argv);
+//    lApp.setApplicationName(QStringLiteral("Threshodl"));
+//    lApp.setOrganizationName(QStringLiteral("Threshodl"));
+//    lApp.setOrganizationDomain(QStringLiteral("com.threshodl"));
 
 //    gApp = new App{argc,argv};
 //    gApp->parseCommandLine();
@@ -31,5 +31,5 @@ int main(int argc, char *argv[])
         qDebug() << lE->Name;
     }
 
-    return lApp.exec();
+//    return lApp.exec();
 }

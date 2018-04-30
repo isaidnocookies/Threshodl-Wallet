@@ -126,3 +126,14 @@ QList<ModuleLinker::ModuleInfo *> ModuleLinker::sortRegisteredModulesByDependenc
 
     return lResults;
 }
+
+ModuleLinker::ModuleInfo *ModuleLinker::moduleInfoForName(const QString iModuleName)
+{
+    QReadLocker l{&_gLock};
+    for( int lIndex = 0; lIndex < _gRegisteredModulesCount && lIndex < kMaxNumberOfModules; lIndex++ )
+    {
+        if( _gRegisteredModules[lIndex]->Name == iModuleName )
+            return _gRegisteredModules[lIndex];
+    }
+    return nullptr;
+}
