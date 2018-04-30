@@ -607,8 +607,6 @@ bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWa
         QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), iWallets.count(), true);
 //        QString lMinerFee = iFeeEstimate;
 
-        // add an output for the bright wallet for "balance"
-
         if (mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, lOutputMap, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey, lRawTransaction)) {
             // sign transaction
             if (mBitcoinBlockchainInterface->signRawTransaction(lRawTransaction, lSignedHex, lPrivateKeys, lTxids, lVouts, lScriptPubKey)) {

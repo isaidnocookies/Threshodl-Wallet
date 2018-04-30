@@ -51,7 +51,9 @@ void BrightSendView::getCameraCode(QString iCode)
 
 bool BrightSendView::sendTransaction(QString iAddress, QString iAmount)
 {
+    startProgressBarAndDisable();
     return mActiveUser->sendBrightTransaction(iAddress, iAmount);
+    stopProgressBarAndEnable();
 }
 
 void BrightSendView::startProgressBarAndDisable()

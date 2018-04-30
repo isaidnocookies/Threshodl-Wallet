@@ -78,9 +78,9 @@ void SendToBrightView::on_convertButton_pressed()
     if (!ui->confirmCheckBox->isChecked()) {
         ui->warningLabelForCheck->setText(QString("*Confirm to continue"));
     } else {
+        startProgressBarAndDisable();
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
         mConnection->open(lUrl);
-        startProgressBarAndDisable();
     }
 }
 
@@ -129,8 +129,8 @@ void SendToBrightView::disconnectedFromServer()
     qDebug() << "Disconnected from server.";
 
     //catastrophic failure
-    stopProgressBarAndEnable();
     ui->warningLabel->setText("[1] Error, please try again!");
+    stopProgressBarAndEnable();
 }
 
 void SendToBrightView::failedToSendMessage()
@@ -150,8 +150,6 @@ void SendToBrightView::sentMessage()
 void SendToBrightView::receivedMessage()
 {
     qDebug() << "Received message.";
-
-    stopProgressBarAndEnable();
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
@@ -205,6 +203,8 @@ void SendToBrightView::receivedMessage()
     } else {
         completeWalletsAndAdd(lReply.walletPartialKeys());
     }
+
+    stopProgressBarAndEnable();
 }
 
 void SendToBrightView::socketError(QAbstractSocket::SocketError iError)
@@ -219,12 +219,12 @@ void SendToBrightView::sslErrors(const QList<QSslError> iErrors)
     qDebug() << "Ssl Errors:";
 
     int lIndex = 0;
-    stopProgressBarAndEnable();
-
     for( auto lError : iErrors ) {
         qDebug() << lIndex++ << lError.errorString();
         ui->warningLabel->setText("[4] Error, please try again!");
     }
+
+    stopProgressBarAndEnable();
 }
 
 void SendToBrightView::startProgressBarAndDisable()

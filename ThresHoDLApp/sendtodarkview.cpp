@@ -79,9 +79,9 @@ void SendToDarkView::on_convertButton_pressed()
 
     if (ui->confirmCheckBox->isChecked()) {
         // Allow transfer
+        startProgressBarAndDisable();
         QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
         mConnection->open(lUrl);
-        startProgressBarAndDisable();
     } else {
         // Don't allow
         ui->warningLabelForCheck->setText("*REQUIRED");
@@ -92,9 +92,7 @@ void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),1,1,currentChain(),mTransactionId,mUsername,mPrivateKey,
-                    "Output balance addresses",
-                    "Output Balance Amounts"));
+    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),1,1,currentChain(),mTransactionId,mUsername,mPrivateKey));
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -102,8 +100,8 @@ void SendToDarkView::disconnectedFromServer()
     qDebug() << "Disconnected from server.";
 
     //catastrophic failures
-    stopProgressBarAndEnable();
     ui->warningLabel->setText("[1] Error, please try again!");
+    stopProgressBarAndEnable();
 }
 
 void SendToDarkView::failedToSendMessage()
@@ -123,8 +121,6 @@ void SendToDarkView::sentMessage()
 void SendToDarkView::receivedMessage()
 {
     qDebug() << "Received message.";
-
-    stopProgressBarAndEnable();
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
@@ -160,7 +156,7 @@ void SendToDarkView::receivedMessage()
             break;
         }
     }
-
+    stopProgressBarAndEnable();
 }
 
 void SendToDarkView::socketError(QAbstractSocket::SocketError iError)
@@ -175,12 +171,12 @@ void SendToDarkView::sslErrors(const QList<QSslError> iErrors)
     qDebug() << "Ssl Errors:";
 
     int lIndex = 0;
-    stopProgressBarAndEnable();
 
     for( auto lError : iErrors ) {
         qDebug() << lIndex++ << lError.errorString();
         ui->warningLabel->setText("[4] Error, please try again!");
     }
+    stopProgressBarAndEnable();
 }
 
 void SendToDarkView::startProgressBarAndDisable()
@@ -232,6 +228,8 @@ void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString 
 
     emit updateBrightBalance(lTotalBrightCoin);
     emit brightToDarkCompleted(true, lTotalBrightCoin, iData);
+
+    stopProgressBarAndEnable();
 }
 
 void SendToDarkView::on_confirmCheckBox_stateChanged(int arg1)
