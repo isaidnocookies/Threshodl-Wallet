@@ -1,19 +1,21 @@
 #ifndef LOGSMANAGER_H
 #define LOGSMANAGER_H
 
-#include <QString>
+#include "../../Interface/LogsManagerInterface/logsmanagerinterface.h"
+
 #include <QMutex>
-#include <QDebug>
-#include <QObject>
 #include <QTimer>
 
 #define kTimerIntervalInSeconds     30
 #define kMaxLogFileSizeInBytes      (1024 * 1024 * 1024) /* 1MB */
 #define kMaxLogFileCount            1024
 
-class LogsManager : public QObject
+class App;
+class LogsManagerML;
+class LogsManager : public LogsManagerInterface
 {
     Q_OBJECT
+    friend class LogsManagerML;
 public:
     explicit LogsManager(const QString iLogsPath, QObject *iParent = nullptr);
 
@@ -22,10 +24,13 @@ public:
 signals:
 
 public slots:
+    bool doInit();
     void threadStarted();
     void timerEventFired();
 
-private:
+protected:
+    void _messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage) override;
+
     void _closeLogFile();
     QString _findOldestFile();
     QString _findNewestFile();
@@ -34,17 +39,26 @@ private:
     qint64 _currentLogFileSize();
     int _countLogFiles();
 
-    void _messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage);
 
     int         mTimerInterval;
     int         mMaxLogFileSizeInBytes;
     int         mMaxLogFiles;
 
-    QString     mLogsPath;
+    App *       mApp            = nullptr;
     QTimer *    mTimer;
     QMutex      mWriteLock;
     bool        mBuffered       = false;
     FILE *      mLoggerHandle;
+};
+
+class LogsManagerML
+{
+public:
+    LogsManagerML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // LOGSMANAGER_H

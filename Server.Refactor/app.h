@@ -20,6 +20,30 @@ public:
     static App * globalInstance();
     static int exec(int argc, char *argv[]);
 
+    quint16             restPort() const;                   // 0 if not set
+
+    QString             caCertificateFilename() const;      // (Optional) - If loaded from a file
+    QByteArray          caCertificatePEM() const;           // Empty if not valid
+    Certificate *       caCertificate() const;              // nullptr if not valid, do NOT delete it
+
+    QString             caPrivateKeyFilename() const;       // (Optional) - If loaded from a file and if exists
+    QByteArray          caPrivateKeyPEM() const;            // (Optional) - Empty if not valid
+    EncryptionKey *     caPrivateKey() const;               // nullptr if not valid, do NOT delete it
+
+    QString             certificateFilename() const;        // (Optional) - If loaded from a file
+    QByteArray          certificatePEM() const;             // Empty if not valid
+    Certificate *       certificate() const;                // nullptr if not valid, do NOT delete it
+
+    QString             privateKeyFilename() const;         // (Optional) - If loaded from a file
+    QByteArray          privateKeyPEM() const;              // Empty if not valid
+    EncryptionKey *     privateKey() const;                 // nullptr if not valid, do NOT delete it
+
+    QString             logsPath() const;                   // Empty if not valid
+    QString             recordsPath() const;                // Empty if not valid
+
+    void *              logManager() const;                 // For internal logging, do not use directly
+    void                setLogManager(void * iLogManager);  // For internal logging, do not use directly
+
 signals:
     void appKernelStarted();
     void modulesLoaded();
@@ -51,6 +75,8 @@ protected:
     QMap< QString, QThread *>   mModuleThreads;
     QMap< QString, bool >       mModuleStarted;
 
+    // For logging
+    void *              mLogManager                 = nullptr;
 
     // Settings:
     int                 mArgC                       = 0;
@@ -81,7 +107,6 @@ protected:
     EncryptionKey *     mPrivateKey                 = nullptr;
 
     QString             mLogsPath;
-
     QString             mRecordsPath;
 
     QString             mDBUserName;

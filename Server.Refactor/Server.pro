@@ -22,11 +22,9 @@ include($$PWD/Modules/Modules.pri)
 HEADERS += \
     main.h \
     modulelinker.h \
-    logsmanager.h \
     app.h
 
 SOURCES += \
     main.cpp \
     modulelinker.cpp \
-    logsmanager.cpp \
     app.cpp

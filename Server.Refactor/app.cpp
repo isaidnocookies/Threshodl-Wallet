@@ -1,11 +1,12 @@
 #include "app.h"
-#include "logsmanager.h"
 
-#include <QCoreApplication>
+#include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QVariant>
 #include <QJsonDocument>
 #include <QSslKey>
+#include <QCoreApplication>
 #include <QAbstractEventDispatcher>
 
 #define     kConfigFile                             "config.json"
@@ -70,8 +71,6 @@ App *App::globalInstance()
 
 int App::exec(int argc, char *argv[])
 {
-    qInstallMessageHandler(LogsManager::messageHandler);
-
     QCoreApplication lApp(argc, argv);
     lApp.setApplicationName(QStringLiteral("Threshodl"));
     lApp.setOrganizationName(QStringLiteral("Threshodl"));
@@ -92,6 +91,54 @@ int App::exec(int argc, char *argv[])
 
     return lApp.exec();
 }
+
+QString App::caCertificateFilename() const
+{ return mCACertificateFilename; }
+
+QByteArray App::caCertificatePEM() const
+{ return mCACertificatePEM; }
+
+Certificate *App::caCertificate() const
+{ return mCACertificate; }
+
+QString App::caPrivateKeyFilename() const
+{ return mCAPrivateKeyFilename; }
+
+QByteArray App::caPrivateKeyPEM() const
+{ return mCAPrivateKeyPEM; }
+
+EncryptionKey *App::caPrivateKey() const
+{ return mCAPrivateKey; }
+
+QString App::certificateFilename() const
+{ return mCertificateFilename; }
+
+QByteArray App::certificatePEM() const
+{ return mCertificatePEM; }
+
+Certificate *App::certificate() const
+{ return mCertificate; }
+
+QString App::privateKeyFilename() const
+{ return mPrivateKeyFilename; }
+
+QByteArray App::privateKeyPEM() const
+{ return mPrivateKeyPEM; }
+
+EncryptionKey *App::privateKey() const
+{ return mPrivateKey; }
+
+QString App::logsPath() const
+{ return mLogsPath; }
+
+QString App::recordsPath() const
+{ return mRecordsPath; }
+
+void *App::logManager() const
+{ return mLogManager; }
+
+void App::setLogManager(void *iLogManager)
+{ mLogManager = iLogManager; }
 
 QByteArray App::_loadFile(const QString &iFilename)
 {
@@ -156,6 +203,9 @@ bool App::_createModules(bool iForInit)
 
             if( ! iForInit && lE->ThreadStart )
                 lShouldStartInThread = lE->ThreadStart();
+
+            if( iForInit )
+                qDebug() << "Creating module" << lE->Name;
 
             mModulesStartOrder << lE->Name;
             mModuleStarted[lE->Name] = false;
@@ -357,6 +407,7 @@ bool App::_doInit()
     for( QString lModuleName : mModules.keys() )
     {
         ModuleLinker::ModuleInfo * lMI = ModuleLinker::moduleInfoForName(lModuleName);
+        qDebug() << "Initializing module" << lMI->Name;
         if( lMI->DoInit )
             if( ! lMI->DoInit(mModules[lModuleName], this) ) {
                 return false;

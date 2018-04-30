@@ -1,5 +1,7 @@
 #include "logsmanager.h"
 #include "main.h"
+#include "modulelinker.h"
+#include "app.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -10,12 +12,13 @@
 #include <unistd.h>
 #include <syslog.h>
 
+static LogsManagerML _gRegisterModuleLinker;
+
 LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
-    : QObject( iParent )
+    : LogsManagerInterface( iLogsPath, iParent )
     , mTimerInterval(kTimerIntervalInSeconds)
     , mMaxLogFileSizeInBytes(kMaxLogFileSizeInBytes)
     , mMaxLogFiles(kMaxLogFileCount)
-    , mLogsPath(iLogsPath)
     , mTimer(nullptr)
     , mLoggerHandle(stderr)
 {
@@ -24,13 +27,12 @@ LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
 
 void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
-//    if( gApp && gApp->logsManager() ) {
-//        gApp->logsManager()->_messageHandler(iType,iContext,iMessage);
-//        return;
-//    }
-
     if( gApp ) {
-
+        LogsManager * lLM = reinterpret_cast<LogsManager *>(gApp->logManager());
+        if( lLM ) {
+            lLM->_messageHandler(iType,iContext,iMessage);
+            return;
+        }
     }
 
     // Fallback
@@ -65,8 +67,25 @@ void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iCon
     }
 }
 
+bool LogsManager::doInit()
+{
+    QString lLogsPath = mApp->logsPath();
+    QDir    lDir{lLogsPath};
+
+    if( ! lDir.exists() ) {
+        if( ! lDir.mkpath(lLogsPath) ) {
+            qWarning() << "Unable to create logs storage path" << lLogsPath;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void LogsManager::threadStarted()
-{   
+{
+    mApp->setLogManager(this);
+
     if( mTimer == nullptr ) {
         mTimer = new QTimer{this};
         connect( mTimer, &QTimer::timeout, this, &LogsManager::timerEventFired );
@@ -121,7 +140,7 @@ void LogsManager::timerEventFired()
 
     // Scan folder for files to clean up
     int     lCount = 0;
-    QDir    lPath{mLogsPath};
+    QDir    lPath{logsPath()};
     while( _countLogFiles() > mMaxLogFiles && lCount < 10) {
         lPath.remove(_findOldestFile());
         lCount++;
@@ -138,7 +157,7 @@ void LogsManager::_closeLogFile()
 
 QString LogsManager::_findOldestFile()
 {
-    QStringList lFiles = QDir(mLogsPath).entryList(
+    QStringList lFiles = QDir(logsPath()).entryList(
                 QStringList() << "*.log",
                 QDir::Files,
                 QDir::Time | QDir::Reversed
@@ -153,12 +172,12 @@ QString LogsManager::_findOldestFile()
 
 QString LogsManager::_findNewestFile()
 {
-    if( ! QDir(mLogsPath).exists() ) {
-        if( ! QDir(mLogsPath).mkpath(mLogsPath) )
+    if( ! QDir(logsPath()).exists() ) {
+        if( ! QDir(logsPath()).mkpath(logsPath()) )
             return QString();
     }
 
-    QStringList lFiles = QDir(mLogsPath).entryList(
+    QStringList lFiles = QDir(logsPath()).entryList(
                 QStringList() << "*.log",
                 QDir::Files,
                 QDir::Time | QDir::Reversed
@@ -173,14 +192,14 @@ QString LogsManager::_findNewestFile()
 
 FILE *LogsManager::_continueLogFile(const QString &iLogFilename)
 {
-    QString    lName = QString("%1%2%3").arg(mLogsPath).arg(QDir::separator()).arg(iLogFilename);
+    QString    lName = QString("%1%2%3").arg(logsPath()).arg(QDir::separator()).arg(iLogFilename);
     QByteArray lLocalFilename = lName.toLocal8Bit();
     return fopen(lLocalFilename,"a");
 }
 
 FILE *LogsManager::_startNewLogFile()
 {
-    QString    lName = QString("%1%2%3.log").arg(mLogsPath).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch());
+    QString    lName = QString("%1%2%3.log").arg(logsPath()).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch());
     QByteArray lLocalFilename = lName.toLocal8Bit();
     return fopen(lLocalFilename,"w");
 }
@@ -197,7 +216,7 @@ qint64 LogsManager::_currentLogFileSize()
 
 int LogsManager::_countLogFiles()
 {
-    QStringList lFiles = QDir(mLogsPath).entryList(
+    QStringList lFiles = QDir(logsPath()).entryList(
                 QStringList() << "*.log",
                 QDir::Files
                 );
@@ -241,4 +260,44 @@ void LogsManager::_messageHandler(QtMsgType iType, const QMessageLogContext &iCo
         mBuffered = false;
         abort();
     }
+}
+
+LogsManagerML::LogsManagerML()
+{
+    ModuleLinker::registerModule(QStringLiteral("LogsManager-1"),LogsManagerML::creator,LogsManagerML::doInit,LogsManagerML::start,LogsManagerML::startInOwnThread);
+}
+
+void *LogsManagerML::creator(void *pointerToAppObject)
+{
+    qInstallMessageHandler(LogsManager::messageHandler);
+
+    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
+    QString             lLogsPath       = lApp->logsPath(); // From app;
+    LogsManager *       lLM             = new LogsManager{lLogsPath};
+    lLM->mApp                           = lApp;
+    return lLM;
+}
+
+bool LogsManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    LogsManager *   lLM = reinterpret_cast<LogsManager *>(pointerToThis);
+    if( lLM ) {
+        return lLM->doInit();
+    }
+    return false;
+}
+
+bool LogsManagerML::startInOwnThread()
+{ return true; }
+
+bool LogsManagerML::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    LogsManager *    lLM = reinterpret_cast<LogsManager *>(pointerToThis);
+    if( lLM ) {
+        QMetaObject::invokeMethod(lLM,"threadStarted",Qt::QueuedConnection);
+        return true;
+    }
+    return false;
 }

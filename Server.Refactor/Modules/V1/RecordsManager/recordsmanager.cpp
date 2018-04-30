@@ -1,5 +1,6 @@
 #include "recordsmanager.h"
 #include "modulelinker.h"
+#include "app.h"
 
 #include <QDebug>
 #include <QDir>
@@ -16,7 +17,7 @@ RecordsManagerML::RecordsManagerML()
 void *RecordsManagerML::creator(void *pointerToAppObject)
 {
     App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
-    QString             lRecordsPath    = ""; // From app;
+    QString             lRecordsPath    = lApp->recordsPath(); // From app;
     RecordsManager *    lRM             = new RecordsManager{lRecordsPath};
     lRM->mApp                           = lApp;
     return lRM;
@@ -97,6 +98,16 @@ QByteArray RecordsManager::testNetEstimateFee() const
 
 bool RecordsManager::doInit()
 {
+    QString lRecordsPath = mApp->recordsPath();
+    QDir    lDir{lRecordsPath};
+
+    if( ! lDir.exists() ) {
+        if( ! lDir.mkpath(lRecordsPath) ) {
+            qWarning() << "Unable to create records storage path" << lRecordsPath;
+            return false;
+        }
+    }
+
     return true;
 }
 
