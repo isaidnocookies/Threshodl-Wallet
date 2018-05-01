@@ -261,7 +261,20 @@ void App::_parseCommandLine()
             continue;
         }
 
-        mConfiguration.setValue(lKey,lValue);
+        // Is it a Json value?
+        bool lStoreIt = true;
+        if( lValue.startsWith(QChar{'{'}) || lValue.startsWith(QChar{'['}) ) {
+            // Its probably a Json value
+            QJsonParseError lError;
+            QVariant        lVar = QJsonDocument::fromJson(lValue.toUtf8(),&lError).toVariant();
+            if( lError.error == QJsonParseError::NoError ) {
+                mConfiguration.setValue(lKey,lVar);
+                lStoreIt = false;
+            }
+        }
+
+        if( lStoreIt )
+            mConfiguration.setValue(lKey,lValue);
     }
 }
 
@@ -283,6 +296,8 @@ bool App::_doInit()
                 return false;
             }
     }
+
+    mConfiguration.save();
 
     return true;
 }

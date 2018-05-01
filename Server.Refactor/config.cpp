@@ -4,7 +4,12 @@
 #include <QJsonDocument>
 
 Config::Config()
-{ }
+{
+    mDefaultKeyFilter
+            << QStringLiteral("CommandLineArgumentCount")
+            << QStringLiteral("CommandLineArguments")
+            << QStringLiteral("CAPrivateKeyFilename");
+}
 
 Config::Config(const QString iFilename)
     : mFilename(iFilename)
@@ -57,14 +62,23 @@ bool Config::load()
     return false;
 }
 
-bool Config::save() const
+bool Config::save(const QStringList iKeyFilter) const
 {
     QReadLocker l{&mLock};
 
     if( ! mFilename.isEmpty() ) {
         QFile   lFile{mFilename};
 
-        QByteArray lData = QJsonDocument::fromVariant(mConfigValues).toJson();
+        QVariantMap     lMap = mConfigValues;
+
+        QStringList     lFilter = mDefaultKeyFilter;
+        if( ! iKeyFilter.isEmpty() )
+            lFilter = iKeyFilter;
+
+        for( QString lKeyFilter : lFilter )
+        { lMap.remove(lKeyFilter); }
+
+        QByteArray lData = QJsonDocument::fromVariant(lMap).toJson();
 
         if( ! lData.isEmpty() ) {
             if( lFile.open(QIODevice::WriteOnly | QIODevice::Truncate) ) {

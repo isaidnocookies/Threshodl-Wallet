@@ -22,7 +22,7 @@ public:
     void                    setFilename(const QString iFilename);
 
     bool                    load();
-    bool                    save() const;
+    bool                    save(const QStringList iKeyFilter = QStringList()) const;
 
     void                    setPointer(const QString iKey, void * iPointer);            // Not savable/loadable
     void *                  toPointer(const QString iKey) const;                        // Not savable/loadable
@@ -55,6 +55,7 @@ protected:
     void _copy(const Config &iOther);
 
     mutable QReadWriteLock  mLock;
+    QStringList             mDefaultKeyFilter;
     QString                 mFilename;
     QVariantMap             mConfigValues;
     QMap< QString, void * > mPointers;
