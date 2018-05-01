@@ -69,7 +69,7 @@ void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iCon
 
 bool LogsManager::doInit()
 {
-    QString lLogsPath = mApp->logsPath();
+    QString lLogsPath = mApp->configuration()->toString(QStringLiteral("LogsPath"));
     QDir    lDir{lLogsPath};
 
     if( ! lDir.exists() ) {
@@ -272,7 +272,7 @@ void *LogsManagerML::creator(void *pointerToAppObject)
     qInstallMessageHandler(LogsManager::messageHandler);
 
     App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
-    QString             lLogsPath       = lApp->logsPath(); // From app;
+    QString             lLogsPath       = lApp->configuration()->toString(QStringLiteral("LogsPath"));
     LogsManager *       lLM             = new LogsManager{lLogsPath};
     lLM->mApp                           = lApp;
     return lLM;

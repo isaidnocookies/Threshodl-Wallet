@@ -1,6 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include "config.h"
 #include "modulelinker.h"
 #include "certificate.h"
 #include "encryptionkey.h"
@@ -20,26 +21,20 @@ public:
     static App * globalInstance();
     static int exec(int argc, char *argv[]);
 
-    quint16             restPort() const;                   // 0 if not set
-
-    QString             caCertificateFilename() const;      // (Optional) - If loaded from a file
     QByteArray          caCertificatePEM() const;           // Empty if not valid
     Certificate *       caCertificate() const;              // nullptr if not valid, do NOT delete it
 
-    QString             caPrivateKeyFilename() const;       // (Optional) - If loaded from a file and if exists
     QByteArray          caPrivateKeyPEM() const;            // (Optional) - Empty if not valid
     EncryptionKey *     caPrivateKey() const;               // nullptr if not valid, do NOT delete it
 
-    QString             certificateFilename() const;        // (Optional) - If loaded from a file
     QByteArray          certificatePEM() const;             // Empty if not valid
     Certificate *       certificate() const;                // nullptr if not valid, do NOT delete it
 
-    QString             privateKeyFilename() const;         // (Optional) - If loaded from a file
     QByteArray          privateKeyPEM() const;              // Empty if not valid
     EncryptionKey *     privateKey() const;                 // nullptr if not valid, do NOT delete it
 
-    QString             logsPath() const;                   // Empty if not valid
-    QString             recordsPath() const;                // Empty if not valid
+    const Config *      configuration() const;
+    Config *            configuration();
 
     void *              logManager() const;                 // For internal logging, do not use directly
     void                setLogManager(void * iLogManager);  // For internal logging, do not use directly
@@ -63,6 +58,7 @@ protected:
 
     bool _createModules(bool iForInit = false);
     void _startModules();
+
     void _parseCommandLine();
     bool _shouldDoInit();
     bool _doInit();
@@ -75,47 +71,22 @@ protected:
     QMap< QString, QThread *>   mModuleThreads;
     QMap< QString, bool >       mModuleStarted;
 
+    Config                      mConfiguration;
+
     // For logging
-    void *              mLogManager                 = nullptr;
+    void *                      mLogManager                 = nullptr;
 
-    // Settings:
-    int                 mArgC                       = 0;
-    QStringList         mArgV;
+    QByteArray                  mCACertificatePEM;
+    Certificate *               mCACertificate              = nullptr;
 
-    bool                mShouldDoInit                       = false;
-    QString             mConfigFile;
+    QByteArray                  mCAPrivateKeyPEM;
+    EncryptionKey *             mCAPrivateKey               = nullptr;
 
-    quint16             mRESTPort                   = 0;
-    quint16             mRPCPort                    = 0;
-    QString             mServerName;
-    QString             mServerAddress;             // Only used for init
+    QByteArray                  mCertificatePEM;
+    Certificate *               mCertificate                = nullptr;
 
-    QString             mCACertificateFilename;
-    QByteArray          mCACertificatePEM;
-    Certificate *       mCACertificate              = nullptr;
-
-    QString             mCAPrivateKeyFilename;
-    QByteArray          mCAPrivateKeyPEM;
-    EncryptionKey *     mCAPrivateKey               = nullptr;
-
-    QString             mCertificateFilename;
-    QByteArray          mCertificatePEM;
-    Certificate *       mCertificate                = nullptr;
-
-    QString             mPrivateKeyFilename;
-    QByteArray          mPrivateKeyPEM;
-    EncryptionKey *     mPrivateKey                 = nullptr;
-
-    QString             mLogsPath;
-    QString             mRecordsPath;
-
-    QString             mDBUserName;
-    QString             mDBPassword;
-    QString             mDBName;
-    QString             mDBHostName;
-    quint16             mDBPort                     = 5432;
-    QString             mDBType;
-
+    QByteArray                  mPrivateKeyPEM;
+    EncryptionKey *             mPrivateKey                 = nullptr;
 };
 
 #endif // APP_H

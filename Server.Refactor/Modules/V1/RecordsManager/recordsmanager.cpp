@@ -17,7 +17,7 @@ RecordsManagerML::RecordsManagerML()
 void *RecordsManagerML::creator(void *pointerToAppObject)
 {
     App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
-    QString             lRecordsPath    = lApp->recordsPath(); // From app;
+    QString             lRecordsPath    = lApp->configuration()->toString(QStringLiteral("RecordsPath"));
     RecordsManager *    lRM             = new RecordsManager{lRecordsPath};
     lRM->mApp                           = lApp;
     return lRM;
@@ -98,7 +98,7 @@ QByteArray RecordsManager::testNetEstimateFee() const
 
 bool RecordsManager::doInit()
 {
-    QString lRecordsPath = mApp->recordsPath();
+    QString lRecordsPath = mApp->configuration()->toString(QStringLiteral("RecordsPath"));
     QDir    lDir{lRecordsPath};
 
     if( ! lDir.exists() ) {

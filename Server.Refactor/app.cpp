@@ -11,40 +11,6 @@
 
 #define     kConfigFile                             "config.json"
 
-#define     kCommandLineOption_Init                 "-init"
-#define     kCommandLineOption_ConfigFile           "-config"
-#define     kCommandLineOption_RESTPort             "-restPort"
-#define     kCommandLineOption_RPCPort              "-rpcPort"
-#define     kCommandLineOption_CACertFile           "-caCert"
-#define     kCommandLineOption_CAKeyFile            "-caKey"
-#define     kCommandLineOption_CertificateFile      "-cert"
-#define     kCommandLineOption_PrivateKeyFile       "-key"
-#define     kCommandLineOption_ServerName           "-serverName"
-#define     kCommandLineOption_ServerAddress        "-serverAddress"
-#define     kCommandLineOption_LogsPath             "-logs"
-#define     kCommandLineOption_RecordsPath          "-records"
-#define     kCommandLineOption_DBUserName           "-dbUserName"
-#define     kCommandLineOption_DBPassword           "-dbPassword"
-#define     kCommandLineOption_DBName               "-dbName"
-#define     kCommandLineOption_DBHostName           "-dbHostName"
-#define     kCommandLineOption_DBPort               "-dbPort"
-#define     kCommandLineOption_DBType               "-dbYype"
-
-#define     kConfigKey_RESTPort                     "RESTPort"
-#define     kConfigKey_RPCPort                      "RPCPort"
-#define     kConfigKey_ServerName                   "ServerName"
-#define     kConfigKey_CACertFile                   "CACertFile"
-#define     kConfigKey_PrivateKeyFile               "PrivateKeyFile"
-#define     kConfigKey_CertificateFile              "CertificateFile"
-#define     kConfigKey_LogsPath                     "LogsPath"
-#define     kConfigKey_RecordsPath                  "RecordsPath"
-#define     kConfigKey_DBUserName                   "DBUserName"
-#define     kConfigKey_DBPassword                   "DBPassword"
-#define     kConfigKey_DBName                       "DBName"
-#define     kConfigKey_DBHostName                   "DBHostName"
-#define     kConfigKey_DBPort                       "DBPort"
-#define     kConfigKey_DBType                       "DBType"
-
 static App * _globalInstance = nullptr;
 
 // https://stackoverflow.com/questions/21646467/how-to-execute-a-functor-or-a-lambda-in-a-given-thread-in-qt-gcd-style
@@ -92,17 +58,11 @@ int App::exec(int argc, char *argv[])
     return lApp.exec();
 }
 
-QString App::caCertificateFilename() const
-{ return mCACertificateFilename; }
-
 QByteArray App::caCertificatePEM() const
 { return mCACertificatePEM; }
 
 Certificate *App::caCertificate() const
 { return mCACertificate; }
-
-QString App::caPrivateKeyFilename() const
-{ return mCAPrivateKeyFilename; }
 
 QByteArray App::caPrivateKeyPEM() const
 { return mCAPrivateKeyPEM; }
@@ -110,17 +70,11 @@ QByteArray App::caPrivateKeyPEM() const
 EncryptionKey *App::caPrivateKey() const
 { return mCAPrivateKey; }
 
-QString App::certificateFilename() const
-{ return mCertificateFilename; }
-
 QByteArray App::certificatePEM() const
 { return mCertificatePEM; }
 
 Certificate *App::certificate() const
 { return mCertificate; }
-
-QString App::privateKeyFilename() const
-{ return mPrivateKeyFilename; }
 
 QByteArray App::privateKeyPEM() const
 { return mPrivateKeyPEM; }
@@ -128,11 +82,11 @@ QByteArray App::privateKeyPEM() const
 EncryptionKey *App::privateKey() const
 { return mPrivateKey; }
 
-QString App::logsPath() const
-{ return mLogsPath; }
+const Config *App::configuration() const
+{ return &mConfiguration; }
 
-QString App::recordsPath() const
-{ return mRecordsPath; }
+Config *App::configuration()
+{ return &mConfiguration; }
 
 void *App::logManager() const
 { return mLogManager; }
@@ -274,134 +228,50 @@ void App::_eventLoopStarted()
 
 App::App(int argc, char *argv[], QObject *iParent)
     : QObject(iParent)
-    , mArgC(argc)
-    , mConfigFile(kConfigFile)
 {
-    for( int lIndex = 0; lIndex < mArgC; lIndex++ ) {
-        mArgV << QString::fromLocal8Bit(argv[lIndex]);
+    mConfiguration.setFilename(kConfigFile);
+    QStringList lArgV;
+
+    for( int lIndex = 0; lIndex < argc; lIndex++ ) {
+        lArgV << QString::fromLocal8Bit(argv[lIndex]);
     }
+
+    mConfiguration.setValue(QStringLiteral("CommandLineArgumentCount"), argc);
+    mConfiguration.setValue(QStringLiteral("CommandLineArguments"), lArgV);
 }
 
 void App::_parseCommandLine()
 {
-    for( int lIndex = 1; lIndex < mArgC; lIndex++ ) {
-        if( mArgV[lIndex] == kCommandLineOption_Init ) {
-            mShouldDoInit = true;
+    QStringList lCommandLineArguments = mConfiguration.toStringList(QStringLiteral("CommandLineArguments"));
+
+    for( int lIndex = 1; lIndex < mConfiguration.toInt32(QStringLiteral("CommandLineArgumentCount")); lIndex++ ) {
+        // Format:
+        // Key=Value....
+
+        QString     lArgument           = lCommandLineArguments.at(lIndex);
+        int         lLocationOfEquals   = lArgument.indexOf(QChar('='));
+
+        if( lLocationOfEquals < 0 ) continue;
+
+        QString     lKey                = lArgument.left(lLocationOfEquals);
+        QString     lValue              = lArgument.mid(lLocationOfEquals+1);
+
+        if( lKey.toLower() == QStringLiteral("configfile") || lKey == QStringLiteral("ConfigurationFilename") ) {
+            mConfiguration.setFilename(lValue);
             continue;
         }
 
-        // These options take a parameter
-        if( lIndex+1 < mArgC ) {
-            if( mArgV[lIndex] == kCommandLineOption_ConfigFile ) {
-                lIndex++;
-                mConfigFile = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_RESTPort ) {
-                lIndex++;
-                mRESTPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_RPCPort ) {
-                lIndex++;
-                mRPCPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_CACertFile ) {
-                lIndex++;
-                mCACertificateFilename = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_CAKeyFile ) {
-                lIndex++;
-                mCAPrivateKeyFilename = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_CertificateFile ) {
-                lIndex++;
-                mCertificateFilename = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_PrivateKeyFile ) {
-                lIndex++;
-                mPrivateKeyFilename = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_ServerName ) {
-                lIndex++;
-                mServerName = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_ServerAddress ) {
-                lIndex++;
-                mServerAddress = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_LogsPath ) {
-                lIndex++;
-                mLogsPath = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_RecordsPath ) {
-                lIndex++;
-                mRecordsPath = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBUserName ) {
-                lIndex++;
-                mDBUserName = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBPassword ) {
-                lIndex++;
-                mDBPassword = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBName ) {
-                lIndex++;
-                mDBName = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBHostName ) {
-                lIndex++;
-                mDBHostName = mArgV[lIndex];
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBPort ) {
-                lIndex++;
-                mDBPort = static_cast<quint16>(mArgV[lIndex].toUInt() & 0xFFFF);
-                continue;
-            }
-
-            if( mArgV[lIndex] == kCommandLineOption_DBType ) {
-                lIndex++;
-                mDBType = mArgV[lIndex].toUpper();
-                continue;
-            }
-        }
+        mConfiguration.setValue(lKey,lValue);
     }
 }
 
 bool App::_shouldDoInit()
-{ return mShouldDoInit; }
+{ return (mConfiguration.toInt32(QStringLiteral("DoInit")) != 0); }
 
 bool App::_doInit()
 {
+    mConfiguration.removeValue(QStringLiteral("DoInit"));
+
     _createModules(true);
 
     for( QString lModuleName : mModules.keys() )
@@ -419,89 +289,38 @@ bool App::_doInit()
 
 void App::_loadConfigurationFile()
 {
-    QJsonParseError lJsonError;
-    QVariantMap     lConfig = QJsonDocument::fromJson(_loadFile(mConfigFile),&lJsonError).toVariant().toMap();
+    if( mConfiguration.filename().isEmpty() )
+        mConfiguration.setFilename(kConfigFile);
 
-    if( lJsonError.error == QJsonParseError::NoError ) {
-        if( lConfig.contains(kConfigKey_RESTPort) ) {
-            mRESTPort = static_cast<quint16>(lConfig[kConfigKey_RESTPort].toUInt() & 0xFFFF);
-        }
-
-        if( lConfig.contains(kConfigKey_RPCPort) ) {
-            mRPCPort = static_cast<quint16>(lConfig[kConfigKey_RPCPort].toUInt() & 0xFFFF);
-        }
-
-        if( lConfig.contains(kConfigKey_ServerName) ) {
-            mServerName = lConfig[kConfigKey_ServerName].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_CACertFile) ) {
-            mCACertificateFilename = lConfig[kConfigKey_CACertFile].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_PrivateKeyFile) ) {
-            mPrivateKeyFilename = lConfig[kConfigKey_PrivateKeyFile].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_CertificateFile) ) {
-            mCertificateFilename = lConfig[kConfigKey_CertificateFile].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_LogsPath) ) {
-            mLogsPath = lConfig[kConfigKey_LogsPath].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_RecordsPath) ) {
-            mRecordsPath = lConfig[kConfigKey_RecordsPath].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_DBUserName) ) {
-            mDBUserName = lConfig[kConfigKey_DBUserName].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_DBPassword) ) {
-            mDBPassword = lConfig[kConfigKey_DBPassword].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_DBName) ) {
-            mDBName = lConfig[kConfigKey_DBName].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_DBHostName) ) {
-            mDBHostName = lConfig[kConfigKey_DBHostName].toString();
-        }
-
-        if( lConfig.contains(kConfigKey_DBPort) ) {
-            mDBPort = static_cast<quint16>(lConfig[kConfigKey_DBPort].toUInt() & 0xFFFF);
-        }
-
-        if( lConfig.contains(kConfigKey_DBType) ) {
-            mDBType = lConfig[kConfigKey_DBType].toString().toUpper();
-        }
-    }
+    if( ! mConfiguration.load() )
+        qWarning() << "Failed to load configuration file!";
 }
 
 void App::_loadCryptoFiles()
 {
-    if( ! mCACertificateFilename.isEmpty() ) {
+    QString lCACertificateFilename = mConfiguration.toString(QStringLiteral("CACertificateFilename"));
+    QString lPrivateKeyFilename = mConfiguration.toString(QStringLiteral("PrivateKeyFilename"));
+    QString lCertificateFilename = mConfiguration.toString(QStringLiteral("CertificateFilename"));
+
+    if( ! lCACertificateFilename.isEmpty() ) {
         if( mCACertificate == nullptr )
-            mCACertificate = _loadCertificateFilename(mCACertificateFilename);
+            mCACertificate = _loadCertificateFilename(lCACertificateFilename);
 
         if( mCACertificate )
             mCACertificatePEM = mCACertificate->toPEM();
     }
 
-    if( ! mPrivateKeyFilename.isEmpty() ) {
+    if( ! lPrivateKeyFilename.isEmpty() ) {
         if( mPrivateKey == nullptr )
-            mPrivateKey = _loadEncryptionKeyFilename(mPrivateKeyFilename);
+            mPrivateKey = _loadEncryptionKeyFilename(lPrivateKeyFilename);
 
         if( mPrivateKey )
             mPrivateKeyPEM = mPrivateKey->privateToPEM();
     }
 
-    if( ! mCertificateFilename.isEmpty() ) {
+    if( ! lCertificateFilename.isEmpty() ) {
         if( mCertificate == nullptr )
-            mCertificate = _loadCertificateFilename(mCertificateFilename);
+            mCertificate = _loadCertificateFilename(lCertificateFilename);
 
         if( mCertificate )
             mCertificatePEM = mCertificate->toPEM();
