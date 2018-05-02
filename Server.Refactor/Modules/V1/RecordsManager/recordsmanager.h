@@ -1,5 +1,5 @@
-#ifndef RECORDSMANAGER_H
-#define RECORDSMANAGER_H
+#ifndef RECORDSMANAGERV1_H
+#define RECORDSMANAGERV1_H
 
 #include "../../Interface/RecordsManagerInterface/recordsmanagerinterface.h"
 
@@ -57,4 +57,4 @@ public:
     static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
-#endif // RECORDSMANAGER_H
+#endif // RECORDSMANAGERV1_H

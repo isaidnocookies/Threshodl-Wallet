@@ -10,7 +10,8 @@ class CertificateManagerInterface
 public:
     virtual ~CertificateManagerInterface() { }
 
-    virtual void generateCertificates() = 0;
+    virtual bool loadCertificates() = 0;
+    virtual bool generateCertificates() = 0;
 };
 
 #endif // CERTIFICATEMANAGERINTERFACE_H

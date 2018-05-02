@@ -1,5 +1,5 @@
-!contains( WALLETSERVERMODULES, LogsManager ) {
-    WALLETSERVERMODULES += LogsManager
+!contains( WALLETSERVERMODULES, LogsManagerV1 ) {
+    WALLETSERVERMODULES += LogsManagerV1
 
     HEADERS += \
         $$PWD/logsmanager.h

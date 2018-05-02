@@ -1,5 +1,5 @@
-#ifndef LOGSMANAGER_H
-#define LOGSMANAGER_H
+#ifndef LOGSMANAGERV1_H
+#define LOGSMANAGERV1_H
 
 #include "../../Interface/LogsManagerInterface/logsmanagerinterface.h"
 
@@ -61,4 +61,4 @@ public:
     static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
-#endif // LOGSMANAGER_H
+#endif // LOGSMANAGERV1_H
