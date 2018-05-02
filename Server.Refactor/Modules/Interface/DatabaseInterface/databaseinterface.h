@@ -33,7 +33,7 @@ public:
 
     // Relating to microwallets:
     virtual bool                        microWalletExists( const QString iMicroWalletId )                                                                       = 0;
-    virtual bool                        microWalletsExists(const QStringList iMicroWalletId)                                                                    = 0;
+    virtual bool                        microWalletsExists( const QStringList iMicroWalletIds )                                                                 = 0;
 
     virtual bool                        microWalletOwnershipCheck( const QString iMicroWalletId, const QString iAddress )                                       = 0;
     virtual bool                        microWalletsOwnershipCheck( const QStringList iMicroWalletIds, const QString iAddress )                                 = 0;
@@ -52,6 +52,6 @@ public:
     virtual bool                        microWalletDelete( const QString iMicroWalletId, const QString iAddress )                                               = 0;
     virtual bool                        microWalletsDelete( const QString iAddress, const QStringList iMicroWalletIds )                                         = 0;
     virtual bool                        microWalletsDelete( const QStringList iMicroWalletIds, const QString iAddress )                                         = 0;
-}
+};
 
 #endif // DATABASEINTERFACE_H

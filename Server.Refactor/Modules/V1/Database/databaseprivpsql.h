@@ -1,0 +1,62 @@
+#ifndef DATABASEPRIVPSQL_H
+#define DATABASEPRIVPSQL_H
+
+#include "databasepriv.h"
+#include "app.h"
+
+#include <QSqlDatabase>
+
+class DataBase;
+class DataBasePrivPSQL : public DataBasePriv
+{
+    friend class DataBase;
+protected:
+    enum EscrowRecordState {
+        Invalid     = 0x0,
+        Unlocked    = 0x1,
+        Locked      = 0x2
+    };
+
+    typedef enum EscrowRecordState EscrowRecordState;
+
+    QString _sanitizeAccountName(const QString iAccountName);
+    QString _escrowTableNameForAccount(const QString iAccountName);
+    QString _createEscrowTableSqlQueryForAccount(const QString iAccountName);
+
+    App *               mApp            = nullptr;
+    QString             mDBUserName;
+    QString             mDBPassword;
+    QString             mDBName;
+    QString             mDBHostName;
+    quint16             mDBPort         = 5432;
+
+    QString             mInternalDataBaseString;
+
+    bool    _init();
+
+    bool    _startTransactionAndLockTables(QSqlDatabase &iDataBase, const QStringList iTablesToLockForSharedMode = QStringList(), const QStringList iTablesToLockForExclusiveMode = QStringList());
+    bool    _startTransaction(QSqlDatabase &iDataBase)      { return _startTransactionAndLockTables(iDataBase, QStringList(), QStringList()); }
+    bool    _rollbackTransaction(QSqlDatabase &iDataBase);
+    bool    _commitTransaction(QSqlDatabase &iDataBase);
+
+    bool    _startTransactionAndOpenAndLockTables(QSqlDatabase &oDatabase, const QStringList iTablesToLockForSharedMode = QStringList(), const QStringList iTablesToLockForExclusiveMode = QStringList());
+    bool    _startTransactionAndOpen(QSqlDatabase &oDatabase)      { return _startTransactionAndOpenAndLockTables(oDatabase,QStringList(), QStringList()); }
+
+public:
+    DataBasePrivPSQL();
+
+    bool                        createTables() override;
+    bool                        addressExists( const QString iAddress ) override;
+    bool                        addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;
+    bool                        addressValidate( const QString iAddress, const QByteArray iPublicKey ) override;
+    bool                        addressDelete( const QString iAddress ) override;
+    QByteArray                  publicKeyForAddress(const QString iAddress) override;
+    bool                        microWalletsExists( const QStringList iMicroWalletIds ) override;
+    bool                        microWalletsOwnershipCheck( const QStringList iMicroWalletIds, const QString iAddress ) override;
+    bool                        microWalletsChangeOwnership( const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override;
+    bool                        microWalletCreates( const QMap< QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress ) override;
+    QMap< QString, QByteArray>  microWalletsCopyPayload( const QStringList iMicroWalletIds, const QString iAddress ) override;
+    bool                        microWalletsDelete( const QStringList iMicroWalletIds, const QString iAddress ) override;
+};
+
+#endif // DATABASEPRIVPSQL_H
