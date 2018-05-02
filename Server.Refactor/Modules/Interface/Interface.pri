@@ -6,6 +6,7 @@
     include($$PWD/CertificateManagerInterface/CertificateManagerInterface.pri)
     include($$PWD/DatabaseInterface/DatabaseInterface.pri)
     include($$PWD/DownloaderInterface/DownloaderInterface.pri)
+    include($$PWD/RESTServerInterface/RESTServerInterface.pri)
     include($$PWD/RESTHandlerInterface/RESTHandlerInterface.pri)
     include($$PWD/RPCServerInterface/RPCServerInterface.pri)
     include($$PWD/RPCServerHandlerInterface/RPCServerHandlerInterface.pri)
