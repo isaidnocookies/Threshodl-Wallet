@@ -16,12 +16,16 @@ class CertificateManager : public CertificateManagerInterface
     friend class CertificateManagerML;
 
 protected:
+    App *                   mApp                    = nullptr;
+
+    static bool             _saveFile(const QByteArray &iData, const QString &iFilename);
+
     static QByteArray       _loadFile(const QString &iFilename);
     static Certificate *    _loadCertificateFilename(const QString &iFilename);
     static EncryptionKey *  _loadEncryptionKeyFilename(const QString &iFilename, bool iIsPrivateKey = true);
 
-    static bool             _loadCertificatePEMOrFile(const QByteArray iPEM, const QString iFilename, Certificate ** oCertificate);
-    static bool             _loadEncryptionKeyPEMOrFile(const QByteArray iPEM, const QString iFilename, EncryptionKey ** oKey, bool iIsPrivateKey = true);
+    static bool             _loadCertificatePEMOrFile(QByteArray &ioPEM, const QString iFilename, Certificate ** oCertificate);
+    static bool             _loadEncryptionKeyPEMOrFile(QByteArray &ioPEM, const QString iFilename, EncryptionKey ** oKey, bool iIsPrivateKey = true);
 
 public:
     virtual ~CertificateManager();
@@ -29,7 +33,7 @@ public:
     CertificateManager()
     { }
 
-    void loadConfigurationValuesFromApp(App * iApp);
+    void loadConfigurationValues();
 
     bool loadCertificates() override;
     bool generateCertificates() override;

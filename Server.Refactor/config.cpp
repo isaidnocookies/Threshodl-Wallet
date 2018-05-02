@@ -155,3 +155,9 @@ void Config::removeValue(const QString iKey)
     QWriteLocker l{&mLock};
     mConfigValues.remove(iKey);
 }
+
+bool Config::contains(const QString iKey) const
+{
+    QReadLocker l{&mLock};
+    return mConfigValues.contains(iKey);
+}

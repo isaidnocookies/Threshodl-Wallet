@@ -31,6 +31,8 @@ public:
     void                    setValue(const QString iKey, QByteArray iValue)             { setValue(iKey, QVariant{iValue.toBase64()}); }
     void                    removeValue(const QString iKey);
 
+    bool                    contains(const QString iKey) const;
+
     QStringList             keys() const;
     QVariantMap             values() const;
 

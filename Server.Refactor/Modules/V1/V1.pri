@@ -4,4 +4,5 @@
     include($$PWD/LogsManager/LogsManager.pri)
     include($$PWD/CertificateManager/CertificateManager.pri)
     include($$PWD/RecordsManager/RecordsManager.pri)
+    include($$PWD/Downloader/Downloader.pri)
 }
