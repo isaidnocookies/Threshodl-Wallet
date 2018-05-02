@@ -7,5 +7,6 @@
     include($$PWD/DatabaseInterface/DatabaseInterface.pri)
     include($$PWD/DownloaderInterface/DownloaderInterface.pri)
     include($$PWD/RESTHandlerInterface/RESTHandlerInterface.pri)
-    include($$PWD/RPCHandlerInterface/RPCHandlerInterface.pri)
+    include($$PWD/RPCServerInterface/RPCServerInterface.pri)
+    include($$PWD/RPCServerHandlerInterface/RPCServerHandlerInterface.pri)
 }
