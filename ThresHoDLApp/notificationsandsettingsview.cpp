@@ -12,6 +12,17 @@ NotificationsAndSettingsView::NotificationsAndSettingsView(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //////////////////////////////////////////////
+    /// INCLUDED FOR TESTING ONLY
+    //////////////////////////////////////////////
+    ///
+    ui->resetBalancePushButton->setVisible(false);
+    ui->addPushButton->setVisible(false);
+    ui->amountLineEdit->setVisible(false);
+    ///
+    //////////////////////////////////////////////
+    //////////////////////////////////////////////
+
     ui->amountLineEdit->setStyleSheet(lightBackgroundStyleSheet());
     ui->emailLineEdit->setStyleSheet(lightBackgroundStyleSheet());
     ui->addPushButton->setStyleSheet(lightBackgroundStyleSheet());
@@ -19,8 +30,7 @@ NotificationsAndSettingsView::NotificationsAndSettingsView(QWidget *parent) :
     ui->deleteAccountButton->setStyleSheet(lightBackgroundStyleSheet());
     ui->backupPushButton->setStyleSheet(lightBackgroundStyleSheet());
 
-//    ui->addPushButton->setVisible(false);
-//    ui->amountLineEdit->setVisible(false);
+    ui->resetBalancePushButton->setStyleSheet(lightBackgroundStyleSheet());
 
     QScroller::grabGesture(ui->notificationTableWidget, QScroller::LeftMouseButtonGesture);
 }
@@ -116,4 +126,10 @@ void NotificationsAndSettingsView::stopProgressBarAndEnable()
     ui->deleteAccountButton->setEnabled(true);
     ui->imSureCheckBox->setEnabled(true);
     ui->amountLineEdit->setEnabled(true);
+}
+
+void NotificationsAndSettingsView::on_resetBalancePushButton_pressed()
+{
+    mActiveUser->setBrightPendingBalance(mActiveUser->getBrightBalance());
+    mActiveUser->setDarkPendingBalance(mActiveUser->getDarkBalance());
 }

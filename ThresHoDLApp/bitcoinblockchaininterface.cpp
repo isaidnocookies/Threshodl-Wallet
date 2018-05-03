@@ -38,22 +38,39 @@ bool BitcoinBlockchainInterface::updateBrightWalletBalances(int iConfirmations)
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
     QStringMath             lBrightBalance = QStringMath();
+    QStringMath             lBrightPendingBalance = QStringMath();
     QList<BitcoinWallet>    lNewWallets;
     bool                    lSuccess = true;
 
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
     for (BitcoinWallet &w : mActiveUser->getBrightWallets()) {
-        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2/balance").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
+        lReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/addr/%2").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(w.address())))));
         lMyEventLoop.exec();
 
         if (lReply->error() == QNetworkReply::NoError) {
             QByteArray      lReplyText = lReply->readAll();
+            auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
             BitcoinWallet   lNewWallet = w;
-            QStringMath     lBalance = QStringMath::btcFromSatoshi(QString(lReplyText));
+
+            QString         lPendingString = lMyMap["unconfirmedBalance"].toString();
+            QStringMath     lBalance = lMyMap["balance"].toString();
+            QStringMath     lPendingBalance;
+
+            if (!lPendingString.isEmpty()) {
+                if (lPendingString.at(0) == "-") {
+                    lPendingString.remove(0,1);
+                    lPendingBalance = lBalance - lMyMap["unconfirmedBalance"].toString();
+                } else {
+                    lPendingBalance = lBalance + lMyMap["unconfirmedBalance"].toString();
+                }
+            }
+
             lNewWallet.setValue(lBalance.toString());
             lNewWallets.append(lNewWallet);
             lBrightBalance = lBrightBalance + lBalance;
+
+            lBrightPendingBalance = lBrightPendingBalance + lPendingBalance;
         } else {
             qDebug() << "Error.... Can not update bright wallet balance...";
             lSuccess = false;
@@ -62,6 +79,17 @@ bool BitcoinBlockchainInterface::updateBrightWalletBalances(int iConfirmations)
     }
 
     mActiveUser->setBrightWallets(lNewWallets);
+    mActiveUser->setBrightPendingBalance(lBrightPendingBalance);
+
+    if (mActiveUser->getBrightBalance() == mActiveUser->getBrightPendingBalance()) {
+        mActiveUser->setBrightWalletsSettled(true);
+    } else {
+        mActiveUser->setBrightWalletsSettled(false);
+    }
+
+    qDebug() << "PendingBrightBalance: " << mActiveUser->getBrightPendingBalance().toString();
+    qDebug() << "lBrightBalance: " << mActiveUser->getBrightBalance().toString();
+
     return lSuccess;
 }
 
@@ -92,6 +120,9 @@ bool BitcoinBlockchainInterface::updateDarkWalletBalances(int iConfirmations)
             lSuccess = false;
         }
     }
+
+    mActiveUser->setDarkPendingBalance(lPendingDarkBalance);
+    mActiveUser->setDarkBalance(lDarkBalance);
 
     if (lPendingDarkBalance == lDarkBalance) {
         mActiveUser->setDarkWalletsSettled(true);

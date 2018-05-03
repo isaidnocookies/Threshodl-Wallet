@@ -171,14 +171,12 @@ void DarkWallet::on_balancePushButton_pressed()
     mDarkMicroWalletView->showMaximized();
 }
 
-void DarkWallet::on_refreshWalletButton_pressed()
-{
-//    startProgressBarAndDisable();
-}
-
 void DarkWallet::updateBalanceLabel()
 {
-    QString lTotalBalance = mActiveUser->getDarkBalance().toString();
+    QStringMath lBalance = mActiveUser->getDarkBalance();
+    QStringMath lPendingBalance = mActiveUser->getDarkPendingBalance();
+
+    QString lTotalBalance = mActiveUser->getDarkPendingBalance().toString();
 
     bool    lFontFits = false;
     QFont   lFont = mMainBalanceFont;
@@ -195,4 +193,18 @@ void DarkWallet::updateBalanceLabel()
 
     ui->balancePushButton->setText(QString("%1").arg(lTotalBalance));
     ui->balancePushButton->setFont(lFont);
+
+    if (mActiveUser->isDarkWalletsSettled()) {
+        ui->darkBtcLabel->setText("Dark BTC (Confirmed)");
+    } else {
+        ui->darkBtcLabel->setText("Dark BTC (Unconfirmed)");
+    }
+
+    stopProgressBarAndEnable();
+}
+
+void DarkWallet::on_refreshWalletButton_released()
+{
+    startProgressBarAndDisable();
+    mActiveUser->updateBalancesFromBlockchain();
 }

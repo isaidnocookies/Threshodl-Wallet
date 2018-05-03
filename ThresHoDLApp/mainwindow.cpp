@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mPendingImport = "";
 
     connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &MainWindow::updateBalances);
-    connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
+//    connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
 
     if (mActiveUser->isNewAccount()) {
         mCreateAccount = new CreateAccount;
@@ -121,11 +121,6 @@ void MainWindow::createAccountComplete(QString iUsername, QByteArray iPriv, QByt
     setUI();
 }
 
-void MainWindow::makeMaximized()
-{
-    this->showMaximized();
-}
-
 void MainWindow::saveAddressInSettings(QString iEmail, QString iAddress)
 {
     mActiveUser->setAddresses(iEmail, iAddress);
@@ -161,12 +156,13 @@ void MainWindow::completePendingImport(bool iComplete)
 void MainWindow::on_brightButton_pressed()
 {
     mBrightWalletView = new BrightWallet;
+    mBrightWalletView->setActiveUser(*mActiveUser);
+
+    connect (mBrightWalletView, &BrightWallet::brightToDarkCompletedSignal, this, &MainWindow::brightToDarkCompleted);
+    connect (mActiveUser, &UserAccount::updateBalancesForViews, mBrightWalletView, &BrightWallet::updateBalancesForViews);
 
     ui->warningLabel->setText("");
 
-    connect (mBrightWalletView, &BrightWallet::brightToDarkCompletedSignal, this, &MainWindow::brightToDarkCompleted);
-
-    mBrightWalletView->setActiveUser(*mActiveUser);
     mBrightWalletView->show();
     mBrightWalletView->showMaximized();
 }
@@ -175,13 +171,14 @@ void MainWindow::on_darkButton_pressed()
 {
    mDarkWalletView = new DarkWallet;
 
-   ui->warningLabel->setText("");
-
-   connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
-   connect (mDarkWalletView, &DarkWallet::destroyed, this, &MainWindow::walletWindowDeleted);
    mDarkWalletView->setActiveUser(*mActiveUser);
    mDarkWalletView->setEmail(mActiveUser->getEmail());
    mDarkWalletView->setAddress(mActiveUser->getUsername());
+
+   connect (mDarkWalletView, &DarkWallet::saveAddressSettings, this, &MainWindow::saveAddressInSettings);
+   connect (mActiveUser, &UserAccount::updateBalancesForViews, mDarkWalletView, &DarkWallet::updateBalancesForViews);
+
+   ui->warningLabel->setText("");
 
    mDarkWalletView->showMaximized();
    mDarkWalletView->show();
@@ -202,12 +199,18 @@ void MainWindow::on_notificationPushButton_pressed()
 void MainWindow::brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets)
 {
     Q_UNUSED(lBrightAmount);
-    QStringMath lDarkTotal = QStringMath();
-    for (auto dw : iDarkWallets) {
-        lDarkTotal = lDarkTotal + BitcoinWallet(dw).value();
+
+    if (iSuccessful) {
+        QStringMath lDarkTotal = QStringMath();
+        for (auto dw : iDarkWallets) {
+            lDarkTotal = lDarkTotal + BitcoinWallet(dw).value();
+        }
+
+        addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal.toString()));
+    } else {
+        addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("Bright to dark transaction failed."));
     }
 
-    addNotificationToSettings(QDate::currentDate().toString(myDateFormat()), QString("%1 was added to your Dark Wallet from your Bright Wallet!").arg(lDarkTotal.toString()));
 }
 
 void MainWindow::addNotificationToSettings(QString iDate, QString iNotification)
@@ -221,6 +224,7 @@ void MainWindow::updateBalances(QString iBrightBalance, QString iDarkBalances)
     QString lTotalBalance = (QStringMath(iBrightBalance) + QStringMath(iDarkBalances)).toString();
 
     bool    lFontFits = false;
+    bool    lFontWasChanged = false;
     QFont   lFont = mMainBalanceFont;
 
     ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC").arg(iBrightBalance));
@@ -231,43 +235,40 @@ void MainWindow::updateBalances(QString iBrightBalance, QString iDarkBalances)
         ui->darkBitcoinBalanceLabel->setText(QString("%1 BTC (Unconfirmed)").arg(iDarkBalances));
     }
 
+    if (mActiveUser->isBrightWalletSettled()) {
+        ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC (Confirmed)").arg(iBrightBalance));
+    } else {
+        ui->brightBitcoinBalanceLabel->setText(QString("%1 BTC (Unconfirmed)").arg(iBrightBalance));
+    }
+
     while (!lFontFits) {
         QFontMetrics lFm(lFont);
         QRect lBound = lFm.boundingRect(0,0, ui->btcTotalLabel->width(), ui->btcTotalLabel->height(), Qt::TextWordWrap | Qt::AlignCenter, lTotalBalance);
 
-        if (lBound.width() <= QApplication::desktop()->screenGeometry().width())
+        if (lBound.width() <= QApplication::desktop()->screenGeometry().width()) {
             lFontFits = true;
-        else
+        } else {
             lFont.setPointSize(lFont.pointSize() - 2);
+            lFontWasChanged = true;
+        }
+    }
+
+    if (lFontWasChanged) {
+        lFont.setPointSize(lFont.pointSize() - 2);
     }
 
     ui->btcTotalLabel->setText(QString("%1").arg(lTotalBalance));
     ui->btcTotalLabel->setFont(lFont);
 }
 
-void MainWindow::walletWindowDeleted()
-{
-    mDarkWalletView = nullptr;
-    mBrightWalletView = nullptr;
-}
-
-void MainWindow::brightWalletUpdateComplete(bool iSuccess)
-{
-    stopProgressBarAndEnable();
-    ui->warningLabel->setText("Wallets updated!");
-}
-
 void MainWindow::clearAllDataAndLogout()
 {
-//    ui->centralWidget->setGeometry(QApplication::desktop()->screenGeometry());
-//    this->showMaximized();
     mActiveUser->deleteLater();
     mActiveUser = nullptr;
 
     mActiveUser = new UserAccount;
     connect (mActiveUser, &UserAccount::clearAllSavedDataComplete, this, &MainWindow::clearAllDataAndLogout);
     connect (mActiveUser, &UserAccount::updateBalancesForViews, this, &MainWindow::updateBalances);
-    connect (mActiveUser, &UserAccount::updateBrightBalanceComplete, this, &MainWindow::brightWalletUpdateComplete);
     mPendingImport = "";
 
     if (mActiveUser->isNewAccount()) {
@@ -294,7 +295,7 @@ void MainWindow::setUI()
 {
     ui->welcomeLabel->setText(QString("Welcome, %1").arg(mActiveUser->getUsername()));
     updateBalances(mActiveUser->getBrightBalance().toString(), mActiveUser->getDarkBalance().toString());
-    makeMaximized();
+    this->showMaximized();
 }
 
 void MainWindow::startProgressBarAndDisable()
@@ -317,10 +318,10 @@ void MainWindow::stopProgressBarAndEnable()
     ui->warningLabel->setText("");
 }
 
-void MainWindow::on_refreshWalletsButton_pressed()
+void MainWindow::on_refreshWalletsButton_released()
 {
-    ui->warningLabel->setText("");
     startProgressBarAndDisable();
-    mActiveUser->updateBrightBalanceFromBlockchain();
-
+    ui->warningLabel->setText("");
+    mActiveUser->updateBalancesFromBlockchain();
+    stopProgressBarAndEnable();
 }

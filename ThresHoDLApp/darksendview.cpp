@@ -261,8 +261,7 @@ bool DarkSendView::getAttachmentPackage(QByteArray &oData)
     }
 
     if (lCounterValue < lValue) {
-        qDebug() << "Shit, can't make change...";
-        // TODO: do something about it...
+        qDebug() << "Can't make change...";
         return false;
     }
 

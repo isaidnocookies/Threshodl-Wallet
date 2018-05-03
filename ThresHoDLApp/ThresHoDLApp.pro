@@ -34,6 +34,9 @@ ios {
     ios_icon.files = $$files($$PWD/ios/AppIcon.appiconset/Icon-App*.png)
     QMAKE_BUNDLE_DATA += ios_icon
     include (ios/plist.pri)
+
+    QMAKE_CFLAGS += -gdwarf-2
+    QMAKE_CXXFLAGS += -gdwarf-2
 }
 
 SOURCES += \

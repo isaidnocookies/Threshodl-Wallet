@@ -15,7 +15,7 @@ darwin {
         "    <key>CFBundleExecutable</key>" \
         "    <string>$$TARGET</string>" \
         "    <key>CFBundleIdentifier</key>" \
-        "    <string>com.threshodl.$${LITERAL_DOLLAR}{PRODUCT_NAME:rfc1034identifier}</string>" \
+        "    <string>com.threeb.$${LITERAL_DOLLAR}{PRODUCT_NAME:rfc1034identifier}</string>" \
         "    <key>CFBundleDisplayName</key>" \
         "    <string>threshodl</string>" \
         "    <key>CFBundleName</key>" \

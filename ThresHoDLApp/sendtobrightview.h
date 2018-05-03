@@ -39,7 +39,7 @@ private slots:
     void on_amountLineEdit_textChanged(const QString &arg1);
 
     void newMicroWallets(bool iSuccess);
-    void completeMicroWallet(bool oSuccess);
+    void completeMicroWallet(bool iSuccess);
     void microWalletBreakdownComplete(bool oSuccess);
 
 signals:
@@ -54,6 +54,7 @@ private:
     UserAccount             *mActiveUser;
     BreakdownMicroWallet    *mBreakdownMicroWallet;
 
+    void sendToBrightComplete(bool iSuccess);
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
     void completeWalletsAndAdd(QMap<QString, QByteArray> iData);

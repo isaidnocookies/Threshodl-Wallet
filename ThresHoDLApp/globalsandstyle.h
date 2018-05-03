@@ -8,7 +8,7 @@
 
 #define BLOCKCYPER_API_URL "https://api.blockcypher.com/v1/btc/test3"
 
-#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.35:4431"
+#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.38:4431"
 //#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
 
 #define BITCOIN_NODE_IP_ADDRESS "http://test:test@10.10.0.158:8332"
@@ -27,13 +27,12 @@ inline QString privateKeySetting() {                return QString("privateKeySe
 inline QString brightWalletsSetting() {             return QString("brightWalletsSetting"); }
 inline QString brightPendingBalanceSetting() {      return QString("brightPendingBalanceSetting"); }
 inline QString darkWalletsSetting() {               return QString("darkWalletsSetting"); }
+inline QString darkPendingBalanceSetting() {        return QString("darkPendingBalanceSetting"); }
 inline QString darkWalletPendingSetting() {         return QString("darkWalletPendingSetting"); }
 
 inline QString emailSetting() {                     return QString("emailSetting"); }
 inline QString addressSetting() {                   return QString("addressSetting"); }
-
 inline QString notificationsSetting() {             return QString("notificationsSettings"); }
-
 inline QString myDateFormat() {                     return QString("d.M.yy"); }
 
 inline QString jsonPrivateKey() {                   return QString("jsonPrivateKey"); }
