@@ -4,10 +4,10 @@
 #include <QString>
 #include <QStringList>
 
-class Grinder
+class GrinderInterface
 {
 public:
-    virtual ~Grinder() { }
+    virtual ~GrinderInterface() { }
 
     virtual QStringList grindValues(const QString iValue, const QString iCryptoCurrency = QStringLiteral("BTC")) = 0;
 };
