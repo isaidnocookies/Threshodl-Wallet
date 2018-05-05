@@ -170,7 +170,7 @@ bool DatabasePrivPSQL::addressExists(const QString iAddress)
         if( lQuery.exec() ) {
             int lAddressNo = lQuery.record().indexOf(QStringLiteral("address"));
             if( lQuery.first() ) {
-                if( lQuery.value(lAddressNo).toString() == iAddress.toLower() ) {
+                if( lQuery.value(lAddressNo).toString() == lAddress.toLower() ) {
                     _commitTransaction(lDB);
                     return true;
                 } else {

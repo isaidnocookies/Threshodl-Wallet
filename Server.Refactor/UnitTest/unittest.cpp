@@ -2,7 +2,7 @@
 
 void UnitTestInjectCommandConfiguration(Config * iConfiguration)
 {
-    Q_UNUSED(iConfiguration)
+    iConfiguration->setValue(QStringLiteral("LogOutputFormat"),QStringLiteral("json"));
 
     // Do nothing for now, later we can inject custom configuration settings and filters here
 

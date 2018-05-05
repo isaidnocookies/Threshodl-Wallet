@@ -18,9 +18,61 @@
 #   define  syslog(...)
 #endif
 
+typedef enum OutputFormat {
+    Human       = 0,
+    Json        = 1
+} OutputFormat;
+
 static LogsManagerML            _gRegisterModuleLinker;
 static QReadWriteLock           _gGlobalInstanceConstructionDestructionLock;
+static OutputFormat             _gOutputFormat                                  = OutputFormat::Human;
 static LogsManager *            _gGlobalInstance                                = nullptr;
+
+static QByteArray _createJsonOutput(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
+{
+    QByteArray          lResult;
+
+    switch (iType) {
+    case QtDebugMsg:    lResult = "{\n\t\"Type\" : \"Debug\",";         break;
+    case QtInfoMsg:     lResult = "{\n\t\"Type\" : \"Info\",";          break;
+    case QtWarningMsg:  lResult = "{\n\t\"Type\" : \"Warning\",";       break;
+    case QtCriticalMsg: lResult = "{\n\t\"Type\" : \"Critical\",";      break;
+    case QtFatalMsg:    lResult = "{\n\t\"Type\" : \"Fatal\",";         break;
+    }
+
+    lResult = lResult.append(
+                QStringLiteral("\n\t\"File\" : \"%1\",\n\t\"Function\" : \"%2\",\n\t\"Line\" : %3,\n\t\"Category\" : \"%4\",\n\t\"Version\" : %5,\n\t\"Message\" : \"%6\"\n}\n")
+                .arg(iContext.file).arg(iContext.function).arg(iContext.line).arg(iContext.category == nullptr ? "(null)" : iContext.category).arg(iContext.version)
+                .arg(iMessage.toHtmlEscaped())
+                );
+
+    return lResult;
+}
+
+static QByteArray _createHumanOutput(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
+{
+    QByteArray  lResult;
+
+    switch (iType) {
+    case QtDebugMsg:    lResult = "Debug ";     break;
+    case QtInfoMsg:     lResult = "Info ";      break;
+    case QtWarningMsg:  lResult = "Warning ";   break;
+    case QtCriticalMsg: lResult = "Critical ";  break;
+    case QtFatalMsg:    lResult = "Fatal ";     break;
+    }
+
+    lResult = lResult.append( QStringLiteral("[%1:%2, %3]: %4\n").arg(iContext.file).arg(iContext.line).arg(iContext.function).arg(iMessage) );
+
+    return lResult;
+}
+
+static QByteArray _createOutput(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
+{
+    switch(_gOutputFormat) {
+    case OutputFormat::Json:    return _createJsonOutput(iType,iContext,iMessage);
+    default:                    return _createHumanOutput(iType,iContext,iMessage);
+    }
+}
 
 LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
     : LogsManagerInterface( iLogsPath, iParent )
@@ -51,32 +103,35 @@ void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iCon
     _gGlobalInstanceConstructionDestructionLock.unlock();
 
     // Fallback
-    QByteArray lLocalMessage = iMessage.toLocal8Bit();
+    QByteArray      lOutput     = _createOutput(iType,iContext,iMessage);
+    const char *    lCString    = lOutput.constData();
+    size_t          lCStringLen = qstrlen(lCString);
 
     switch (iType) {
     case QtDebugMsg:
-        fprintf(stderr, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        // fprintf(stderr, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,stderr);
+        syslog(LOG_DEBUG, "%s", lCString );
         fflush(stderr);
         break;
     case QtInfoMsg:
-        fprintf(stderr, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,stderr);
+        syslog(LOG_INFO, "%s", lCString );
         fflush(stderr);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,stderr);
+        syslog(LOG_WARNING, "%s", lCString );
         fflush(stderr);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,stderr);
+        syslog(LOG_CRIT, "%s", lCString );
         fflush(stderr);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,stderr);
+        syslog(LOG_EMERG, "%s", lCString );
         fflush(stderr);
         abort();
     }
@@ -248,36 +303,71 @@ int LogsManager::_countLogFiles()
 
 void LogsManager::_messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
-    QByteArray lLocalMessage = iMessage.toLocal8Bit();
+//    QByteArray lLocalMessage = iMessage.toLocal8Bit();
 
     QMutexLocker l{&mWriteLock};
 
+//    switch (iType) {
+//    case QtDebugMsg:
+//        fprintf(mLoggerHandle, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        mBuffered = true;
+//        break;
+//    case QtInfoMsg:
+//        fprintf(mLoggerHandle, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        mBuffered = true;
+//        break;
+//    case QtWarningMsg:
+//        fprintf(mLoggerHandle, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        fflush(mLoggerHandle);
+//        mBuffered = false;
+//        break;
+//    case QtCriticalMsg:
+//        fprintf(mLoggerHandle, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        fflush(mLoggerHandle);
+//        mBuffered = false;
+//        break;
+//    case QtFatalMsg:
+//        fprintf(mLoggerHandle, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+//        fflush(mLoggerHandle);
+//        mBuffered = false;
+//        abort();
+//    }
+
+    QByteArray      lOutput     = _createOutput(iType,iContext,iMessage);
+    const char *    lCString    = lOutput.constData();
+    size_t          lCStringLen = qstrlen(lCString);
+
     switch (iType) {
     case QtDebugMsg:
-        fprintf(mLoggerHandle, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,mLoggerHandle);
+        syslog(LOG_DEBUG, "%s", lCString );
         mBuffered = true;
         break;
     case QtInfoMsg:
-        fprintf(mLoggerHandle, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,mLoggerHandle);
+        syslog(LOG_INFO, "%s", lCString );
         mBuffered = true;
         break;
     case QtWarningMsg:
-        fprintf(mLoggerHandle, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,mLoggerHandle);
+        syslog(LOG_WARNING, "%s", lCString );
         fflush(mLoggerHandle);
         mBuffered = false;
         break;
     case QtCriticalMsg:
-        fprintf(mLoggerHandle, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,mLoggerHandle);
+        syslog(LOG_CRIT, "%s", lCString );
         fflush(mLoggerHandle);
         mBuffered = false;
         break;
     case QtFatalMsg:
-        fprintf(mLoggerHandle, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
+        fwrite(lCString,lCStringLen,1,mLoggerHandle);
+        syslog(LOG_EMERG, "%s", lCString );
         fflush(mLoggerHandle);
         mBuffered = false;
         abort();
@@ -291,10 +381,20 @@ LogsManagerML::LogsManagerML()
 
 void *LogsManagerML::creator(void *pointerToAppObject)
 {
+    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
+    auto                lConfig         = lApp->configuration();
+
+    if( lConfig->contains(QStringLiteral("LogOutputFormat")) ) {
+        QString     lOutputFormat = lConfig->toString(QStringLiteral("LogOutputFormat")).toLower();
+
+        if( lOutputFormat == QStringLiteral("json") ) {
+            _gOutputFormat = OutputFormat::Json;
+        }
+    }
+
     qInstallMessageHandler(LogsManager::messageHandler);
 
-    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
-    QString             lLogsPath       = lApp->configuration()->toString(QStringLiteral("LogsPath"));
+    QString             lLogsPath       = lConfig->toString(QStringLiteral("LogsPath"));
     LogsManager *       lLM             = new LogsManager{lLogsPath};
     lLM->mApp                           = lApp;
     return lLM;
