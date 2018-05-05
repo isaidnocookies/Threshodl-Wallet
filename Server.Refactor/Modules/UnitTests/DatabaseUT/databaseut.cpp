@@ -27,6 +27,16 @@ void *DatabaseUT::creator(void *pointerToAppObject)
     return &_gRegisterModuleLinker;
 }
 
+bool DatabaseUT::startInOwnThread()
+{ return false; }
+
+bool DatabaseUT::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToThis)
+    Q_UNUSED(pointerToAppObject)
+    return true;
+}
+
 bool DatabaseUT::doInit(void *pointerToThis, void *pointerToAppObject)
 {
     Q_UNUSED(pointerToThis)
@@ -88,16 +98,4 @@ bool DatabaseUT::doInit(void *pointerToThis, void *pointerToAppObject)
 
 
     return lResult;
-}
-
-bool DatabaseUT::startInOwnThread()
-{ return false; }
-
-bool DatabaseUT::start(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToThis)
-    Q_UNUSED(pointerToAppObject)
-
-    qDebug() << __func__;
-    return true;
 }
