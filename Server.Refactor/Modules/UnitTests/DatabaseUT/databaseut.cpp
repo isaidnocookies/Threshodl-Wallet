@@ -13,7 +13,7 @@ static void *       _gRegisterModuleLinker = nullptr; // To prevent compiler err
 
 DatabaseUT::DatabaseUT()
 {
-    QStringList lDependencies = QStringList() << QStringLiteral("LogsManager-1") << QStringLiteral("CertifiateManager-1") << QStringLiteral("Database-1");
+    QStringList lDependencies = QStringList() << QStringLiteral("LogsManager-1") << QStringLiteral("CertificateManager-1") << QStringLiteral("Database-1");
     ModuleLinker::registerModuleWithDependencies(QStringLiteral("DatabaseUnitTest-1"),lDependencies,DatabaseUT::creator,DatabaseUT::doInit,DatabaseUT::start,DatabaseUT::startInOwnThread);
 }
 

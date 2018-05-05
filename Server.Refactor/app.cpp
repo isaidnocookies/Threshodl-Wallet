@@ -133,6 +133,12 @@ bool App::_createModules(bool iForInit)
 
     QList<ModuleLinker::ModuleInfo *> lModules = ModuleLinker::sortRegisteredModulesByDependencies(ModuleLinker::registeredModules());
 
+    qDebug() << "Resolved Internal Module load and start order:";
+    for( auto lE : lModules )
+    {
+        qDebug().noquote().nospace() << "[" << ((lE->ThreadStart && lE->ThreadStart()) ? "s" : "M") << "] " << lE->Name;
+    }
+
     if( ! lModules.isEmpty() ) {
         // Honor threads if iForInit is false
         for( auto lE : lModules ) {
@@ -274,7 +280,7 @@ bool App::_doInit()
 
     _createModules(true);
 
-    for( QString lModuleName : mModules.keys() )
+    for( QString lModuleName : mModulesStartOrder )
     {
         ModuleLinker::ModuleInfo * lMI = ModuleLinker::moduleInfoForName(lModuleName);
         qDebug() << "Initializing module" << lMI->Name;
