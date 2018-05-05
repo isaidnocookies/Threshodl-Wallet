@@ -11,7 +11,7 @@
 static QMutex       _connectionCounterLock;
 static quint64      _connectionCounter      = 0;
 
-QString DataBasePrivPSQL::_stringListToWhereIn(const QStringList iList)
+QString DatabasePrivPSQL::_stringListToWhereIn(const QStringList iList)
 {
     QString         lWhereIn;
     int             lCount      = iList.size();
@@ -27,45 +27,45 @@ QString DataBasePrivPSQL::_stringListToWhereIn(const QStringList iList)
     return lWhereIn;
 }
 
-QString DataBasePrivPSQL::_sanitizeAccountName(const QString iAccountName)
+QString DatabasePrivPSQL::_sanitizeAccountName(const QString iAccountName)
 { return iAccountName.trimmed().split(QRegExp(QStringLiteral("\\W"))).join(QStringLiteral("_")).toLower(); }
 
-QString DataBasePrivPSQL::_storageTableNameForAccount(const QString iAccountName)
+QString DatabasePrivPSQL::_storageTableNameForAccount(const QString iAccountName)
 { return QStringLiteral("storage_%1").arg(_sanitizeAccountName(iAccountName)); }
 
-QString DataBasePrivPSQL::_createStorageTableSqlQueryForAccount(const QString iAccountName)
+QString DatabasePrivPSQL::_createStorageTableSqlQueryForAccount(const QString iAccountName)
 {
     return QStringLiteral("CREATE TABLE %1 ( walletid text NOT NULL UNIQUE PRIMARY KEY, state integer, payload text );")
                     .arg(_storageTableNameForAccount(iAccountName));
 }
 
-bool DataBasePrivPSQL::_init()
+bool DatabasePrivPSQL::_init()
 {
     if( mApp ) {
         auto lConfig = mApp->configuration();
 
-        if( lConfig->contains(QStringLiteral("DataBaseName")) )
-            mDBName = lConfig->toString(QStringLiteral("DataBaseName"));
+        if( lConfig->contains(QStringLiteral("DatabaseName")) )
+            mDBName = lConfig->toString(QStringLiteral("DatabaseName"));
         else if( lConfig->contains(QStringLiteral("DBName")) )
             mDBName = lConfig->toString(QStringLiteral("DBName"));
 
-        if( lConfig->contains(QStringLiteral("DataBaseHostName")) )
-            mDBHostName = lConfig->toString(QStringLiteral("DataBaseHostName"));
+        if( lConfig->contains(QStringLiteral("DatabaseHostName")) )
+            mDBHostName = lConfig->toString(QStringLiteral("DatabaseHostName"));
         else if( lConfig->contains(QStringLiteral("DBHostName")) )
             mDBHostName = lConfig->toString(QStringLiteral("DBHostName"));
 
-        if( lConfig->contains(QStringLiteral("DataBaseUserName")) )
-            mDBUserName = lConfig->toString(QStringLiteral("DataBaseUserName"));
+        if( lConfig->contains(QStringLiteral("DatabaseUserName")) )
+            mDBUserName = lConfig->toString(QStringLiteral("DatabaseUserName"));
         else if( lConfig->contains(QStringLiteral("DBUserName")) )
             mDBUserName = lConfig->toString(QStringLiteral("DBUserName"));
 
-        if( lConfig->contains(QStringLiteral("DataBasePassword")) )
-            mDBPassword = lConfig->toString(QStringLiteral("DataBasePassword"));
+        if( lConfig->contains(QStringLiteral("DatabasePassword")) )
+            mDBPassword = lConfig->toString(QStringLiteral("DatabasePassword"));
         else if( lConfig->contains(QStringLiteral("DBPassword")) )
             mDBPassword = lConfig->toString(QStringLiteral("DBPassword"));
 
-        if( lConfig->contains(QStringLiteral("DataBasePort")) )
-            mDBPort = lConfig->toUInt16(QStringLiteral("DataBasePort"));
+        if( lConfig->contains(QStringLiteral("DatabasePort")) )
+            mDBPort = lConfig->toUInt16(QStringLiteral("DatabasePort"));
         else if( lConfig->contains(QStringLiteral("DBPort")) )
             mDBPort = lConfig->toUInt16(QStringLiteral("DBPort"));
 
@@ -74,10 +74,10 @@ bool DataBasePrivPSQL::_init()
 
         // Now generate a unique database string
         _connectionCounterLock.lock();
-        mInternalDataBaseString = QStringLiteral("DataBasePrivPSQL-1-Connection.%1").arg(_connectionCounter++);
+        mInternalDatabaseString = QStringLiteral("DatabasePrivPSQL-1-Connection.%1").arg(_connectionCounter++);
         _connectionCounterLock.unlock();
 
-        QSqlDatabase    lDB = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"),mInternalDataBaseString);
+        QSqlDatabase    lDB = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"),mInternalDatabaseString);
         lDB.setDatabaseName(mDBName);
         lDB.setHostName(mDBHostName);
         lDB.setPort(mDBPort);
@@ -89,14 +89,14 @@ bool DataBasePrivPSQL::_init()
     return false;
 }
 
-bool DataBasePrivPSQL::_startTransactionAndLockTables(QSqlDatabase &iDataBase, const QStringList iTablesToLockForSharedMode, const QStringList iTablesToLockForExclusiveMode)
+bool DatabasePrivPSQL::_startTransactionAndLockTables(QSqlDatabase &iDatabase, const QStringList iTablesToLockForSharedMode, const QStringList iTablesToLockForExclusiveMode)
 {
-    if( iDataBase.transaction() ) {
+    if( iDatabase.transaction() ) {
         if( ! iTablesToLockForSharedMode.isEmpty() ) {
             for( QString lTN : iTablesToLockForSharedMode )
             {
-                if( ! QSqlQuery{iDataBase}.exec( QStringLiteral("LOCK TABLE %1 IN SHARE MODE").arg(lTN) ) ) {
-                    iDataBase.rollback();
+                if( ! QSqlQuery{iDatabase}.exec( QStringLiteral("LOCK TABLE %1 IN SHARE MODE").arg(lTN) ) ) {
+                    iDatabase.rollback();
                     return false;
                 }
             }
@@ -105,8 +105,8 @@ bool DataBasePrivPSQL::_startTransactionAndLockTables(QSqlDatabase &iDataBase, c
         if( ! iTablesToLockForExclusiveMode.isEmpty() ) {
             for( QString lTN : iTablesToLockForExclusiveMode )
             {
-                if( ! QSqlQuery{iDataBase}.exec( QStringLiteral("LOCK TABLE %1 IN EXCLUSIVE MODE").arg(lTN) ) ) {
-                    iDataBase.rollback();
+                if( ! QSqlQuery{iDatabase}.exec( QStringLiteral("LOCK TABLE %1 IN EXCLUSIVE MODE").arg(lTN) ) ) {
+                    iDatabase.rollback();
                     return false;
                 }
             }
@@ -118,22 +118,22 @@ bool DataBasePrivPSQL::_startTransactionAndLockTables(QSqlDatabase &iDataBase, c
     return false;
 }
 
-bool DataBasePrivPSQL::_rollbackTransaction(QSqlDatabase &iDataBase)
-{ return iDataBase.rollback(); }
+bool DatabasePrivPSQL::_rollbackTransaction(QSqlDatabase &iDatabase)
+{ return iDatabase.rollback(); }
 
-bool DataBasePrivPSQL::_commitTransaction(QSqlDatabase &iDataBase)
-{ return iDataBase.commit(); }
+bool DatabasePrivPSQL::_commitTransaction(QSqlDatabase &iDatabase)
+{ return iDatabase.commit(); }
 
-bool DataBasePrivPSQL::_startTransactionAndOpenAndLockTables(QSqlDatabase &oDatabase, const QStringList iTablesToLockForSharedMode, const QStringList iTablesToLockForExclusiveMode)
+bool DatabasePrivPSQL::_startTransactionAndOpenAndLockTables(QSqlDatabase &oDatabase, const QStringList iTablesToLockForSharedMode, const QStringList iTablesToLockForExclusiveMode)
 {
-    oDatabase = QSqlDatabase::database(mInternalDataBaseString,true);
+    oDatabase = QSqlDatabase::database(mInternalDatabaseString,true);
     return _startTransactionAndLockTables(oDatabase,iTablesToLockForSharedMode,iTablesToLockForExclusiveMode);
 }
 
-DataBasePrivPSQL::DataBasePrivPSQL()
+DatabasePrivPSQL::DatabasePrivPSQL()
 { }
 
-bool DataBasePrivPSQL::createTables()
+bool DatabasePrivPSQL::createTables()
 {
     QSqlDatabase    lDB;
 
@@ -157,7 +157,7 @@ bool DataBasePrivPSQL::createTables()
     return false;
 }
 
-bool DataBasePrivPSQL::addressExists(const QString iAddress)
+bool DatabasePrivPSQL::addressExists(const QString iAddress)
 {
     QSqlDatabase        lDB;
     QString             lAddress = _sanitizeAccountName(iAddress);
@@ -186,7 +186,7 @@ bool DataBasePrivPSQL::addressExists(const QString iAddress)
     return false;
 }
 
-bool DataBasePrivPSQL::addressCreate(const QString iAddress, const QByteArray iPublicKey)
+bool DatabasePrivPSQL::addressCreate(const QString iAddress, const QByteArray iPublicKey)
 {
     QSqlDatabase        lDB;
     QString             lAddress = _sanitizeAccountName(iAddress);
@@ -207,7 +207,7 @@ bool DataBasePrivPSQL::addressCreate(const QString iAddress, const QByteArray iP
     return false;
 }
 
-bool DataBasePrivPSQL::addressValidate(const QString iAddress, const QByteArray iPublicKey)
+bool DatabasePrivPSQL::addressValidate(const QString iAddress, const QByteArray iPublicKey)
 {
     QSqlDatabase        lDB;
     QString             lAddress = _sanitizeAccountName(iAddress);
@@ -238,7 +238,7 @@ bool DataBasePrivPSQL::addressValidate(const QString iAddress, const QByteArray 
     return false;
 }
 
-bool DataBasePrivPSQL::addressDelete(const QString iAddress)
+bool DatabasePrivPSQL::addressDelete(const QString iAddress)
 {
     QSqlDatabase        lDB;
     QString             lAddress = _sanitizeAccountName(iAddress);
@@ -258,7 +258,7 @@ bool DataBasePrivPSQL::addressDelete(const QString iAddress)
     return false;
 }
 
-QByteArray DataBasePrivPSQL::publicKeyForAddress(const QString iAddress)
+QByteArray DatabasePrivPSQL::publicKeyForAddress(const QString iAddress)
 {
     QSqlDatabase        lDB;
     QByteArray          lResult;
@@ -292,7 +292,7 @@ QByteArray DataBasePrivPSQL::publicKeyForAddress(const QString iAddress)
     return lResult;
 }
 
-bool DataBasePrivPSQL::microWalletsExists(const QStringList iMicroWalletIds)
+bool DatabasePrivPSQL::microWalletsExists(const QStringList iMicroWalletIds)
 {
     int                 lWalletIdCount  = iMicroWalletIds.size();
     QSqlDatabase        lDB;
@@ -313,7 +313,7 @@ bool DataBasePrivPSQL::microWalletsExists(const QStringList iMicroWalletIds)
     return false;
 }
 
-bool DataBasePrivPSQL::microWalletsOwnershipCheck(const QStringList iMicroWalletIds, const QString iAddress)
+bool DatabasePrivPSQL::microWalletsOwnershipCheck(const QStringList iMicroWalletIds, const QString iAddress)
 {
     int                 lWalletIdCount  = iMicroWalletIds.size();
     QString             lTableName      = _storageTableNameForAccount(iAddress);
@@ -338,7 +338,7 @@ bool DataBasePrivPSQL::microWalletsOwnershipCheck(const QStringList iMicroWallet
     return false;
 }
 
-bool DataBasePrivPSQL::microWalletsChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress)
+bool DatabasePrivPSQL::microWalletsChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress)
 {
     if( iMicroWalletIds.isEmpty() || iFromAddress.isEmpty() || iToAddress.isEmpty() ) return false;
 
@@ -395,7 +395,7 @@ bool DataBasePrivPSQL::microWalletsChangeOwnership(const QStringList iMicroWalle
     return false;
 }
 
-bool DataBasePrivPSQL::microWalletCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress)
+bool DatabasePrivPSQL::microWalletCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress)
 {
     QSqlDatabase    lDB;
     QString         lTable          = _storageTableNameForAccount(iAddress);
@@ -437,7 +437,7 @@ bool DataBasePrivPSQL::microWalletCreates(const QMap<QString, QByteArray> iMicro
     return false;
 }
 
-QMap<QString, QByteArray> DataBasePrivPSQL::microWalletsCopyPayload(const QStringList iMicroWalletIds, const QString iAddress)
+QMap<QString, QByteArray> DatabasePrivPSQL::microWalletsCopyPayload(const QStringList iMicroWalletIds, const QString iAddress)
 {
     QMap<QString, QByteArray>   lResult;
     if( iMicroWalletIds.isEmpty() || iAddress.isEmpty() ) return lResult;
@@ -469,7 +469,7 @@ QMap<QString, QByteArray> DataBasePrivPSQL::microWalletsCopyPayload(const QStrin
     return lResult;
 }
 
-bool DataBasePrivPSQL::microWalletsDelete(const QStringList iMicroWalletIds, const QString iAddress)
+bool DatabasePrivPSQL::microWalletsDelete(const QStringList iMicroWalletIds, const QString iAddress)
 {
     if( iMicroWalletIds.isEmpty() || iAddress.isEmpty() ) return false;
 

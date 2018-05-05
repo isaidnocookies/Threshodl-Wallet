@@ -39,6 +39,13 @@ public:
 
     void                    setCertificates(CertificateManagerInterface * iCertificateManager);
 
+    // Module to Module Communication:
+    bool                    isModuleLinked(const QString iModuleName) const;
+    void *                  getModuleObject(const QString iModuleName) const;
+    QThread *               getModuleThread(const QString iModuleName) const;
+    bool                    isModuleStarted(const QString iModuleName) const;
+    QStringList             getModuleLoadAndStartOrder() const;
+
 signals:
     void appKernelStarted();
     void modulesLoaded();

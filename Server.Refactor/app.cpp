@@ -112,6 +112,21 @@ void App::setCertificates(CertificateManagerInterface *iCertificateManager)
     mServerPrivateKeyPEM        = iCertificateManager->serverPrivateKeyPEM();
 }
 
+bool App::isModuleLinked(const QString iModuleName) const
+{ return mModules.contains(iModuleName); }
+
+void *App::getModuleObject(const QString iModuleName) const
+{ return mModules[iModuleName]; }
+
+QThread *App::getModuleThread(const QString iModuleName) const
+{ return mModuleThreads[iModuleName]; }
+
+bool App::isModuleStarted(const QString iModuleName) const
+{ return mModuleStarted[iModuleName]; }
+
+QStringList App::getModuleLoadAndStartOrder() const
+{ return mModulesStartOrder; }
+
 bool App::_createModules(bool iForInit)
 {
     ModuleLinker::preventNewRegistrationOfModules();

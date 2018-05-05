@@ -5,18 +5,18 @@
 #include <QByteArray>
 #include <QString>
 
-class DataBaseInterface
+class DatabaseInterface
 {
 protected:
     mutable QReadWriteLock      mObjectLock;
     QString                     mDatabaseType;
 
 public:
-    DataBaseInterface(const QString iDatabaseType = QStringLiteral("NotSet"))
+    DatabaseInterface(const QString iDatabaseType = QStringLiteral("NotSet"))
         : mDatabaseType(iDatabaseType)
     { }
 
-    virtual ~DataBaseInterface()
+    virtual ~DatabaseInterface()
     { }
 
     virtual QString                     databaseType() const                                    { QReadLocker l{&mObjectLock};  return mDatabaseType; }

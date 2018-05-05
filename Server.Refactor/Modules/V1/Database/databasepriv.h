@@ -7,10 +7,10 @@
 #include <QMap>
 #include <QStringList>
 
-class DataBasePriv
+class DatabasePriv
 {
 public:
-    virtual ~DataBasePriv() { }
+    virtual ~DatabasePriv() { }
 
     virtual bool                        createTables()                                                                                                          = 0;
     virtual bool                        addressExists( const QString iAddress )                                                                                 = 0;

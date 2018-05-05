@@ -6,10 +6,10 @@
 
 #include <QSqlDatabase>
 
-class DataBase;
-class DataBasePrivPSQL : public DataBasePriv
+class Database;
+class DatabasePrivPSQL : public DatabasePriv
 {
-    friend class DataBase;
+    friend class Database;
 protected:
     enum StorageRecordState {
         Invalid     = 0x0,
@@ -32,20 +32,20 @@ protected:
     QString             mDBHostName;
     quint16             mDBPort         = 5432;
 
-    QString             mInternalDataBaseString;
+    QString             mInternalDatabaseString;
 
     bool    _init();
 
-    bool    _startTransactionAndLockTables(QSqlDatabase &iDataBase, const QStringList iTablesToLockForSharedMode = QStringList(), const QStringList iTablesToLockForExclusiveMode = QStringList());
-    bool    _startTransaction(QSqlDatabase &iDataBase)      { return _startTransactionAndLockTables(iDataBase, QStringList(), QStringList()); }
-    bool    _rollbackTransaction(QSqlDatabase &iDataBase);
-    bool    _commitTransaction(QSqlDatabase &iDataBase);
+    bool    _startTransactionAndLockTables(QSqlDatabase &iDatabase, const QStringList iTablesToLockForSharedMode = QStringList(), const QStringList iTablesToLockForExclusiveMode = QStringList());
+    bool    _startTransaction(QSqlDatabase &iDatabase)      { return _startTransactionAndLockTables(iDatabase, QStringList(), QStringList()); }
+    bool    _rollbackTransaction(QSqlDatabase &iDatabase);
+    bool    _commitTransaction(QSqlDatabase &iDatabase);
 
     bool    _startTransactionAndOpenAndLockTables(QSqlDatabase &oDatabase, const QStringList iTablesToLockForSharedMode = QStringList(), const QStringList iTablesToLockForExclusiveMode = QStringList());
     bool    _startTransactionAndOpen(QSqlDatabase &oDatabase)      { return _startTransactionAndOpenAndLockTables(oDatabase,QStringList(), QStringList()); }
 
 public:
-    DataBasePrivPSQL();
+    DatabasePrivPSQL();
 
     bool                        createTables() override;
     bool                        addressExists( const QString iAddress ) override;

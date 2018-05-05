@@ -4,20 +4,20 @@
 #include "../../Interface/DatabaseInterface/databaseinterface.h"
 
 class App;
-class DataBaseML;
-class DataBasePriv;
-class DataBase : public DataBaseInterface
+class DatabaseML;
+class DatabasePriv;
+class Database : public DatabaseInterface
 {
-    friend class DataBaseML;
+    friend class DatabaseML;
 protected:
     App *           mApp    = nullptr;
-    DataBasePriv *  mPriv   = nullptr;
+    DatabasePriv *  mPriv   = nullptr;
 
     bool            _createPriv();
 
 public:
-    DataBase(const QString iDatabaseType = QStringLiteral("NotSet"));
-    virtual ~DataBase();
+    Database(const QString iDatabaseType = QStringLiteral("NotSet"));
+    virtual ~Database();
 
     bool                        createTables() override;
     // Relating to user address accounts:
@@ -50,10 +50,10 @@ public:
     bool                        microWalletsDelete( const QStringList iMicroWalletIds, const QString iAddress ) override;
 };
 
-class DataBaseML
+class DatabaseML
 {
 public:
-    DataBaseML();
+    DatabaseML();
     static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
     static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
     static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
