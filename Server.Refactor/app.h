@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QThread>
 
+class CertificateManagerInterface;
 class App : public QObject
 {
     Q_OBJECT
@@ -21,23 +22,22 @@ public:
     static App * globalInstance();
     static int exec(int argc, char *argv[]);
 
-    QByteArray          caCertificatePEM() const;           // Empty if not valid
-    Certificate *       caCertificate() const;              // nullptr if not valid, do NOT delete it
+    QByteArray              caCertificatePEM() const;           // Empty if not valid
+    Certificate *           caCertificate() const;              // nullptr if not valid, do NOT delete it
 
-    QByteArray          caPrivateKeyPEM() const;            // (Optional) - Empty if not valid
-    EncryptionKey *     caPrivateKey() const;               // nullptr if not valid, do NOT delete it
+    QByteArray              caPrivateKeyPEM() const;            // (Optional) - Empty if not valid
+    EncryptionKey *         caPrivateKey() const;               // nullptr if not valid, do NOT delete it
 
-    QByteArray          certificatePEM() const;             // Empty if not valid
-    Certificate *       certificate() const;                // nullptr if not valid, do NOT delete it
+    QByteArray              serverCertificatePEM() const;       // Empty if not valid
+    Certificate *           serverCertificate() const;          // nullptr if not valid, do NOT delete it
 
-    QByteArray          privateKeyPEM() const;              // Empty if not valid
-    EncryptionKey *     privateKey() const;                 // nullptr if not valid, do NOT delete it
+    QByteArray              serverPrivateKeyPEM() const;        // Empty if not valid
+    EncryptionKey *         serverPrivateKey() const;           // nullptr if not valid, do NOT delete it
 
-    const Config *      configuration() const;
-    Config *            configuration();
+    const Config *          configuration() const;
+    Config *                configuration();
 
-    void *              logManager() const;                 // For internal logging, do not use directly
-    void                setLogManager(void * iLogManager);  // For internal logging, do not use directly
+    void                    setCertificates(CertificateManagerInterface * iCertificateManager);
 
 signals:
     void appKernelStarted();
@@ -51,11 +51,6 @@ protected slots:
 protected:
     explicit App(int argc, char *argv[], QObject *iParent = nullptr);
 
-    static QByteArray _loadFile(const QString &iFilename);
-    static Certificate * _loadCertificateFilename(const QString &iFilename);
-    static EncryptionKey * _loadEncryptionKeyFilename(const QString &iFilename, bool iIsPrivateKey = true);
-    static bool _saveFile(const QByteArray &iData, const QString &iFilename);
-
     bool _createModules(bool iForInit = false);
     void _startModules();
 
@@ -63,7 +58,6 @@ protected:
     bool _shouldDoInit();
     bool _doInit();
     void _loadConfigurationFile();
-    void _loadCryptoFiles();
 
     // Modules
     QStringList                 mModulesStartOrder;
@@ -73,20 +67,17 @@ protected:
 
     Config                      mConfiguration;
 
-    // For logging
-    void *                      mLogManager                 = nullptr;
-
     QByteArray                  mCACertificatePEM;
     Certificate *               mCACertificate              = nullptr;
 
     QByteArray                  mCAPrivateKeyPEM;
     EncryptionKey *             mCAPrivateKey               = nullptr;
 
-    QByteArray                  mCertificatePEM;
-    Certificate *               mCertificate                = nullptr;
+    QByteArray                  mServerCertificatePEM;
+    Certificate *               mServerCertificate          = nullptr;
 
-    QByteArray                  mPrivateKeyPEM;
-    EncryptionKey *             mPrivateKey                 = nullptr;
+    QByteArray                  mServerPrivateKeyPEM;
+    EncryptionKey *             mServerPrivateKey           = nullptr;
 };
 
 #endif // APP_H

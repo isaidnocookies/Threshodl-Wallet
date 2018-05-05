@@ -18,6 +18,7 @@ class LogsManager : public LogsManagerInterface
     friend class LogsManagerML;
 public:
     explicit LogsManager(const QString iLogsPath, QObject *iParent = nullptr);
+    virtual ~LogsManager();
 
     static void messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage);   // private but needs to be exposed to external functions
 

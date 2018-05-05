@@ -1,4 +1,5 @@
 #include "app.h"
+#include "Modules/Interface/CertificateManagerInterface/certificatemanagerinterface.h"
 
 #include <QDebug>
 #include <QFile>
@@ -8,6 +9,12 @@
 #include <QSslKey>
 #include <QCoreApplication>
 #include <QAbstractEventDispatcher>
+
+#ifdef  UNIT_TEST_ON
+void UnitTestInjectCommandConfiguration(Config * iConfiguration);
+#else
+#   define      UnitTestInjectCommandConfiguration(x)
+#endif  // UNIT_TESTS_ON
 
 #define     kConfigFile                             "config.json"
 
@@ -51,7 +58,6 @@ int App::exec(int argc, char *argv[])
     }
     _globalInstance->_loadConfigurationFile();
     _globalInstance->_parseCommandLine();
-    _globalInstance->_loadCryptoFiles();
 
     QMetaObject::invokeMethod( _globalInstance, "_eventLoopStarted", Qt::QueuedConnection );
 
@@ -70,17 +76,17 @@ QByteArray App::caPrivateKeyPEM() const
 EncryptionKey *App::caPrivateKey() const
 { return mCAPrivateKey; }
 
-QByteArray App::certificatePEM() const
-{ return mCertificatePEM; }
+QByteArray App::serverCertificatePEM() const
+{ return mServerCertificatePEM; }
 
-Certificate *App::certificate() const
-{ return mCertificate; }
+Certificate *App::serverCertificate() const
+{ return mServerCertificate; }
 
-QByteArray App::privateKeyPEM() const
-{ return mPrivateKeyPEM; }
+QByteArray App::serverPrivateKeyPEM() const
+{ return mServerPrivateKeyPEM; }
 
-EncryptionKey *App::privateKey() const
-{ return mPrivateKey; }
+EncryptionKey *App::serverPrivateKey() const
+{ return mServerPrivateKey; }
 
 const Config *App::configuration() const
 { return &mConfiguration; }
@@ -88,57 +94,22 @@ const Config *App::configuration() const
 Config *App::configuration()
 { return &mConfiguration; }
 
-void *App::logManager() const
-{ return mLogManager; }
-
-void App::setLogManager(void *iLogManager)
-{ mLogManager = iLogManager; }
-
-QByteArray App::_loadFile(const QString &iFilename)
+void App::setCertificates(CertificateManagerInterface *iCertificateManager)
 {
-    QFile   lFile{iFilename};
+    mCACertificate      = mServerCertificate    = nullptr;
+    mCAPrivateKey       = mServerPrivateKey     = nullptr;
+    mCACertificatePEM   = mCAPrivateKeyPEM      = mServerCertificatePEM     = mServerPrivateKeyPEM  = QByteArray();
 
-    if( lFile.open(QIODevice::ReadOnly))
-        return lFile.readAll();
-    return QByteArray();
-}
+    if( iCertificateManager ) return;
 
-Certificate * App::_loadCertificateFilename(const QString &iFilename)
-{
-    QByteArray lData = _loadFile(iFilename);
-    if( ! lData.isEmpty() ) {
-        try {
-            return new Certificate{lData};
-        }catch(...){
-            return nullptr;
-        }
-    }
-
-    return nullptr;
-}
-
-EncryptionKey * App::_loadEncryptionKeyFilename(const QString &iFilename, bool iIsPrivateKey)
-{
-    QByteArray lData = _loadFile(iFilename);
-    if( ! lData.isEmpty() ) {
-        try {
-            return new EncryptionKey{lData,iIsPrivateKey};
-        }catch(...){
-            return nullptr;
-        }
-    }
-
-    return nullptr;
-}
-
-bool App::_saveFile(const QByteArray &iData, const QString &iFilename)
-{
-    QFile lFile{iFilename};
-
-    if( lFile.open(QIODevice::WriteOnly) )
-        return lFile.write(iData) >= iData.size();
-
-    return false;
+    mCACertificate              = iCertificateManager->caCertificate();
+    mCACertificatePEM           = iCertificateManager->caCertificatePEM();
+    mCAPrivateKey               = iCertificateManager->caPrivateKey();
+    mCAPrivateKeyPEM            = iCertificateManager->caPrivateKeyPEM();
+    mServerCertificate          = iCertificateManager->serverCertificate();
+    mServerCertificatePEM       = iCertificateManager->serverCertificatePEM();
+    mServerPrivateKey           = iCertificateManager->serverPrivateKey();
+    mServerPrivateKeyPEM        = iCertificateManager->serverPrivateKeyPEM();
 }
 
 bool App::_createModules(bool iForInit)
@@ -148,9 +119,6 @@ bool App::_createModules(bool iForInit)
     QList<ModuleLinker::ModuleInfo *> lModules = ModuleLinker::sortRegisteredModulesByDependencies(ModuleLinker::registeredModules());
 
     if( ! lModules.isEmpty() ) {
-
-        // First create the modules
-
         // Honor threads if iForInit is false
         for( auto lE : lModules ) {
             bool lShouldStartInThread = false;
@@ -232,12 +200,16 @@ App::App(int argc, char *argv[], QObject *iParent)
     mConfiguration.setFilename(kConfigFile);
     QStringList lArgV;
 
-    for( int lIndex = 0; lIndex < argc; lIndex++ ) {
+    int lArgC = argc;
+
+    for( int lIndex = 0; lIndex < lArgC; lIndex++ ) {
         lArgV << QString::fromLocal8Bit(argv[lIndex]);
     }
 
-    mConfiguration.setValue(QStringLiteral("CommandLineArgumentCount"), argc);
+    mConfiguration.setValue(QStringLiteral("CommandLineArgumentCount"), lArgC);
     mConfiguration.setValue(QStringLiteral("CommandLineArguments"), lArgV);
+
+    UnitTestInjectCommandConfiguration(&mConfiguration);
 }
 
 void App::_parseCommandLine()
@@ -304,40 +276,14 @@ bool App::_doInit()
 
 void App::_loadConfigurationFile()
 {
+    if( mConfiguration.contains(QStringLiteral("ConfigurationFile")) )
+        mConfiguration.setFilename(mConfiguration.value(QStringLiteral("ConfigurationFile")).toString());
+    else if( mConfiguration.contains(QStringLiteral("ConfigFile")) )
+        mConfiguration.setFilename(mConfiguration.value(QStringLiteral("ConfigFile")).toString());
+
     if( mConfiguration.filename().isEmpty() )
         mConfiguration.setFilename(kConfigFile);
 
     if( ! mConfiguration.load() )
         qWarning() << "Failed to load configuration file!";
-}
-
-void App::_loadCryptoFiles()
-{
-    QString lCACertificateFilename = mConfiguration.toString(QStringLiteral("CACertificateFilename"));
-    QString lPrivateKeyFilename = mConfiguration.toString(QStringLiteral("PrivateKeyFilename"));
-    QString lCertificateFilename = mConfiguration.toString(QStringLiteral("CertificateFilename"));
-
-    if( ! lCACertificateFilename.isEmpty() ) {
-        if( mCACertificate == nullptr )
-            mCACertificate = _loadCertificateFilename(lCACertificateFilename);
-
-        if( mCACertificate )
-            mCACertificatePEM = mCACertificate->toPEM();
-    }
-
-    if( ! lPrivateKeyFilename.isEmpty() ) {
-        if( mPrivateKey == nullptr )
-            mPrivateKey = _loadEncryptionKeyFilename(lPrivateKeyFilename);
-
-        if( mPrivateKey )
-            mPrivateKeyPEM = mPrivateKey->privateToPEM();
-    }
-
-    if( ! lCertificateFilename.isEmpty() ) {
-        if( mCertificate == nullptr )
-            mCertificate = _loadCertificateFilename(lCertificateFilename);
-
-        if( mCertificate )
-            mCertificatePEM = mCertificate->toPEM();
-    }
 }

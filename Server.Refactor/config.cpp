@@ -6,6 +6,8 @@
 Config::Config()
 {
     mDefaultKeyFilter
+            << QStringLiteral("ConfigurationFile")
+            << QStringLiteral("ConfigFile")
             << QStringLiteral("CommandLineArgumentCount")
             << QStringLiteral("CommandLineArguments")
             << QStringLiteral("CAPrivateKeyFilename");

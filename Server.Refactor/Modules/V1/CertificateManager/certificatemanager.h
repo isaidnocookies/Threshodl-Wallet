@@ -3,9 +3,6 @@
 
 #include "../../Interface/CertificateManagerInterface/certificatemanagerinterface.h"
 
-#include "certificate.h"
-#include "encryptionkey.h"
-
 #include <QByteArray>
 #include <QString>
 
@@ -53,6 +50,15 @@ public:
     QString             CAPrivateKeyFilename;                   // Optional
     EncryptionKey *     CAPrivateKey                = nullptr;  // Optional
     QByteArray          CAPrivateKeyPEM;                        // Optional
+
+    QByteArray      caCertificatePEM() const override       { return CACertificatePEM; }
+    QByteArray      caPrivateKeyPEM() const override        { return CAPrivateKeyPEM; }
+    QByteArray      serverCertificatePEM() const override   { return ServerCertificatePEM; }
+    QByteArray      serverPrivateKeyPEM() const override    { return ServerPrivateKeyPEM; }
+    Certificate *   caCertificate() const override          { return CACertificate; }
+    Certificate *   serverCertificate() const override      { return ServerCertificate; }
+    EncryptionKey * caPrivateKey() const override           { return CAPrivateKey; }
+    EncryptionKey * serverPrivateKey() const override       { return ServerPrivateKey; }
 };
 
 class CertificateManagerML

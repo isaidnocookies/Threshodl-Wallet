@@ -11,17 +11,19 @@ class DataBasePrivPSQL : public DataBasePriv
 {
     friend class DataBase;
 protected:
-    enum EscrowRecordState {
+    enum StorageRecordState {
         Invalid     = 0x0,
         Unlocked    = 0x1,
         Locked      = 0x2
     };
 
-    typedef enum EscrowRecordState EscrowRecordState;
+    typedef enum StorageRecordState StorageRecordState;
+
+    static QString _stringListToWhereIn(const QStringList iList);
 
     QString _sanitizeAccountName(const QString iAccountName);
-    QString _escrowTableNameForAccount(const QString iAccountName);
-    QString _createEscrowTableSqlQueryForAccount(const QString iAccountName);
+    QString _storageTableNameForAccount(const QString iAccountName);
+    QString _createStorageTableSqlQueryForAccount(const QString iAccountName);
 
     App *               mApp            = nullptr;
     QString             mDBUserName;

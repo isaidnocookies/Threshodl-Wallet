@@ -3,6 +3,7 @@
 #include "modulelinker.h"
 #include "app.h"
 
+#include <QReadWriteLock>
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
@@ -10,9 +11,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <syslog.h>
 
-static LogsManagerML _gRegisterModuleLinker;
+#ifdef Q_OS_UNIX
+#include <syslog.h>
+#elif
+#   define  syslog(...)
+#endif
+
+static LogsManagerML            _gRegisterModuleLinker;
+static QReadWriteLock           _gGlobalInstanceConstructionDestructionLock;
+static LogsManager *            _gGlobalInstance                                = nullptr;
 
 LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
     : LogsManagerInterface( iLogsPath, iParent )
@@ -25,15 +33,22 @@ LogsManager::LogsManager(const QString iLogsPath, QObject * iParent)
 
 }
 
+LogsManager::~LogsManager()
+{
+    _gGlobalInstanceConstructionDestructionLock.lockForWrite();
+    _gGlobalInstance = nullptr;
+    _gGlobalInstanceConstructionDestructionLock.unlock();
+}
+
 void LogsManager::messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
-    if( gApp ) {
-        LogsManager * lLM = reinterpret_cast<LogsManager *>(gApp->logManager());
-        if( lLM ) {
-            lLM->_messageHandler(iType,iContext,iMessage);
-            return;
-        }
+    _gGlobalInstanceConstructionDestructionLock.lockForRead();
+    if( _gGlobalInstance ) {
+        _gGlobalInstance->_messageHandler(iType,iContext,iMessage);
+        _gGlobalInstanceConstructionDestructionLock.unlock();
+        return;
     }
+    _gGlobalInstanceConstructionDestructionLock.unlock();
 
     // Fallback
     QByteArray lLocalMessage = iMessage.toLocal8Bit();
@@ -84,7 +99,8 @@ bool LogsManager::doInit()
 
 void LogsManager::threadStarted()
 {
-    mApp->setLogManager(this);
+    _gGlobalInstanceConstructionDestructionLock.lockForWrite();
+    _gGlobalInstance = this;
 
     if( mTimer == nullptr ) {
         mTimer = new QTimer{this};
@@ -116,10 +132,14 @@ void LogsManager::threadStarted()
     } else {
         qWarning() << "Could not open log file.";
     }
+
+    _gGlobalInstanceConstructionDestructionLock.unlock();
 }
 
 void LogsManager::timerEventFired()
 {
+    _gGlobalInstanceConstructionDestructionLock.lockForRead();
+
     if( mBuffered ) {
         mWriteLock.lock();
         if( mBuffered ) {
@@ -145,10 +165,12 @@ void LogsManager::timerEventFired()
         lPath.remove(_findOldestFile());
         lCount++;
     }
+
+    _gGlobalInstanceConstructionDestructionLock.unlock();
 }
 
 void LogsManager::_closeLogFile()
-{
+{    
     if( mLoggerHandle != stderr ) {
         fclose(mLoggerHandle);
         mLoggerHandle = stderr;
