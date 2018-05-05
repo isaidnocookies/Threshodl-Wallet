@@ -303,40 +303,7 @@ int LogsManager::_countLogFiles()
 
 void LogsManager::_messageHandler(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
-//    QByteArray lLocalMessage = iMessage.toLocal8Bit();
-
     QMutexLocker l{&mWriteLock};
-
-//    switch (iType) {
-//    case QtDebugMsg:
-//        fprintf(mLoggerHandle, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        syslog(LOG_DEBUG, "Debug [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        mBuffered = true;
-//        break;
-//    case QtInfoMsg:
-//        fprintf(mLoggerHandle, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        syslog(LOG_INFO, "Info [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        mBuffered = true;
-//        break;
-//    case QtWarningMsg:
-//        fprintf(mLoggerHandle, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        syslog(LOG_WARNING, "Warning [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        fflush(mLoggerHandle);
-//        mBuffered = false;
-//        break;
-//    case QtCriticalMsg:
-//        fprintf(mLoggerHandle, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        syslog(LOG_CRIT, "Critical [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        fflush(mLoggerHandle);
-//        mBuffered = false;
-//        break;
-//    case QtFatalMsg:
-//        fprintf(mLoggerHandle, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        syslog(LOG_EMERG, "Fatal [%s:%u, %s]: %s\n", iContext.file, iContext.line, iContext.function, lLocalMessage.constData());
-//        fflush(mLoggerHandle);
-//        mBuffered = false;
-//        abort();
-//    }
 
     QByteArray      lOutput     = _createOutput(iType,iContext,iMessage);
     const char *    lCString    = lOutput.constData();

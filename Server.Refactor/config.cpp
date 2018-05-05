@@ -32,6 +32,9 @@ Config &Config::operator=(const Config &iOther)
     return *this;
 }
 
+void Config::setDisableSave(bool iOn)
+{ mDisableSave = iOn; }
+
 QString Config::filename() const
 {
     QReadLocker l{&mLock};
@@ -66,6 +69,8 @@ bool Config::load()
 
 bool Config::save(const QStringList iKeyFilter) const
 {
+    if( mDisableSave ) return true;
+
     QReadLocker l{&mLock};
 
     if( ! mFilename.isEmpty() ) {

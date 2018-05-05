@@ -18,11 +18,13 @@ public:
 
     Config & operator=(const Config & iOther);
 
+    void                    setDisableSave(bool iOn = true);
+
     QString                 filename() const;
     void                    setFilename(const QString iFilename);
 
     bool                    load();
-    bool                    save(const QStringList iKeyFilter = QStringList()) const;
+    bool                    save(const QStringList iKeyFilter = QStringList()) const;   // Returns true on disabled save
 
     void                    setPointer(const QString iKey, void * iPointer);            // Not savable/loadable
     void *                  toPointer(const QString iKey) const;                        // Not savable/loadable
@@ -57,6 +59,7 @@ protected:
     void _copy(const Config &iOther);
 
     mutable QReadWriteLock  mLock;
+    bool                    mDisableSave            = false;
     QStringList             mDefaultKeyFilter;
     QString                 mFilename;
     QVariantMap             mConfigValues;

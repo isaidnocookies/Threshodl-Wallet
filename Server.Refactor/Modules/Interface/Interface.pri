@@ -10,4 +10,5 @@
     include($$PWD/RESTHandlerInterface/RESTHandlerInterface.pri)
     include($$PWD/RPCServerInterface/RPCServerInterface.pri)
     include($$PWD/RPCServerHandlerInterface/RPCServerHandlerInterface.pri)
+    include($$PWD/GrinderInterface/GrinderInterface.pri)
 }
