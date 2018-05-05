@@ -51,7 +51,15 @@ bool GrinderUT::doInit(void *pointerToThis, void *pointerToAppObject)
         qDebug() << lGrinder->grindValues(QStringLiteral("0.0002"),QStringLiteral("BTC"));
 
         qDebug() << "[BTC] Grinding 1:";
-        qDebug() << lGrinder->grindValues(QStringLiteral("1"),QStringLiteral("BTC"));
+        QStringList lVResult = lGrinder->grindValues(QStringLiteral("1"),QStringLiteral("BTC"));
+        qDebug() << lVResult;
+
+        QStringMath lVR("0.0");
+        for( auto lR : lVResult )
+        {
+            lVR = lVR.add(lR);
+        }
+        qDebug() << "Math:" << lVR.toString();
     }
 
     return lResult;
