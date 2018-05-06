@@ -46,7 +46,7 @@ inline static bool __TestGrinder(const QString iValue, Grinder * iGrinder, QStri
     { lAfter = lAfter.add(lE); }
 
     if( lAfter == lBefore ) {
-        qDebug().noquote().nospace() << "SUCCESSFUL, Generated " << lValues.size() << " values totaling " << lAfter.toString() << " instead of " << lBefore.toString();
+        qDebug().noquote().nospace() << "SUCCESSFUL, Generated " << lValues.size() << " values totaling " << lAfter.toString() << " matching " << lBefore.toString();
         return true;
     }
 
