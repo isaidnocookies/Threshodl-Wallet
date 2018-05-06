@@ -44,7 +44,7 @@ protected:
     bool _normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative);
     QString _divideStringValue(const QString iValue, unsigned int iDivsor);
     QStringList _appendQStringLists(const QStringList iFirst, const QStringList iSecond);
-    QStringList _sortNumberedQStringList(const QStringList iList);
+    QStringList _sortNumberedQStringList(const QStringList iList, bool iHighestFirst = true);
     QStringList _grindValueOnePass(const QString iValue, GrindingConstraintsRef iConstraints);
 
 };

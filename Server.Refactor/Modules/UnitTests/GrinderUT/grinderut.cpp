@@ -35,32 +35,56 @@ bool GrinderUT::start(void *pointerToThis, void *pointerToAppObject)
     return true;
 }
 
+inline static bool __TestGrinder(const QString iValue, Grinder * iGrinder, QString iCryptoCurrency = QStringLiteral("BTC"))
+{
+    qDebug().noquote().nospace() << "[" << iCryptoCurrency << "] Grinding " << iValue << ":";
+    QStringList     lValues = iGrinder->grindValues(iValue,iCryptoCurrency);
+    QStringMath     lBefore{iValue};
+    QStringMath     lAfter{QStringLiteral("0.0")};
+
+    for( QString lE : lValues )
+    { lAfter = lAfter.add(lE); }
+
+    if( lAfter == lBefore ) {
+        qDebug().noquote().nospace() << "SUCCESSFUL, Generated " << lValues.size() << " values totaling " << lAfter.toString() << " instead of " << lBefore.toString();
+        return true;
+    }
+
+    qDebug().noquote().nospace() << "FAILED, Generated " << lValues.size() << " values totaling " << lAfter.toString() << " instead of " << lBefore.toString();
+    return false;
+}
+
 bool GrinderUT::doInit(void *pointerToThis, void *pointerToAppObject)
 {
     Q_UNUSED(pointerToThis)
 
-    bool            lResult     = true;
     App *           lApp        = reinterpret_cast<App *>(pointerToAppObject);
     Grinder *       lGrinder    = reinterpret_cast<Grinder *>(lApp->getModuleObject(QStringLiteral("Grinder-1")));
+    QStringList     lTestList;
 
     if( lApp && lGrinder ) {
-        qDebug() << "[BTC] Grinding 0.0001:";
-        qDebug() << lGrinder->grindValues(QStringLiteral("0.0001"),QStringLiteral("BTC"));
 
-        qDebug() << "[BTC] Grinding 0.0002:";
-        qDebug() << lGrinder->grindValues(QStringLiteral("0.0002"),QStringLiteral("BTC"));
+        qDebug() << "Generating test list, this will take a moment...";
 
-        qDebug() << "[BTC] Grinding 1:";
-        QStringList lVResult = lGrinder->grindValues(QStringLiteral("1"),QStringLiteral("BTC"));
-        qDebug() << lVResult;
-
-        QStringMath lVR("0.0");
-        for( auto lR : lVResult )
+        for( int lHigh = 0; lHigh <= 10; lHigh++ )
         {
-            lVR = lVR.add(lR);
+            for( int lLow = 1; lLow <= 9999; lLow++ )
+            {
+                lTestList << QStringLiteral("%1.%2").arg(lHigh).arg(lLow,4,10,QChar{'0'});
+            }
         }
-        qDebug() << "Math:" << lVR.toString();
+
+        qDebug() << "Test range set to" << lTestList.first() << "through" << lTestList.last();
+
+        for( QString lE : lTestList )
+        {
+            if( ! __TestGrinder(lE,lGrinder) ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    return lResult;
+    return false;
 }

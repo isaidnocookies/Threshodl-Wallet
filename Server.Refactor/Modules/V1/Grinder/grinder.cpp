@@ -59,15 +59,21 @@ Grinder::~Grinder()
 
 QStringList Grinder::grindValues(const QString iValue, const QString iCryptoCurrency)
 {
-    GrindingConstraintsRef  lConstraints = mGrindingConstraints[iCryptoCurrency];
+    GrindingConstraintsRef  lConstraints    = mGrindingConstraints[iCryptoCurrency];
 
     if( ! lConstraints )
         return QStringList() << iValue;
 
 
+    bool            lIsNegative     = false;
+    QString         lNValue;
+
+    if( ! _normalizeString(iValue,lNValue,lIsNegative) || lIsNegative )
+        return QStringList();
+
     QStringList     lGrindedResult;
     int             lDoPasses = lConstraints->DefaultPasses;
-    QStringMath     lValue{iValue};
+    QStringMath     lValue{lNValue};
     QString         lValueToWorkOn;
 
     // Find out how many passes we should do
@@ -84,7 +90,7 @@ QStringList Grinder::grindValues(const QString iValue, const QString iCryptoCurr
 
     for( int lIndex = 0; lIndex < lDoPasses; lIndex++ ) {
         if( lGrindedResult.isEmpty() )
-            lValueToWorkOn = iValue;
+            lValueToWorkOn = lNValue;
         else
             lValueToWorkOn = lGrindedResult.takeFirst();
 
@@ -192,7 +198,7 @@ QStringList Grinder::_appendQStringLists(const QStringList iFirst, const QString
     return lResult;
 }
 
-QStringList Grinder::_sortNumberedQStringList(const QStringList iList)
+QStringList Grinder::_sortNumberedQStringList(const QStringList iList, bool iHighestFirst)
 {
     QStringList lResult;
 
@@ -229,6 +235,13 @@ QStringList Grinder::_sortNumberedQStringList(const QStringList iList)
             if( lPos >= lResult.size() )
                 lResult.append(lE);
         }
+    }
+
+    if( iHighestFirst ) {
+        QStringList lOldResult = lResult;
+        lResult = QStringList();
+        for( QString lE : lOldResult )
+        { lResult.prepend(lE); }
     }
 
     return lResult;
