@@ -1,0 +1,5 @@
+PDU	- Protocol Data Unit, the payload of the TCP/UDP packet that has a specific structure
+UA	- User Agent, search for services
+SA	- Service Agent, announce one or more services
+DA	- Directory Agent, cache services information. They are used in larger networks to reduce the amount of traffic and allow SLP to scale. The existence of DAs in a network is optional, but if a DA is present, UAs and SAs are required to use it instead of communicating directly.
+RA	- Root Agent, lists one or more well known DAs for other systems to connect to. RA is a block of text data distributed either via a file and/or via a DNS TXT record.
