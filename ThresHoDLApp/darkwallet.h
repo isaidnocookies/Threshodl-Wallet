@@ -37,7 +37,7 @@ private slots:
     void on_withdrawToBrightWalletButton_pressed();
     void on_qrPushButton_pressed();
     void on_balancePushButton_pressed();
-    void on_refreshWalletButton_pressed();
+    void on_refreshWalletButton_released();
 
 signals:
     void saveAddressSettings(QString oEmail, QString oAddress);

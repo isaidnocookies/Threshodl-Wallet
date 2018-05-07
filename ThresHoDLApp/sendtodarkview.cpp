@@ -77,6 +77,12 @@ void SendToDarkView::on_convertButton_pressed()
         return;
     }
 
+    if (!mActiveUser->isBrightWalletSettled()) {
+        ui->warningLabel->setWordWrap(true);
+        ui->warningLabel->setText("Bright wallet is unconfirmed! Please wait and try again when it is settled.");
+        return;
+    }
+
     if (ui->confirmCheckBox->isChecked()) {
         // Allow transfer
         startProgressBarAndDisable();
@@ -129,31 +135,32 @@ void SendToDarkView::receivedMessage()
     QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
     if (lCommand == RPCMessageCreateMicroWalletPackageReply::commandValue()) {
-        // compare reply transaction id
-
         if (mTransactionId == lReply.transactionId()) {
-//            all is good
-        } else {
-//            not for us
-            //TODO: do something
-        }
-
-        switch(lReply.replyCode()) {
-        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-            completeToDarkTransaction(lReply.microWalletsData(),"");
-            ui->warningLabel->setText("Conversion Complete!");
-            ui->amountLineEdit->clear();
-            break;
-        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
-            break;
-        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
-            break;
-        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
-            break;
-        case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
-            break;
-        default:
-            break;
+            switch(lReply.replyCode()) {
+            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
+                completeToDarkTransaction(lReply.microWalletsData(),"0.0"); // TODO: ADD the fee to the function
+                ui->warningLabel->setText("Conversion Complete!");
+                ui->amountLineEdit->clear();
+                break;
+            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            default:
+                break;
+            }
         }
     }
     stopProgressBarAndEnable();
@@ -169,7 +176,6 @@ void SendToDarkView::socketError(QAbstractSocket::SocketError iError)
 void SendToDarkView::sslErrors(const QList<QSslError> iErrors)
 {
     qDebug() << "Ssl Errors:";
-
     int lIndex = 0;
 
     for( auto lError : iErrors ) {
@@ -197,10 +203,8 @@ void SendToDarkView::stopProgressBarAndEnable()
     ui->confirmCheckBox->setEnabled(true);
 }
 
-void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount)
+bool SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount)
 {
-//    mActiveUser->removeBrightWallets(ui->amountLineEdit->text());
-//    mActiveUser->setBrightPendingBalance(lTotalBrightCoin);
     QStringList             lTxids;
     QStringList             lValues;
     QStringList             lVouts;
@@ -208,6 +212,8 @@ void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString 
     QByteArray              lRawTransaction = QByteArray();
     QByteArray              lSignedHex = QByteArray();
     QList<BitcoinWallet>    lNewDarkWallets;
+    QStringMath             lDarkWalletTotal;
+    bool                    lReturn;
 
     QString lTotalBrightCoin = (mBalance - ui->amountLineEdit->text()).toString();
 
@@ -216,20 +222,31 @@ void SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString 
 
     mActiveUser->setBrightBalance(lTotalBrightCoin);
 
-    QStringMath lDarkWalletTotal;
     for (auto w : iData) {
-        mActiveUser->addMicroWallet(BitcoinWallet(w));
         lNewDarkWallets.append(BitcoinWallet(w));
-        qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
         lDarkWalletTotal = lDarkWalletTotal + BitcoinWallet(w).value();
     }
 
-    mActiveUser->fillDarkWallets(lNewDarkWallets, lDarkWalletTotal.toString(), iFeeAmount);
-
-    emit updateBrightBalance(lTotalBrightCoin);
-    emit brightToDarkCompleted(true, lTotalBrightCoin, iData);
+    if (lNewDarkWallets.size() > 0 && lDarkWalletTotal > QStringMath("0.0")) {
+        if (mActiveUser->fillDarkWallets(lNewDarkWallets, lDarkWalletTotal.toString(), iFeeAmount)) {
+            for (auto w : lNewDarkWallets) {
+                mActiveUser->addMicroWallet(w);
+                qDebug() << "Adding.... " << BitcoinWallet(w).walletId();
+            }
+            emit updateBrightBalance(lTotalBrightCoin);
+            emit brightToDarkCompleted(true, lTotalBrightCoin, iData);
+            lReturn = true;
+        } else {
+            emit brightToDarkCompleted(false, mBalance.toString(), QList<QByteArray>());
+            lReturn = false;
+        }
+    } else {
+        emit brightToDarkCompleted(false, mBalance.toString(), QList<QByteArray>());
+        lReturn = false;
+    }
 
     stopProgressBarAndEnable();
+    return lReturn;
 }
 
 void SendToDarkView::on_confirmCheckBox_stateChanged(int arg1)

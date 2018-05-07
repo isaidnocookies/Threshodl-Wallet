@@ -35,6 +35,7 @@ private slots:
     void on_closeWindowButton_pressed();
     void on_sendButton_pressed();
     void on_sendToDarkWalletButton_pressed();
+    void on_refreshButton_released();
 
 signals:
     void makeDashboardMaximized();
@@ -55,6 +56,9 @@ private:
 
     void setQrCode();
     void updateBalanceLabel();
+
+    void startProgressBarAndDisable();
+    void stopProgressBarAndEnable();
 };
 
 #endif // BRIGHTWALLET_H

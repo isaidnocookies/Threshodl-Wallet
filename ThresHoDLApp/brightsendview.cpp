@@ -24,7 +24,7 @@ BrightSendView::~BrightSendView()
 void BrightSendView::setActiveUser(UserAccount *iActiveUser)
 {
     mActiveUser = iActiveUser;
-    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightBalance().toString()));
+    ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightPendingBalance().toString()));
 }
 
 void BrightSendView::on_closePushButton_pressed()
@@ -89,7 +89,10 @@ void BrightSendView::on_sendTransactionButton_released()
     startProgressBarAndDisable();
 
     if (sendTransaction(ui->addressLineEdit->text(), ui->amountLineEdit->text())) {
-        ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightBalance().toString()));
+        ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mActiveUser->getBrightPendingBalance().toString()));
+        ui->amountLineEdit->clear();
+        ui->addressLineEdit->clear();
+        ui->checkBox->setChecked(false);
         ui->warningLabel->setText("Transaction Sent!");
     } else {
         ui->warningLabel->setText("Transaction Failed!");

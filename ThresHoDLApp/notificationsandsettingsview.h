@@ -26,6 +26,8 @@ private slots:
     void on_deleteAccountButton_released();
     void on_backupPushButton_released();
 
+    void on_resetBalancePushButton_pressed();
+
 signals:
     void deleteAccountAndClearData();
 

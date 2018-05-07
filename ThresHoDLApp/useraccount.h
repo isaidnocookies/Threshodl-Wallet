@@ -38,6 +38,7 @@ public:
     QStringMath             getDarkBalance()                    { return mDarkBalance; }
     QStringMath             getBrightBalance()                  { return mBrightBalance; }
     QStringMath             getBrightPendingBalance()           { return mBrightPendingBalance; }
+    QStringMath             getDarkPendingBalance()             { return mDarkPendingBalance; }
     QList<BitcoinWallet>    getPendingToSendDarkWallets();
 
     void setUsername(QString iUsername);
@@ -56,12 +57,15 @@ public:
     void setDarkWallets(QList<BitcoinWallet> iWallets);
     void setBrightBalance(QStringMath iValue)                           { mBrightBalance = iValue; }
     void setBrightPendingBalance(QStringMath iValue);
+    void setBrightWalletsSettled(bool iIsSettled)                       { mBrightWalletSettled = iIsSettled; }
+    void setDarkPendingBalance(QStringMath iValue);
     void setDarkBalance(QStringMath iValue)                             { mDarkBalance = iValue; }
     void setDarkWalletsSettled(bool iIsSettled)                         { mDarkWalletSettled = iIsSettled; }
     bool isDarkWalletsSettled()                                         { return mDarkWalletSettled; }
+    bool isBrightWalletSettled()                                        { return mBrightWalletSettled; }
     bool isNewAccount();
     bool accountContainsWallet (QString iWalletId);
-    void updateBrightBalanceFromBlockchain();
+    void updateBalancesFromBlockchain();
     bool sendBrightTransaction(QString iToAddress, QString iAmount);
     bool fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWalletTotal, QString iFeeEstimate);
     bool sendDarkWalletsToBrightWallet(QList<BitcoinWallet> iWallets);
@@ -93,10 +97,12 @@ private:
     QStringMath                             mBrightPendingBalance;
     QList<BitcoinWallet>                    mDarkWallet;
     QStringMath                             mDarkBalance;
+    QStringMath                             mDarkPendingBalance;
 
     QSet<QString>                           mAllWallets;
 
     bool                                    mDarkWalletSettled;
+    bool                                    mBrightWalletSettled;
 
     void loadFromSettings();
     bool greaterThanWallet (BitcoinWallet iLHS, BitcoinWallet iRHS);

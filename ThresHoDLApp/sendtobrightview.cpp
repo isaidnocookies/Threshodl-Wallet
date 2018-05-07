@@ -94,6 +94,7 @@ void SendToBrightView::connectedToServer()
 
         // INCOMPLETE UNTIL BLOCKCHAIN STUFF IS SORTED OUT
         ui->warningLabel->setText("Failed because can't make change...");
+        sendToBrightComplete(false);
         stopProgressBarAndEnable();
         return;
         // INCOMPLETE...
@@ -200,8 +201,10 @@ void SendToBrightView::receivedMessage()
 
     if (lTreatAsFailure) {
         //roll back changes...
+        sendToBrightComplete(false);
     } else {
         completeWalletsAndAdd(lReply.walletPartialKeys());
+        sendToBrightComplete(true);
     }
 
     stopProgressBarAndEnable();
@@ -338,12 +341,12 @@ void SendToBrightView::on_amountLineEdit_textChanged(const QString &arg1)
 
 void SendToBrightView::newMicroWallets(bool iSuccess)
 {
-
+    Q_UNUSED (iSuccess)
 }
 
-void SendToBrightView::completeMicroWallet(bool oSuccess)
+void SendToBrightView::completeMicroWallet(bool iSuccess)
 {
-
+    Q_UNUSED (iSuccess)
 }
 
 void SendToBrightView::microWalletBreakdownComplete(bool iSuccess)
@@ -360,5 +363,20 @@ void SendToBrightView::microWalletBreakdownComplete(bool iSuccess)
         //error....
         qDebug() << "FAILURE to break down microwallets before send. Trying again...";
         ui->warningLabel->setText("Failed to convert back to bright. Please try again.");
+    }
+}
+
+void SendToBrightView::sendToBrightComplete(bool iSuccess)
+{
+    if (iSuccess) {
+        qDebug() << "Successfully sent dark to bright!";
+        mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Dark wallets were sent to bright!");
+    } else {
+        for (auto w : mActiveUser->getPendingToSendDarkWallets()) {
+            mActiveUser->addMicroWallet(w);
+        }
+        mActiveUser->clearPendingToSendDarkWallets();
+        mActiveUser->addNotification(QDate::currentDate().toString(myDateFormat()), "Failed to send dark to bright..");
+        qDebug() << "Failed to send dark to bright. Rolling back changes...";
     }
 }

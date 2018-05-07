@@ -58,7 +58,7 @@ private:
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();
 
-    void completeToDarkTransaction (QList<QByteArray> iData, QString iFeeAmount);
+    bool completeToDarkTransaction(QList<QByteArray> iData, QString iFeeAmount);
 };
 
 #endif // SENDTODARKVIEW_H

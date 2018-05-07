@@ -42,6 +42,7 @@ UserAccount::UserAccount(QObject *parent)
     mBitcoinBlockchainInterface = new BitcoinBlockchainInterface;
     mBitcoinBlockchainInterface->setActiveUser(this);
     mDarkWalletSettled = true;
+    mBrightWalletSettled = true;
 
     loadFromSettings();
 }
@@ -313,7 +314,7 @@ void UserAccount::setBrightWallets(QList<BitcoinWallet> iWallets)
     mAccountSettings->setValue(brightWalletsSetting(), lWalletList);
     mAccountSettings->sync();
 
-    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+//    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
 }
 
 void UserAccount::setDarkWallets(QList<BitcoinWallet> iWallets)
@@ -347,6 +348,14 @@ void UserAccount::setBrightPendingBalance(QStringMath iValue)
     mBrightPendingBalance = iValue;
 
     mAccountSettings->setValue(brightPendingBalanceSetting(), mBrightPendingBalance.toString());
+    mAccountSettings->sync();
+}
+
+void UserAccount::setDarkPendingBalance(QStringMath iValue)
+{
+    mDarkPendingBalance = iValue;
+
+    mAccountSettings->setValue(darkPendingBalanceSetting(), mDarkPendingBalance.toString());
     mAccountSettings->sync();
 }
 
@@ -525,18 +534,12 @@ bool UserAccount::accountContainsWallet(QString iWalletId)
     return mAllWallets.contains(iWalletId);
 }
 
-void UserAccount::updateBrightBalanceFromBlockchain()
+void UserAccount::updateBalancesFromBlockchain()
 {
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
     mBitcoinBlockchainInterface->updateDarkWalletBalances();
 
-//    if (mBrightBalance == mBrightPendingBalance) {
-    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
-//    } else {
-//        emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
-//    }
-
-    emit updateBrightBalanceComplete(true);
+    emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
 }
 
 bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
@@ -567,9 +570,10 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
                 qDebug() << "Transaction signed!";
                 if (mBitcoinBlockchainInterface->sendRawTransaction(lSignedHex)) {
                     qDebug() << "Transaction sent!";
-                    mBrightBalance = mBrightBalance - iAmount;
-                    setBrightPendingBalance(mBrightBalance.toString());
-                    emit updateBalancesForViews(mBrightBalance.toString(), mDarkBalance.toString());
+                    mBrightPendingBalance = mBrightBalance - iAmount;
+                    setBrightPendingBalance(mBrightPendingBalance.toString());
+                    setBrightWalletsSettled(false);
+                    emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
                     return true;
                 }
             } else {
@@ -695,6 +699,19 @@ void UserAccount::loadFromSettings()
 
     mEmail = mAccountSettings->value(emailSetting()).toString();
     mBrightPendingBalance = mAccountSettings->value(brightPendingBalanceSetting()).toString();
+    mDarkPendingBalance = mAccountSettings->value(darkPendingBalanceSetting()).toString();
+
+    if (mBrightBalance == mBrightPendingBalance) {
+        setBrightWalletsSettled(true);
+    } else {
+        setBrightWalletsSettled(false);
+    }
+
+    if (mDarkBalance == mDarkPendingBalance) {
+        setDarkWalletsSettled(true);
+    } else {
+        setDarkWalletsSettled(false);
+    }
 
     if (!mAccountSettings->contains(brightWalletsSetting())) {
         //create new wallet

@@ -27,13 +27,10 @@ public:
 
 public slots:
     void createAccountComplete(QString iUsername, QByteArray iPriv, QByteArray iPub);
-    void makeMaximized();
     void saveAddressInSettings(QString iEmail, QString iAddress);
     void completePendingImport(bool iComplete);
     void addNotificationToSettings (QString iDate, QString iNotification);
     void updateBalances(QString iBrightBalance, QString iDarkBalances);
-    void walletWindowDeleted();
-    void brightWalletUpdateComplete(bool iSuccess);
     void clearAllDataAndLogout();
     void startClearAllDataAndLogout();
 
@@ -42,7 +39,7 @@ private slots:
     void on_darkButton_pressed();
     void on_notificationPushButton_pressed();
     void brightToDarkCompleted(bool iSuccessful, QString lBrightAmount, QList<QByteArray> iDarkWallets);
-    void on_refreshWalletsButton_pressed();
+    void on_refreshWalletsButton_released();
 
 private:
     Ui::MainWindow                  *ui;
