@@ -68,7 +68,7 @@ bool GrinderUT::doInit(void *pointerToThis, void *pointerToAppObject)
 
         for( int lHigh = 0; lHigh <= 10; lHigh++ )
         {
-            for( int lLow = 1; lLow <= 9999; lLow++ )
+            for( int lLow = 0; lLow <= 9999; lLow++ )
             {
                 lTestList << QStringLiteral("%1.%2").arg(lHigh).arg(lLow,4,10,QChar{'0'});
             }
