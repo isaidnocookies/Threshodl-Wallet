@@ -2,6 +2,7 @@
 #include "modulelinker.h"
 #include "app.h"
 #include "../../V1/Grinder/grinder.h"
+#include "qstringmath.h"
 
 #include <QDebug>
 #include <QString>

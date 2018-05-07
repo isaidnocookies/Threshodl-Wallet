@@ -200,7 +200,23 @@ QStringList Grinder::_appendQStringLists(const QStringList iFirst, const QString
 
 QStringList Grinder::_sortNumberedQStringList(const QStringList iList, bool iHighestFirst)
 {
-    QStringList lResult;
+    QStringList lResult = iList;
+
+    std::sort(lResult.begin(), lResult.end(), [iHighestFirst](QString iLHS, QString iRHS) -> bool
+    {
+        if (QStringMath(iLHS) == QStringMath(iRHS)) {
+            return false;
+        } else {
+            if (iHighestFirst) {
+                return QStringMath(iLHS) > QStringMath(iRHS);
+            } else {
+                return QStringMath(iLHS) < QStringMath(iRHS);
+            }
+
+        }
+    });
+
+    return lResult;
 
     for( auto lE : iList )
     {
@@ -217,7 +233,7 @@ QStringList Grinder::_sortNumberedQStringList(const QStringList iList, bool iHig
             // Down
             for( ; lPos >= 0; lPos-- ) {
                 if( QStringMath(lResult[lPos]) < lES ) {
-                    lResult.insert(lPos,lE);
+                    lResult.insert(lPos+1,lE);
                     break;
                 }
             }
@@ -227,7 +243,7 @@ QStringList Grinder::_sortNumberedQStringList(const QStringList iList, bool iHig
             // Up
             for( ; lPos < lResult.size(); lPos++ ) {
                 if( QStringMath(lResult[lPos]) > lES ) {
-                    lResult.insert(lPos,lE);
+                    lResult.insert(lPos+1,lE);
                     break;
                 }
             }
@@ -300,6 +316,7 @@ QStringList Grinder::_grindValueOnePass(const QString iValue, Grinder::GrindingC
         return iInput.value * (std::pow(10.0, iInput.multiplier));
     };
 
+
     lStartValueString = iValue;
     lDecimalIndex = lStartValueString.indexOf(".");
 
@@ -352,7 +369,15 @@ QStringList Grinder::_grindValueOnePass(const QString iValue, Grinder::GrindingC
     }
 
     for (size_t i = 0; i < lBreaks->size(); i++) {
-        lStringBreaks << QString::number(getValueFromBValue(lBreaks->at(static_cast<int>(i))));
+        QString     lValue = QString::number(getValueFromBValue(lBreaks->at(static_cast<int>(i))));
+        bool        lIsNegative;
+        QString     lNormalizedValue;
+
+        if (_normalizeString(lValue, lNormalizedValue, lIsNegative)) {
+            lStringBreaks << lNormalizedValue;
+        } else {
+            lStringBreaks << lValue;
+        }
     }
 
     return _sortNumberedQStringList(lStringBreaks);
