@@ -1,0 +1,9 @@
+!contains( WALLETSERVERMODULES, <<MODULE_NAME>>V1 ) {
+    WALLETSERVERMODULES += <<MODULE_NAME>>V1
+
+    HEADERS += \
+        $$PWD/<<HEADER_FILE>>.h
+
+    SOURCES += \
+        $$PWD/<<SOURCE_FILE>>.cpp
+}
