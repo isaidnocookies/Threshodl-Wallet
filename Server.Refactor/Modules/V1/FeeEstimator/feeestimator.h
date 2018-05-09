@@ -15,11 +15,16 @@ class FeeEstimator : public FeeEstimatorInterface
     friend class FeeEstimatorML;
 protected:
     App *                                       mApp                            = nullptr;
-    QMap< QString, QPair< QString, QString > >  mUrlToCryptoCurrencyAndType;
+    QMap< QUrl, QPair< QString, QString > >     mUrlToCryptoCurrencyAndType;
+
+    bool _normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative);
+    QString _divideStringValue(const QString iValue, unsigned int iDivsor);
 
 public:
     FeeEstimator(QObject *iParent = nullptr);
     virtual ~FeeEstimator();
+
+
 
 public slots:
     void downloaded( const QUrl iUrl, const QByteArray iData );
