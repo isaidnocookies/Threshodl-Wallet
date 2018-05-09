@@ -1,26 +1,26 @@
-#ifndef __TEMPLATE___H
-#define __TEMPLATE___H
+#ifndef FEEESTIMATOR_H
+#define FEEESTIMATOR_H
 
-#include "../../Interface/<<MODULE_NAME>>Interface/<<MODULE_NAME>>interface.h"
+#include "../../Interface/FeeEstimatorInterface/FeeEstimatorinterface.h"
 
 class App;
-class <<MODULE_NAME>>ML;
-class <<MODULE_NAME>> : public <<MODULE_NAME>>Interface
+class FeeEstimatorML;
+class FeeEstimator : public FeeEstimatorInterface
 {
-    friend class <<MODULE_NAME>>ML;
+    friend class FeeEstimatorML;
 public:
-    <<MODULE_NAME>>();
-    virtual ~<<MODULE_NAME>>();
+    FeeEstimator();
+    virtual ~FeeEstimator();
 };
 
-class <<MODULE_NAME>>ML
+class FeeEstimatorML
 {
 public:
-    <<MODULE_NAME>>ML();
+    FeeEstimatorML();
     static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
     static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
     static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
     static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
-#endif // __TEMPLATE___H
+#endif // FEEESTIMATOR_H
