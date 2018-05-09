@@ -10,6 +10,7 @@
 
 class DownloaderInterface : public QObject
 {
+    Q_OBJECT
 protected:
     mutable QReadWriteLock      mUrlsLock;
     QList<QUrl>                 mUrls;
@@ -17,27 +18,25 @@ protected:
 public:
     typedef QNetworkRequest (*UrlCallback_t)(const QUrl iUrl, void * iUserData);
 
-    DownloaderInterface(QObject * iParent = nullptr) : QObject(iParent)
-    { }
+    DownloaderInterface(QObject * iParent = nullptr);
+    virtual ~DownloaderInterface();
 
-    virtual ~DownloaderInterface()
-    { }
-
-    QList<QUrl> urls() const                            { QReadLocker l{&mUrlsLock}; return mUrls; }
+    QList<QUrl> urls() const;
 
 public slots:
     // Url callbacks are placed on allready added Urls or if the Url is not already added then it adds it as it is placed
     virtual void    addUrlCallback(const QUrl iUrl, UrlCallback_t iCallback, void * iUserData = nullptr)    = 0;
     virtual void    removeUrlCallback(const QUrl iUrl)                                                      = 0;
 
-    virtual void    removeUrl(const QUrl iUrl)          { removeUrlCallback(iUrl); QWriteLocker l{&mUrlsLock}; mUrls.removeAll(iUrl); }
-    virtual void    addUrl(const QUrl iUrl)             { removeUrl(iUrl); QWriteLocker l{&mUrlsLock}; mUrls << iUrl; }
-    virtual void    setUrls(const QList<QUrl> iUrls)    { QWriteLocker l{&mUrlsLock}; mUrls = iUrls; }
+    virtual void    removeUrl(const QUrl iUrl);
+    virtual void    addUrl(const QUrl iUrl);
+    virtual void    setUrls(const QList<QUrl> iUrls);
 
 signals:
-    virtual void    downloaded( const QUrl iUrl, const QByteArray iData )   = 0;
-    virtual void    timedOut( const QUrl iUrl )                             = 0;
-    virtual void    failed( const QUrl iUrl )                               = 0;
+    void    urlsChanged();
+    void    downloaded( const QUrl iUrl, const QByteArray iData );
+    void    timedOut( const QUrl iUrl );
+    void    failed( const QUrl iUrl );
 };
 
 #endif // DOWNLOADERINTERFACE_H

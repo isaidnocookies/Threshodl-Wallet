@@ -3,13 +3,19 @@
 
 #include "../../Interface/FeeEstimatorInterface/feeestimatorinterface.h"
 
+#include <QUrl>
+#include <QPair>
+#include <QMap>
+
 class App;
 class FeeEstimatorML;
 class FeeEstimator : public FeeEstimatorInterface
 {
+    Q_OBJECT
     friend class FeeEstimatorML;
 protected:
-    App *       mApp = nullptr;
+    App *                                       mApp                            = nullptr;
+    QMap< QString, QPair< QString, QString > >  mUrlToCryptoCurrencyAndType;
 
 public:
     FeeEstimator(QObject *iParent = nullptr);

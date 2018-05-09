@@ -29,6 +29,7 @@ public slots:
     bool doInit() override;
     void threadStarted() override;
     void handleDownloadedUrlData( const QString iUrl, const QByteArray iData ) override;
+    void recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee) override;
 
 protected:
     void    saveDataBTCTestNetBlockChainStats(const QString iSource, const QByteArray iData);

@@ -133,6 +133,15 @@ void RecordsManager::handleDownloadedUrlData(const QString iUrl, const QByteArra
     // Ignore it, not for us
 }
 
+void RecordsManager::recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee)
+{
+    QString     lDirname    = QString("%1%2%3%4%5").arg(mRecordsPath).arg(QDir::separator()).arg(iCryptoCurrency.toLower()).arg(QDir::separator()).arg(iType);
+    QString     lFilename   = QString("%1%2%3").arg(lDirname).arg(QDir::separator()).arg(QDateTime::currentSecsSinceEpoch());
+    QByteArray  lIgnored;
+    _recordFileAndStoreLocalVariable( lDirname, lFilename, iFee.toUtf8(), lIgnored );
+    emit btcTestNetEstimateFeesChanged();
+}
+
 void RecordsManager::saveDataBTCTestNetBlockChainStats(const QString iSource, const QByteArray iData)
 {
     QString     lDirname    = QString("%1%2testnet_estimatefee%3%4").arg(mRecordsPath).arg(QDir::separator()).arg(QDir::separator()).arg(iSource);

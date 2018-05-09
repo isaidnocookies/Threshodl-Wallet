@@ -14,9 +14,10 @@ signals:
     virtual void btcMainNetEstimateFeesChanged() = 0;
 
 public slots:
-    virtual bool doInit()                                                                   = 0;
-    virtual void threadStarted()                                                            = 0;
-    virtual void handleDownloadedUrlData( const QString iUrl, const QByteArray iData )      = 0;
+    virtual bool doInit()                                                                           = 0;
+    virtual void threadStarted()                                                                    = 0;
+    virtual void handleDownloadedUrlData( const QString iUrl, const QByteArray iData )              = 0;
+    virtual void recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee)  = 0;
 };
 
 #endif // RECORDSMANAGERINTERFACE_H

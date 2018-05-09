@@ -20,15 +20,7 @@ public:
     Downloader(QObject * iParent = nullptr);
     virtual ~Downloader();
 
-signals:
-    void urlsChanged();
-    void downloaded( const QUrl iUrl, const QByteArray iData ) override;
-    void timedOut( const QUrl iUrl ) override;
-    void failed( const QUrl iUrl ) override;
-
 public slots:
-    void addUrl(const QUrl iUrl) override;
-    void setUrls(const QList<QUrl> iUrls) override;
     void addUrlCallback(const QUrl iUrl, UrlCallback_t iCallback, void * iUserData = nullptr) override;
     void removeUrlCallback(const QUrl iUrl) override;
 

@@ -22,18 +22,6 @@ Downloader::~Downloader()
     }
 }
 
-void Downloader::addUrl(const QUrl iUrl)
-{
-    DownloaderInterface::addUrl(iUrl);
-    emit urlsChanged();
-}
-
-void Downloader::setUrls(const QList<QUrl> iUrls)
-{
-    DownloaderInterface::setUrls(iUrls);
-    emit urlsChanged();
-}
-
 void Downloader::addUrlCallback(const QUrl iUrl, DownloaderInterface::UrlCallback_t iCallback, void *iUserData)
 {
     PendingUrlCallback  lPending;
