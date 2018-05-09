@@ -5,7 +5,7 @@
 static <<MODULE_NAME>>ML _gRegisterModuleLinker;
 
 <<MODULE_NAME>>ML::<<MODULE_NAME>>ML()
-{ ModuleLinker::registerModule(QStringLiteral("Grinder-1"),<<MODULE_NAME>>ML::creator,<<MODULE_NAME>>ML::doInit,<<MODULE_NAME>>ML::start,<<MODULE_NAME>>ML::startInOwnThread); }
+{ ModuleLinker::registerModule(QStringLiteral("<<MODULE_NAME>>-1"),<<MODULE_NAME>>ML::creator,<<MODULE_NAME>>ML::doInit,<<MODULE_NAME>>ML::start,<<MODULE_NAME>>ML::startInOwnThread); }
 
 void *<<MODULE_NAME>>ML::creator(void *pointerToAppObject)
 {
