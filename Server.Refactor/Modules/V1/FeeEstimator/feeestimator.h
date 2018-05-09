@@ -1,16 +1,25 @@
 #ifndef FEEESTIMATOR_H
 #define FEEESTIMATOR_H
 
-#include "../../Interface/FeeEstimatorInterface/FeeEstimatorinterface.h"
+#include "../../Interface/FeeEstimatorInterface/feeestimatorinterface.h"
 
 class App;
 class FeeEstimatorML;
 class FeeEstimator : public FeeEstimatorInterface
 {
     friend class FeeEstimatorML;
+protected:
+    App *       mApp = nullptr;
+
 public:
-    FeeEstimator();
+    FeeEstimator(QObject *iParent = nullptr);
     virtual ~FeeEstimator();
+
+public slots:
+    void downloaded( const QUrl iUrl, const QByteArray iData );
+
+signals:
+    void recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee);
 };
 
 class FeeEstimatorML

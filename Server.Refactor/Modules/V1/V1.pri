@@ -7,4 +7,5 @@
     include($$PWD/Downloader/Downloader.pri)
     include($$PWD/Database/Database.pri)
     include($$PWD/Grinder/Grinder.pri)
+    include($$PWD/FeeEstimator/FeeEstimator.pri)
 }

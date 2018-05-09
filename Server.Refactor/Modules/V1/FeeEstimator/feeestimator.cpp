@@ -1,39 +1,55 @@
-#include "<<HEADER_FILE>>.h"
+#include "feeestimator.h"
 #include "app.h"
 #include "modulelinker.h"
 
-static <<MODULE_NAME>>ML _gRegisterModuleLinker;
+#include "../../Interface/RecordsManagerInterface/recordsmanagerinterface.h"
+#include "../../Interface/DownloaderInterface/downloaderinterface.h"
+//#include "../RecordsManager/recordsmanager.h"
+//#include "../Downloader/downloader.h"
 
-<<MODULE_NAME>>ML::<<MODULE_NAME>>ML()
-{ ModuleLinker::registerModule(QStringLiteral("Grinder-1"),<<MODULE_NAME>>ML::creator,<<MODULE_NAME>>ML::doInit,<<MODULE_NAME>>ML::start,<<MODULE_NAME>>ML::startInOwnThread); }
+static FeeEstimatorML _gRegisterModuleLinker;
 
-void *<<MODULE_NAME>>ML::creator(void *pointerToAppObject)
+FeeEstimatorML::FeeEstimatorML()
 {
-    Q_UNUSED(pointerToAppObject)
-    return new <<MODULE_NAME>>;
+    QStringList lDependencies = QStringList() << QStringLiteral("Downloader-1") << QStringLiteral("RecordsManager-1");
+    ModuleLinker::registerModuleWithDependencies(QStringLiteral("FeeEstimator-1"),lDependencies,FeeEstimatorML::creator,FeeEstimatorML::doInit,FeeEstimatorML::start,FeeEstimatorML::startInOwnThread);
 }
 
-bool <<MODULE_NAME>>ML::doInit(void *pointerToThis, void *pointerToAppObject)
+void *FeeEstimatorML::creator(void *pointerToAppObject)
+{
+    FeeEstimator * lFE  = new FeeEstimator;
+    lFE->mApp           = reinterpret_cast<App *>(pointerToAppObject);
+    return lFE;
+}
+
+bool FeeEstimatorML::doInit(void *pointerToThis, void *pointerToAppObject)
 {
     Q_UNUSED(pointerToThis)
     Q_UNUSED(pointerToAppObject)
     return true;
 }
 
-bool <<MODULE_NAME>>ML::startInOwnThread()
+bool FeeEstimatorML::startInOwnThread()
 { return false; }
 
-bool <<MODULE_NAME>>ML::start(void *pointerToThis, void *pointerToAppObject)
+bool FeeEstimatorML::start(void *pointerToThis, void *pointerToAppObject)
 {
-    Q_UNUSED(pointerToThis)
     Q_UNUSED(pointerToAppObject)
+    FeeEstimator *              lFE = reinterpret_cast<FeeEstimator *>(pointerToThis);
+    RecordsManagerInterface *   lRM = reinterpret_cast<RecordsManagerInterface *>(lFE->mApp->getModuleObject(QStringLiteral("RecordsManager-1")));
+    DownloaderInterface *       lD  = reinterpret_cast<DownloaderInterface *>(lFE->mApp->getModuleObject(QStringLiteral("Downloader-1")));
+
+    QObject::connect( lD, &DownloaderInterface::downloaded, lFE, &FeeEstimator::downloaded );
+
+
     return true;
 }
 
-<<MODULE_NAME>>::<<MODULE_NAME>>()
+FeeEstimator::FeeEstimator(QObject * iParent)
+    : FeeEstimatorInterface(iParent)
 {
 }
 
-<<MODULE_NAME>>::~<<MODULE_NAME>>()
+FeeEstimator::~FeeEstimator()
 {
 }
