@@ -62,12 +62,13 @@ bool FeeEstimatorML::start(void *pointerToThis, void *pointerToAppObject)
     if( ! lRM || ! lD || ! lConfig )
         return false;
 
-    QObject::connect( lD, &DownloaderInterface::downloaded, lFE, &FeeEstimator::downloaded );
-    QObject::connect( lFE, &FeeEstimator::recordFee, lRM, &RecordsManagerInterface::recordFee );
+    QObject::connect( lD,   &DownloaderInterface::downloaded,   lFE,    &FeeEstimator::downloaded           );
+    QObject::connect( lFE,  &FeeEstimator::recordFee,           lRM,    &RecordsManagerInterface::recordFee );
 
     for( QVariant lE : lConfig->toVariantList(QStringLiteral("FeeEstimationSources")) )
     {
-        QVariantMap lM = lE.toMap();
+        QVariantMap lM      = lE.toMap();
+        QUrl        lUrl    = QUrl(lM[QStringLiteral("url")].toString());
 
         if( lM.isEmpty() || ! lM.contains(QStringLiteral("url")) || ! lM.contains(QStringLiteral("crypto")) )
             continue;
@@ -79,7 +80,9 @@ bool FeeEstimatorML::start(void *pointerToThis, void *pointerToAppObject)
             lM[QStringLiteral("chain")] = QStringLiteral("MainNet");
 
         lFE->mCryptoSources << lM;
-        lFE->mUrlToCryptoSource[QUrl(lM[QStringLiteral("url")].toString())] = lM;
+        lFE->mUrlToCryptoSource[lUrl] = lM;
+
+        QMetaObject::invokeMethod( lD, "addUrl", Qt::QueuedConnection, Q_ARG(QUrl, lUrl) );
     }
 
     if( lFE->mCryptoSources.isEmpty() || lFE->mUrlToCryptoSource.isEmpty() )

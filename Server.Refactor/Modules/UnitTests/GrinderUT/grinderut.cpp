@@ -65,6 +65,16 @@ bool GrinderUT::doInit(void *pointerToThis, void *pointerToAppObject)
 
     if( lApp && lGrinder ) {
 
+        auto lConfig = lApp->configuration();
+
+        // Skip GrinderUT if told too
+        if( lConfig->contains(QStringLiteral("GrinderUT")) ) {
+            QString lValue = lConfig->toString(QStringLiteral("GrinderUT"));
+            lConfig->removeValue(QStringLiteral("GrinderUT"));
+            if( lValue == QStringLiteral("Skip") )
+                return true;
+        }
+
         qDebug() << "Generating test list, this will take a moment...";
 
         for( int lHigh = 0; lHigh <= 10; lHigh++ )

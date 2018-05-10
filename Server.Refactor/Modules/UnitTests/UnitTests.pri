@@ -3,4 +3,5 @@
 
     include($$PWD/DatabaseUT/DatabaseUT.pri)
     include($$PWD/GrinderUT/GrinderUT.pri)
+    include($$PWD/FeeEstimatorUT/FeeEstimatorUT.pri)
 }

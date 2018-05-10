@@ -46,6 +46,15 @@ bool DatabaseUT::doInit(void *pointerToThis, void *pointerToAppObject)
     App *           lApp    = reinterpret_cast<App *>(pointerToAppObject);
     Database *      lDB     = reinterpret_cast<Database *>(lApp->getModuleObject(QStringLiteral("Database-1")));
 
+    auto lConfig = lApp->configuration();
+
+    // Skip DatabaseUT if told too
+    if( lConfig->contains(QStringLiteral("DatabaseUT")) ) {
+        QString lValue = lConfig->toString(QStringLiteral("DatabaseUT"));
+        lConfig->removeValue(QStringLiteral("DatabaseUT"));
+        if( lValue == QStringLiteral("Skip") )
+            return true;
+    }
 
     Certificate     lTestUser1;
     QString         lTimeStamp      = QString::number(QDateTime::currentMSecsSinceEpoch());
