@@ -29,9 +29,6 @@ public:
 
 public slots:
     void downloaded( const QUrl iUrl, const QByteArray iData );
-
-signals:
-    void recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee);
 };
 
 class FeeEstimatorML

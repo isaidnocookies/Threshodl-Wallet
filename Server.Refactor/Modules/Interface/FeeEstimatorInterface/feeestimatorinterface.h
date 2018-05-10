@@ -67,6 +67,9 @@ public:
         return lFees;
     }
 
+signals:
+    void recordFee(const QString iCryptoCurrency, const QString iType, const QString iFee);
+
 public slots:
     virtual void setFee(const QString iCryptoCurrency, const QString iType, const QString iFee)
     {
