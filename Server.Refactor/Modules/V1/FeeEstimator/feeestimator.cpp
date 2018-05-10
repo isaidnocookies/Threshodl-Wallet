@@ -31,8 +31,19 @@ bool FeeEstimatorML::doInit(void *pointerToThis, void *pointerToAppObject)
     FeeEstimator *              lFE = reinterpret_cast<FeeEstimator *>(pointerToThis);
     auto *                      lConfig = lFE->mApp->configuration();
 
-    lConfig->setValue(QStringLiteral("BTCTestNetFeeEstimationSource"),QStringLiteral("https://test-insight.bitpay.com/api/utils/estimatefee?nbBlocks=3"));
-    lConfig->setValue(QStringLiteral("BTCMainNetFeeEstimationSource"),QStringLiteral("https://insight.bitpay.com/api/utils/estimatefee?nbBlocks=3"));
+    QVariantMap     lTestNetConf;
+    lTestNetConf["url"]     = QStringLiteral("https://test-insight.bitpay.com/api/utils/estimatefee?nbBlocks=6");
+    lTestNetConf["crypto"]  = QStringLiteral("BTC");
+    lTestNetConf["chain"]   = QStringLiteral("TestNet");
+    lTestNetConf["divisor"] = 1000;
+
+    QVariantMap     lMainNetConf;
+    lMainNetConf["url"]     = QStringLiteral("https://insight.bitpay.com/api/utils/estimatefee?nbBlocks=6");
+    lMainNetConf["crypto"]  = QStringLiteral("BTC");
+    lMainNetConf["chain"]   = QStringLiteral("MainNet");
+    lMainNetConf["divisor"] = 1000;
+
+    lConfig->setValue(QStringLiteral("FeeEstimationSources"), QVariantList() << lTestNetConf << lMainNetConf);
 
     return true;
 }
@@ -54,14 +65,25 @@ bool FeeEstimatorML::start(void *pointerToThis, void *pointerToAppObject)
     QObject::connect( lD, &DownloaderInterface::downloaded, lFE, &FeeEstimator::downloaded );
     QObject::connect( lFE, &FeeEstimator::recordFee, lRM, &RecordsManagerInterface::recordFee );
 
-    QUrl lBTCTestNetFSource = QUrl::fromUserInput(lConfig->toString(QStringLiteral("BTCTestNetFeeEstimationSource")));
-    QUrl lBTCMainNetFSource = QUrl::fromUserInput(lConfig->toString(QStringLiteral("BTCMainNetFeeEstimationSource")));
+    for( QVariant lE : lConfig->toVariantList(QStringLiteral("FeeEstimationSources")) )
+    {
+        QVariantMap lM = lE.toMap();
 
-    if( lBTCTestNetFSource.isEmpty() || lBTCMainNetFSource.isEmpty() )
+        if( lM.isEmpty() || ! lM.contains(QStringLiteral("url")) || ! lM.contains(QStringLiteral("crypto")) )
+            continue;
+
+        if( ! lM.contains(QStringLiteral("divisor")) )
+            lM[QStringLiteral("divisor")] = 1000;
+
+        if( ! lM.contains(QStringLiteral("chain")) && lM["crypto"] == QStringLiteral("BTC") )
+            lM[QStringLiteral("chain")] = QStringLiteral("MainNet");
+
+        lFE->mCryptoSources << lM;
+        lFE->mUrlToCryptoSource[QUrl(lM[QStringLiteral("url")].toString())] = lM;
+    }
+
+    if( lFE->mCryptoSources.isEmpty() || lFE->mUrlToCryptoSource.isEmpty() )
         return false;
-
-    lFE->mUrlToCryptoCurrencyAndType[lBTCTestNetFSource] = QPair< QString, QString >( QStringLiteral("BTC"), QStringLiteral("TestNet") );
-    lFE->mUrlToCryptoCurrencyAndType[lBTCMainNetFSource] = QPair< QString, QString >( QStringLiteral("BTC"), QStringLiteral("MainNet") );
 
     return true;
 }
@@ -149,48 +171,47 @@ QString FeeEstimator::_divideStringValue(const QString iValue, unsigned int iDiv
 
 FeeEstimator::FeeEstimator(QObject * iParent)
     : FeeEstimatorInterface(iParent)
-{
-}
+{ }
 
 FeeEstimator::~FeeEstimator()
-{
-}
+{ }
 
 void FeeEstimator::downloaded(const QUrl iUrl, const QByteArray iData)
 {
-    if( mUrlToCryptoCurrencyAndType.contains(iUrl) ) {
+    if( mUrlToCryptoSource.contains(iUrl) ) {
         // Its for us
-        QPair< QString, QString >   lCryptoCurrencyAndType  = mUrlToCryptoCurrencyAndType[iUrl.toString()];
-        QString                     lCryptoCurrency         = lCryptoCurrencyAndType.first;
-        QString                     lType                   = lCryptoCurrencyAndType.second;
-        QString                     lValuePerByte;
         QJsonParseError             lJsonError;
-        QVariantMap                 lJsonMap                = QJsonDocument::fromJson(iData,&lJsonError).toVariant().toMap();
+        QString                     lValue;
+        QMap< QString, QString >    lFees;
+        double                      lValueD;
+        QVariantMap                 lCryptoSource   = mUrlToCryptoSource[iUrl];
+        QString                     lCrypto         = lCryptoSource[QStringLiteral("crypto")].toString();
+        QString                     lChain          = lCryptoSource[QStringLiteral("chain")].toString();
+        QVariantMap                 lJsonMap        = QJsonDocument::fromJson(iData,&lJsonError).toVariant().toMap();
 
         if( lJsonError.error == QJsonParseError::NoError  && lJsonMap.size() > 0 ) {
-            lValuePerByte = _divideStringValue(lJsonMap[lJsonMap.keys().first()].toString(),1000);
-            emit recordFee(lCryptoCurrency,lType,lValuePerByte);
+            lValue  = _divideStringValue(lJsonMap[lJsonMap.keys().first()].toString(),lCryptoSource[QStringLiteral("divisor")].toInt());
+            if( lCrypto.toLower() == QStringLiteral("btc") ) {
 
-            if( lCryptoCurrency.toLower() == QStringLiteral("btc") ) {
-                lType = lType.toLower();
-                QMap< QString, QString >    lFees;
-                double                      lValue = lValuePerByte.toDouble();
+                emit recordFee(lCrypto,lChain,lValue);
 
-                if( lType == QStringLiteral("testnet") ) {
-                    lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] = lValue * 10.0f;
-                    lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = lValue * 180.0f;
-                    lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = lValue * 34.0f;
-                    setFees(QStringLiteral("BTC"),lFees);
-                }else if( lType == QStringLiteral("mainnet") ) {
-                    lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = lValue * 10.0f;
-                    lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = lValue * 180.0f;
-                    lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = lValue * 34.0f;
-                    setFees(QStringLiteral("BTC"),lFees);
+                lValueD = lValue.toDouble();
+
+                if( lChain == QStringLiteral("testnet") ) {
+                    lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] = lValueD * 10.0f;
+                    lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = lValueD * 180.0f;
+                    lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = lValueD * 34.0f;
+                    setFees(lCrypto,lFees);
+                }else if( lChain == QStringLiteral("mainnet") ) {
+                    lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = lValueD * 10.0f;
+                    lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = lValueD * 180.0f;
+                    lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = lValueD * 34.0f;
+                    setFees(lCrypto,lFees);
                 }else{
-                    qWarning() << "Unhandled BTC chain type:" << lType;
+                    qWarning() << "Unhandled BTC chain type:" << lChain;
                 }
             }else{
-                qWarning() << "Unknown crypto currency type:" << lCryptoCurrency;
+                qWarning() << "Unknown crypto currency type:" << lCrypto;
             }
         }else{
             qWarning() << "Remote fee data parsing error!";

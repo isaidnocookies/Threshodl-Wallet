@@ -14,8 +14,9 @@ class FeeEstimator : public FeeEstimatorInterface
     Q_OBJECT
     friend class FeeEstimatorML;
 protected:
-    App *                                       mApp                            = nullptr;
-    QMap< QUrl, QPair< QString, QString > >     mUrlToCryptoCurrencyAndType;
+    App *                           mApp                = nullptr;
+    QList< QVariantMap >            mCryptoSources;
+    QMap< QUrl, QVariantMap >       mUrlToCryptoSource;
 
     bool _normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative);
     QString _divideStringValue(const QString iValue, unsigned int iDivsor);
