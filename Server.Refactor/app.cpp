@@ -9,6 +9,7 @@
 #include <QSslKey>
 #include <QCoreApplication>
 #include <QAbstractEventDispatcher>
+#include <QTimer>
 
 #ifdef  UNIT_TEST_ON
 void UnitTestInjectCommandConfiguration(Config * iConfiguration);
@@ -186,7 +187,7 @@ void App::_startModules()
                 if( lMI->Start ) {
                     bool lResult = false;
                     bool * lResultPtr = &lResult;
-                    postToThreadAndWait([=]{*lResultPtr = lMI->Start(mModules[lModuleName], this);});
+                    postToThreadAndWait([=]{*lResultPtr = lMI->Start(mModules[lModuleName], this);},lThread);
                     mModuleStarted[lModuleName] = lResult;
                 } else {
                     mModuleStarted[lModuleName] = true;
@@ -201,6 +202,20 @@ void App::_startModules()
             }
         }
     }
+
+    bool lTerminate = false;
+    for( auto lModuleName : mModulesStartOrder ) {
+        if( ! mModuleStarted[lModuleName] ) {
+            qCritical() << "Module" << lModuleName << "FAILED to start!";
+            lTerminate = true;
+        }
+
+    }
+
+    if( lTerminate ) {
+        qFatal("One or more modules FAILED to start, server is terminating.");
+        qApp->exit(1);
+    }
 }
 
 void App::_eventLoopStarted()
@@ -210,6 +225,11 @@ void App::_eventLoopStarted()
     // Load Modules
     if( _createModules(false) ) {
         emit modulesLoaded();
+
+        QTimer::singleShot(1000,[this](){
+            // Give the kernel time to normalize after the emit modulesLoaded signal
+            _startModules();
+        });
     }else{
         qFatal("Unable to load internal modules!");
     }

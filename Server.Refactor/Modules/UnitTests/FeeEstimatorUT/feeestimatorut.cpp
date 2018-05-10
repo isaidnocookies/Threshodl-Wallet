@@ -3,7 +3,9 @@
 #include "app.h"
 #include "modulelinker.h"
 
+#include <QElapsedTimer>
 #include <QSignalSpy>
+#include <QDebug>
 
 #ifdef UNIT_TEST_ON
 static FeeEstimatorUT   _gRegisterModuleLinker;
@@ -52,15 +54,50 @@ bool FeeEstimatorUT::start(void *pointerToThis, void *pointerToAppObject)
                 return true;
         }
 
+        // Build list of Cryptos and Types
+        QList< QString >    lCryptosAndTypes;
+        for( QVariant lE : lConfig->toVariantList(QStringLiteral("FeeEstimationSources")) )
+        {
+            QVariantMap lEntry      = lE.toMap();
+            QString     lCrypto     = lEntry["crypto"].toString();
+            QString     lType;
+
+            if( lCrypto == QStringLiteral("BTC") )
+                lType = lEntry["chain"].toString();
+
+            lCryptosAndTypes << QStringLiteral("%1.%2").arg(lCrypto).arg(lType);
+        }
+
         QSignalSpy      lSignalSpy(lFE, SIGNAL(recordFee(QString,QString,QString)));
 
         // Need to download a list of crypto currencies and then check to make sure we get we have downloaded each one
         // Before saying the module is good
 
-        if( ! lSignalSpy.wait(30000) ) {
-            qWarning() << "Timed out waiting for a fee estimation download!";
-            return false;
+        qDebug() << "Performing FeeEstimator Unit test...";
+        QElapsedTimer   lTimer;
+        lTimer.start();
+        while( ! lCryptosAndTypes.isEmpty() ) {
+            if( lTimer.elapsed() > 120000 ) {
+                qCritical() << "Timed out waiting for all of the fee estimations to download!";
+                return false;
+            }
+
+            qDebug() << "Waiting for a download event to occur.";
+            if( ! lSignalSpy.wait(30000) ) {
+                qWarning() << "Timed out waiting for a fee estimation download!";
+            }
+
+            while( ! lSignalSpy.isEmpty() ) {
+                QList<QVariant> lArguments  = lSignalSpy.takeFirst();
+                QString         lEmitCrypto = lArguments.at(0).toString();
+                QString         lEmitType   = lArguments.at(1).toString();
+                QString         lEmitFee    = lArguments.at(2).toString();
+
+                qDebug() << "FeeEstimator recorded fee" << lEmitFee << "for type" << lEmitType << "for crypto currency" << lEmitCrypto;
+                lCryptosAndTypes.removeAll(QStringLiteral("%1.%2").arg(lEmitCrypto).arg(lEmitType));
+            }
         }
+
 
         return true;
     }

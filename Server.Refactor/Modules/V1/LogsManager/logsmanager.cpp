@@ -41,8 +41,8 @@ static QByteArray _createJsonOutput(QtMsgType iType, const QMessageLogContext &i
     }
 
     lResult = lResult.append(
-                QStringLiteral("\n\t\"File\" : \"%1\",\n\t\"Function\" : \"%2\",\n\t\"Line\" : %3,\n\t\"Category\" : \"%4\",\n\t\"Version\" : %5,\n\t\"Message\" : \"%6\"\n}\n")
-                .arg(iContext.file).arg(iContext.function).arg(iContext.line).arg(iContext.category == nullptr ? "(null)" : iContext.category).arg(iContext.version)
+                QStringLiteral("\n\t\"Timestamp\" : \"%7\",\n\t\"File\" : \"%1\",\n\t\"Function\" : \"%2\",\n\t\"Line\" : %3,\n\t\"Category\" : \"%4\",\n\t\"Version\" : %5,\n\t\"Message\" : \"%6\"\n}\n")
+                .arg(iContext.file).arg(iContext.function).arg(iContext.line).arg(iContext.category == nullptr ? "(null)" : iContext.category).arg(iContext.version).arg(QDateTime::currentMSecsSinceEpoch())
                 .arg(iMessage.toHtmlEscaped())
                 );
 
@@ -54,11 +54,11 @@ static QByteArray _createHumanOutput(QtMsgType iType, const QMessageLogContext &
     QByteArray  lResult;
 
     switch (iType) {
-    case QtDebugMsg:    lResult = "Debug ";     break;
-    case QtInfoMsg:     lResult = "Info ";      break;
-    case QtWarningMsg:  lResult = "Warning ";   break;
-    case QtCriticalMsg: lResult = "Critical ";  break;
-    case QtFatalMsg:    lResult = "Fatal ";     break;
+    case QtDebugMsg:    lResult = QStringLiteral("%1 Debug ").arg(QDateTime::currentMSecsSinceEpoch()).toUtf8();     break;
+    case QtInfoMsg:     lResult = QStringLiteral("%1 Info ").arg(QDateTime::currentMSecsSinceEpoch()).toUtf8();      break;
+    case QtWarningMsg:  lResult = QStringLiteral("%1 Warning ").arg(QDateTime::currentMSecsSinceEpoch()).toUtf8();   break;
+    case QtCriticalMsg: lResult = QStringLiteral("%1 Critical ").arg(QDateTime::currentMSecsSinceEpoch()).toUtf8();  break;
+    case QtFatalMsg:    lResult = QStringLiteral("%1 Fatal ").arg(QDateTime::currentMSecsSinceEpoch()).toUtf8();     break;
     }
 
     lResult = lResult.append( QStringLiteral("[%1:%2, %3]: %4\n").arg(iContext.file).arg(iContext.line).arg(iContext.function).arg(iMessage) );

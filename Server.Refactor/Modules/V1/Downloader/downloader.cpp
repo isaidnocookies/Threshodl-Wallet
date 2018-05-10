@@ -188,8 +188,10 @@ void Downloader::_networkReplyFinished(const QUrl iUrl, QNetworkReply *iSource)
     mDownloadEventsLock.unlock();
 
     if( ! lData.isEmpty() ) {
+        qDebug() << "Downloaded" << lData.size() << "bytes from" << iUrl.toString();
         emit downloaded(iUrl, lData);
     }else{
+        qDebug() << "Failed to download from" << iUrl.toString();
         emit failed(iUrl);
     }
 }
@@ -234,6 +236,8 @@ bool Downloader::loadConfiguration()
 
         if( mTimerIntervalInMS < 1 || mDownloadTimeOutInMS < 1 )
             return false;
+
+        return true;
     }
 
     return false;
@@ -280,5 +284,6 @@ bool DownloaderML::start(void *pointerToThis, void *pointerToAppObject)
 
     if( ! lDM->loadConfiguration() ) return false;
     lDM->connectInternalSignalsAndSlots();
+    lDM->_restartTimer();
     return true;
 }
