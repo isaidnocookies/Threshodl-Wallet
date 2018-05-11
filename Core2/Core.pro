@@ -47,6 +47,7 @@ include($$PWD/../CertLib/CertLib.pri)
 
 HEADERS += \
     core.h \
+    qstringmath.h \
     walletdatacore.h \
     wallet.h \
     bitcoinwallet.h \
@@ -55,12 +56,37 @@ HEADERS += \
     wcpconnection.h \
     wcpserver.h \
     wcp.h \
-    wallets.h
+    wallets.h \
+    wcpmessages/wcpmessagecheckownershipofmicrowalletsreply.h \
+    wcpmessages/wcpmessagecheckownershipofmicrowalletsrequest.h \
+    wcpmessages/wcpmessagecompletemicrowalletsreply.h \
+    wcpmessages/wcpmessagecompletemicrowalletsrequest.h \
+    wcpmessages/wcpmessagecreateaccountreply.h \
+    wcpmessages/wcpmessagecreateaccountrequest.h \
+    wcpmessages/wcpmessagecreatemicrowalletpackagereply.h \
+    wcpmessages/wcpmessagecreatemicrowalletpackagerequest.h \
+    wcpmessages/wcpmessagepingreply.h \
+    wcpmessages/wcpmessagepingrequest.h \
+    wcpmessages/wcpmessagereassignmicrowalletsreply.h \
+    wcpmessages/wcpmessagereassignmicrowalletsrequest.h \
+    wcpmessages.h
 
 SOURCES += \
+    qstringmath.cpp \
     walletdatacore.cpp \
     bitcoinwallet.cpp \
     wcpmessage.cpp \
     wcpconnection.cpp \
-    wcpserver.cpp
-
+    wcpserver.cpp \
+    wcpmessages/wcpmessagecheckownershipofmicrowalletsreply.cpp \
+    wcpmessages/wcpmessagecheckownershipofmicrowalletsrequest.cpp \
+    wcpmessages/wcpmessagecompletemicrowalletsreply.cpp \
+    wcpmessages/wcpmessagecompletemicrowalletsrequest.cpp \
+    wcpmessages/wcpmessagecreateaccountreply.cpp \
+    wcpmessages/wcpmessagecreateaccountrequest.cpp \
+    wcpmessages/wcpmessagecreatemicrowalletpackagereply.cpp \
+    wcpmessages/wcpmessagecreatemicrowalletpackagerequest.cpp \
+    wcpmessages/wcpmessagepingreply.cpp \
+    wcpmessages/wcpmessagepingrequest.cpp \
+    wcpmessages/wcpmessagereassignmicrowalletsrequest.cpp \
+    wcpmessages/wcpmessagereassignmicrowalletsreply.cpp
