@@ -28,6 +28,7 @@ public:
     QByteArray                  publicKeyForAddress(const QString iAddress) override;
 
     // Relating to microwallets:
+    bool                        microWalletAcquireFreeWalletIdPrefixBlock(unsigned int iBlockSize, QString &oStartingWalletIdPrefix) override;
     bool                        microWalletExists( const QString iMicroWalletId ) override;
     bool                        microWalletsExists( const QStringList iMicroWalletIds ) override;
 
@@ -37,9 +38,11 @@ public:
     bool                        microWalletChangeOwnership( const QString iMicroWalletId, const QString iFromAddress, const QString iToAddress ) override;
     bool                        microWalletsChangeOwnership( const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override;
 
-    bool                        microWalletCreate( const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload ) override;
-    bool                        microWalletCreate( const QString iMicroWalletId, const QByteArray iPayload, const QString iAddress ) override;
-    bool                        microWalletCreates( const QMap< QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress ) override;
+    bool                        microWalletScratchCreates( const QString iMicroWalletId, const QByteArray iPayload, const QString iAddress, const quint64 iCreationTime ) override;
+    bool                        microWalletScratchCreates( const QMap< QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress, const quint64 iCreationTime ) override;
+
+    bool                        microWalletMoveFromScratch(const QString iMicroWalletId, const QString iAddress) override;
+    bool                        microWalletMoveFromScratch(const QStringList iMicroWalletIds, const QString iAddress ) override;
 
     QByteArray                  microWalletCopyPayload( const QString iMicroWalletId, const QString iAddress ) override;
     QMap< QString, QByteArray>  microWalletsCopyPayload( const QString iAddress, const QStringList iMicroWalletIds ) override;

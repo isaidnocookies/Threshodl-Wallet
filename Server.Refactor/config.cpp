@@ -10,6 +10,9 @@ Config::Config()
             << QStringLiteral("ConfigFile")
             << QStringLiteral("CommandLineArgumentCount")
             << QStringLiteral("CommandLineArguments")
+            << QStringLiteral("DatabaseUT")
+            << QStringLiteral("GrinderUT")
+            << QStringLiteral("FeeEstimatorUT")
             << QStringLiteral("CAPrivateKeyFilename");
 }
 

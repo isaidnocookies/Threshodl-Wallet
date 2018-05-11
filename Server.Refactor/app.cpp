@@ -65,6 +65,9 @@ int App::exec(int argc, char *argv[])
     return lApp.exec();
 }
 
+QString App::productFQDN() const
+{ return mProductFQDN; }
+
 QByteArray App::caCertificatePEM() const
 { return mCACertificatePEM; }
 
@@ -327,4 +330,7 @@ void App::_loadConfigurationFile()
 
     if( ! mConfiguration.load() )
         qWarning() << "Failed to load configuration file!";
+
+    if( mConfiguration.contains(QStringLiteral("ProductFQDN")) )
+        mProductFQDN = mConfiguration.toString(QStringLiteral("ProductFQDN"));
 }

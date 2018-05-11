@@ -148,6 +148,20 @@ bool DatabasePrivPSQL::createTables()
             if( ! QSqlQuery{lDB}.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS in_use_walletids( walletid text NOT NULL UNIQUE PRIMARY KEY )") ) )
                 throw __LINE__;
 
+            if( ! QSqlQuery{lDB}.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS wallet_scratch_creation_area( walletid text NOT NULL UNIQUE PRIMARY KEY, payload text, owner text NOT NULL, state integer, ctime integer)") ) )
+                throw __LINE__;
+
+            if( ! QSqlQuery{lDB}.exec( QStringLiteral("CREATE TABLE IF NOT EXISTS free_walletid_prefix( walletidprefix integer PRIMARY KEY )") ) )
+                throw __LINE__;
+
+            // Insert '1' into free_walletid_prefix if it is empty
+            QSqlQuery   lSelectFreeQuery{lDB};
+            if( ! lSelectFreeQuery.exec( QStringLiteral("SELECT walletidprefix FROM free_walletid_prefix") ) || lSelectFreeQuery.numRowsAffected() < 1 ) {
+                // Need to insert
+                if( ! QSqlQuery{lDB}.exec( QStringLiteral("INSERT INTO free_walletid_prefix (walletidprefix) VALUES (1)") ) )
+                    throw __LINE__;
+            }
+
             return _commitTransaction(lDB);
         }catch(int iLine){
             qCritical() << "Unable to create table at line" << iLine;
@@ -292,6 +306,34 @@ QByteArray DatabasePrivPSQL::publicKeyForAddress(const QString iAddress)
     return lResult;
 }
 
+bool DatabasePrivPSQL::microWalletAcquireFreeWalletIdPrefixBlock(unsigned int iBlockSize, QString &oStartingWalletIdPrefix)
+{
+    QSqlDatabase        lDB;
+
+    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << QStringLiteral("free_walletid_prefix") ) ) {
+        QString         lSelectQueryString    = QStringLiteral("SELECT walletidprefix FROM free_walletid_prefix");
+        QString         lUpdateQueryString;
+        QSqlQuery       lSelectQuery{lDB};
+        QSqlQuery       lUpdateQuery{lDB};
+
+        if( lSelectQuery.exec(lSelectQueryString) && lSelectQuery.numRowsAffected() == 1 ) {
+            int lWalletIdPrefixNo = lSelectQuery.record().indexOf(QStringLiteral("walletidprefix"));
+            if( lSelectQuery.next() ) {
+                quint16     lValue = lSelectQuery.value(lWalletIdPrefixNo).toULongLong();
+                oStartingWalletIdPrefix = QString::number(lValue);
+                lUpdateQueryString = QStringLiteral("UPDATE free_walletid_prefix SET walletidprefix = %1 WHERE walletidprefix = %2").arg(lValue + iBlockSize).arg(lValue);
+                if( lUpdateQuery.exec(lUpdateQueryString) ) {
+                    return _commitTransaction(lDB);
+                }
+            }
+        }
+
+        _rollbackTransaction(lDB);
+    }
+
+    return false;
+}
+
 bool DatabasePrivPSQL::microWalletsExists(const QStringList iMicroWalletIds)
 {
     int                 lWalletIdCount  = iMicroWalletIds.size();
@@ -395,39 +437,41 @@ bool DatabasePrivPSQL::microWalletsChangeOwnership(const QStringList iMicroWalle
     return false;
 }
 
-bool DatabasePrivPSQL::microWalletCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress)
+bool DatabasePrivPSQL::microWalletScratchCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress, const quint64 iCreationTime)
 {
     QSqlDatabase    lDB;
-    QString         lTable          = _storageTableNameForAccount(iAddress);
     QStringList     lWalletIds      = iMicroWalletIdsAndPayloads.keys();
     int             lWalletIdsCount = lWalletIds.size();
+    QString         lAddress        = _sanitizeAccountName(iAddress);
 
     if( iMicroWalletIdsAndPayloads.isEmpty() || iAddress.isEmpty() ) return false;
 
     QString     lInUseQueryString   = QStringLiteral("INSERT INTO in_use_walletids (walletid) VALUES ");
-    QString     lStorageQueryString = QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES ").arg(lTable);
+    QString     lScratchQueryString = QStringLiteral("INSERT INTO wallet_scratch_creation_area (walletid,payload,owner,state,ctime) VALUES ");
 
     for( int lIndex = 0; lIndex < lWalletIdsCount; lIndex++ ) {
         if( lIndex != 0 ) {
-            lStorageQueryString = lStorageQueryString.append(QStringLiteral(", "));
+            lScratchQueryString = lScratchQueryString.append(QStringLiteral(", "));
             lInUseQueryString   = lInUseQueryString.append(QStringLiteral(", "));
         }
 
         lInUseQueryString = lInUseQueryString.append(QStringLiteral("('%1')").arg(lWalletIds.at(lIndex)));
-        lStorageQueryString = lStorageQueryString.append(
-                    QStringLiteral("('%1',%2,'%3')")
+        lScratchQueryString = lScratchQueryString.append(
+                    QStringLiteral("('%1','%2','%3',%4)")
                     .arg(lWalletIds.at(lIndex))
-                    .arg(static_cast<int>(StorageRecordState::Unlocked),10)
                     .arg(QString::fromUtf8(iMicroWalletIdsAndPayloads[lWalletIds.at(lIndex)].toBase64()))
+                    .arg(lAddress)
+                    .arg(static_cast<int>(StorageRecordState::Unlocked),10)
+                    .arg(iCreationTime)
                     );
     }
 
-    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << lTable << QStringLiteral("in_use_walletids")) ) {
+    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << QStringLiteral("wallet_scratch_creation_area") << QStringLiteral("in_use_walletids")) ) {
 
         QSqlQuery   lInUseQuery{lDB};
-        QSqlQuery   lStorageQuery{lDB};
+        QSqlQuery   lScratchQuery{lDB};
 
-        if( lInUseQuery.exec(lInUseQueryString) && lInUseQuery.numRowsAffected() == lWalletIdsCount && lStorageQuery.exec(lStorageQueryString) && lStorageQuery.numRowsAffected() == lWalletIdsCount ) {
+        if( lInUseQuery.exec(lInUseQueryString) && lInUseQuery.numRowsAffected() == lWalletIdsCount && lScratchQuery.exec(lScratchQueryString) && lScratchQuery.numRowsAffected() == lWalletIdsCount ) {
             return _commitTransaction(lDB);
         }
 
@@ -435,6 +479,81 @@ bool DatabasePrivPSQL::microWalletCreates(const QMap<QString, QByteArray> iMicro
     }
 
     return false;
+}
+
+bool DatabasePrivPSQL::microWalletMoveFromScratch(const QStringList iMicroWalletIds, const QString iAddress)
+{
+    QSqlDatabase    lDB;
+    QString         lAddress        = _sanitizeAccountName(iAddress);
+    QString         lTable          = _storageTableNameForAccount(iAddress);
+    int             lWalletIdsCount = iMicroWalletIds.size();
+    QString         lWhereInString  = _stringListToWhereIn(iMicroWalletIds);
+
+    if( iMicroWalletIds.isEmpty() || iAddress.isEmpty() ) return false;
+
+    QString     lMoveQueryString    = QStringLiteral("INSERT INTO %1 (walletid,state,payload) SELECT walletid,state,payload FROM wallet_scratch_creation_area WHERE owner = %2 AND walletid IN(%3)")
+            .arg(lTable)
+            .arg(lAddress)
+            .arg(lWhereInString);
+
+    QString     lDeleteQueryString  = QStringLiteral("DELETE FROM wallet_scratch_creation_area WHERE owner = %1 AND walletid IN(%2)")
+            .arg(lAddress)
+            .arg(lWhereInString);
+
+    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << lTable << QStringLiteral("wallet_scratch_creation_area")) ) {
+
+        QSqlQuery   lMoveQuery{lDB};
+        QSqlQuery   lDeleteQuery{lDB};
+
+        if( lMoveQuery.exec(lMoveQueryString) && lMoveQuery.numRowsAffected() == lWalletIdsCount && lDeleteQuery.exec(lDeleteQueryString) && lDeleteQuery.numRowsAffected() == lWalletIdsCount ) {
+            return _commitTransaction(lDB);
+        }
+
+        _rollbackTransaction(lDB);
+    }
+
+    return false;
+
+    // OLD WORKING:
+
+//    QSqlDatabase    lDB;
+//    QString         lTable          = _storageTableNameForAccount(iAddress);
+//    QStringList     lWalletIds      = iMicroWalletIdsAndPayloads.keys();
+//    int             lWalletIdsCount = lWalletIds.size();
+
+//    if( iMicroWalletIdsAndPayloads.isEmpty() || iAddress.isEmpty() ) return false;
+
+//    QString     lInUseQueryString   = QStringLiteral("INSERT INTO in_use_walletids (walletid) VALUES ");
+//    QString     lStorageQueryString = QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES ").arg(lTable);
+
+//    for( int lIndex = 0; lIndex < lWalletIdsCount; lIndex++ ) {
+//        if( lIndex != 0 ) {
+//            lStorageQueryString = lStorageQueryString.append(QStringLiteral(", "));
+//            lInUseQueryString   = lInUseQueryString.append(QStringLiteral(", "));
+//        }
+
+//        lInUseQueryString = lInUseQueryString.append(QStringLiteral("('%1')").arg(lWalletIds.at(lIndex)));
+//        lStorageQueryString = lStorageQueryString.append(
+//                    QStringLiteral("('%1',%2,'%3')")
+//                    .arg(lWalletIds.at(lIndex))
+//                    .arg(static_cast<int>(StorageRecordState::Unlocked),10)
+//                    .arg(QString::fromUtf8(iMicroWalletIdsAndPayloads[lWalletIds.at(lIndex)].toBase64()))
+//                    );
+//    }
+
+//    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << lTable << QStringLiteral("in_use_walletids")) ) {
+
+//        QSqlQuery   lInUseQuery{lDB};
+//        QSqlQuery   lStorageQuery{lDB};
+
+//        if( lInUseQuery.exec(lInUseQueryString) && lInUseQuery.numRowsAffected() == lWalletIdsCount && lStorageQuery.exec(lStorageQueryString) && lStorageQuery.numRowsAffected() == lWalletIdsCount ) {
+//            return _commitTransaction(lDB);
+//        }
+
+//        _rollbackTransaction(lDB);
+//    }
+
+//    return false;
 }
 
 QMap<QString, QByteArray> DatabasePrivPSQL::microWalletsCopyPayload(const QStringList iMicroWalletIds, const QString iAddress)

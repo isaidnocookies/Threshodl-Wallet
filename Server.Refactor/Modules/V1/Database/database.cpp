@@ -101,6 +101,9 @@ bool Database::addressDelete(const QString iAddress)
 QByteArray Database::publicKeyForAddress(const QString iAddress)
 { return mPriv->publicKeyForAddress(iAddress); }
 
+bool Database::microWalletAcquireFreeWalletIdPrefixBlock(unsigned int iBlockSize, QString &oStartingWalletIdPrefix)
+{ return mPriv->microWalletAcquireFreeWalletIdPrefixBlock(iBlockSize,oStartingWalletIdPrefix); }
+
 bool Database::microWalletExists(const QString iMicroWalletId)
 { return mPriv->microWalletsExists(QStringList() << iMicroWalletId); }
 
@@ -119,22 +122,21 @@ bool Database::microWalletChangeOwnership(const QString iMicroWalletId, const QS
 bool Database::microWalletsChangeOwnership(const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress)
 { return mPriv->microWalletsChangeOwnership(iMicroWalletIds, iFromAddress, iToAddress); }
 
-bool Database::microWalletCreate(const QString iMicroWalletId, const QString iAddress, const QByteArray iPayload)
+bool Database::microWalletScratchCreates(const QString iMicroWalletId, const QByteArray iPayload, const QString iAddress, const quint64 iCreationTime)
 {
     QMap< QString, QByteArray > lPayloads;
     lPayloads[iMicroWalletId] = iPayload;
-    return mPriv->microWalletCreates(lPayloads, iAddress);
+    return microWalletScratchCreates(lPayloads,iAddress,iCreationTime);
 }
 
-bool Database::microWalletCreate(const QString iMicroWalletId, const QByteArray iPayload, const QString iAddress)
-{
-    QMap< QString, QByteArray > lPayloads;
-    lPayloads[iMicroWalletId] = iPayload;
-    return mPriv->microWalletCreates(lPayloads, iAddress);
-}
+bool Database::microWalletScratchCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress, const quint64 iCreationTime)
+{ return mPriv->microWalletScratchCreates(iMicroWalletIdsAndPayloads,iAddress,iCreationTime); }
 
-bool Database::microWalletCreates(const QMap<QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress)
-{ return mPriv->microWalletCreates(iMicroWalletIdsAndPayloads,iAddress); }
+bool Database::microWalletMoveFromScratch(const QString iMicroWalletId, const QString iAddress)
+{ return mPriv->microWalletMoveFromScratch(QStringList() << iMicroWalletId, iAddress); }
+
+bool Database::microWalletMoveFromScratch(const QStringList iMicroWalletIds, const QString iAddress)
+{ return mPriv->microWalletMoveFromScratch(iMicroWalletIds,iAddress); }
 
 QByteArray Database::microWalletCopyPayload(const QString iMicroWalletId, const QString iAddress)
 {

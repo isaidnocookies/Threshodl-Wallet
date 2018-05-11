@@ -12,7 +12,9 @@ public:
         Unauthorized                    = 0x2,
         UnhandledCryptoType             = 0x3,
         UnableToGrindUpCryptoCurrency   = 0x4,
-        InternalServerError1            = 0xA0
+        InternalServerError1            = 0xA0,
+        InternalServerError2            = 0xA1,
+        InternalServerError3            = 0xA2
     };
 
     typedef enum ReplyCode ReplyCode;

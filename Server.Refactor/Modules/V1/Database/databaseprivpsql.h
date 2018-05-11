@@ -53,10 +53,12 @@ public:
     bool                        addressValidate( const QString iAddress, const QByteArray iPublicKey ) override;
     bool                        addressDelete( const QString iAddress ) override;
     QByteArray                  publicKeyForAddress(const QString iAddress) override;
+    bool                        microWalletAcquireFreeWalletIdPrefixBlock(unsigned int iBlockSize, QString &oStartingWalletIdPrefix) override;
     bool                        microWalletsExists( const QStringList iMicroWalletIds ) override;
     bool                        microWalletsOwnershipCheck( const QStringList iMicroWalletIds, const QString iAddress ) override;
     bool                        microWalletsChangeOwnership( const QStringList iMicroWalletIds, const QString iFromAddress, const QString iToAddress ) override;
-    bool                        microWalletCreates( const QMap< QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress ) override;
+    bool                        microWalletScratchCreates( const QMap< QString, QByteArray> iMicroWalletIdsAndPayloads, const QString iAddress, const quint64 iCreationTime ) override;
+    bool                        microWalletMoveFromScratch(const QStringList iMicroWalletIds, const QString iAddress ) override;
     QMap< QString, QByteArray>  microWalletsCopyPayload( const QStringList iMicroWalletIds, const QString iAddress ) override;
     bool                        microWalletsDelete( const QStringList iMicroWalletIds, const QString iAddress ) override;
 };

@@ -22,6 +22,8 @@ public:
     static App * globalInstance();
     static int exec(int argc, char *argv[]);
 
+    QString                 productFQDN() const;
+
     QByteArray              caCertificatePEM() const;           // Empty if not valid
     Certificate *           caCertificate() const;              // nullptr if not valid, do NOT delete it
 
@@ -73,6 +75,8 @@ protected:
     QMap< QString, bool >       mModuleStarted;
 
     Config                      mConfiguration;
+
+    QString                     mProductFQDN                = QStringLiteral("threshodl.com");
 
     QByteArray                  mCACertificatePEM;
     Certificate *               mCACertificate              = nullptr;

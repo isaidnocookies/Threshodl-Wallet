@@ -25,7 +25,7 @@ public:
     virtual void processMessage(const QString iWCPVersion, const QString iCommand, const WCPMessage &iMessage)     = 0;
 
 signals:
-    void clientDisconnected();
+    void clientDisconnected(WCPClientInterface *iClient);
     void messageSent();
 
 public slots:

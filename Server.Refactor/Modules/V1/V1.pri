@@ -8,4 +8,5 @@
     include($$PWD/Database/Database.pri)
     include($$PWD/Grinder/Grinder.pri)
     include($$PWD/FeeEstimator/FeeEstimator.pri)
+    include($$PWD/WCP/WCP.pri)
 }
