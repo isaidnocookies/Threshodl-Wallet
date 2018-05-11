@@ -30,7 +30,7 @@ void WCPClientInterface::timerCheckBuffer()
         processIncomingMessage();
 
     if( ! mConnection->isConnected() )
-        emit clientDisconnected();
+        emit clientDisconnected(this);
 }
 
 void WCPClientInterface::processIncomingMessage()
