@@ -1,9 +1,9 @@
 !contains( WALLETMODULES, WALLET_CORE ) {
     WALLETMODULES += WALLET_CORE
 
-    !contains( QT, core ): QT += core
-    !contains( QT, core ): QT += network
-    !contains( QT, core ): QT += websockets
+    !contains( QT, core ):          QT += core
+    !contains( QT, network ):       QT += network
+    !contains( QT, websockets ):    QT += websockets
 
     linux | macos | ios {
         INCLUDEPATH += $$PWD/../libbtc/include

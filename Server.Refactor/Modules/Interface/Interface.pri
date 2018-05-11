@@ -8,7 +8,7 @@
     include($$PWD/DownloaderInterface/DownloaderInterface.pri)
     include($$PWD/RESTServerInterface/RESTServerInterface.pri)
     include($$PWD/RESTHandlerInterface/RESTHandlerInterface.pri)
-    include($$PWD/RPCServerInterface/RPCServerInterface.pri)
+    include($$PWD/WCPServerInterface/WCPServerInterface.pri)
     include($$PWD/RPCServerHandlerInterface/RPCServerHandlerInterface.pri)
     include($$PWD/GrinderInterface/GrinderInterface.pri)
     include($$PWD/FeeEstimatorInterface/FeeEstimatorInterface.pri)
