@@ -10,23 +10,40 @@
     }
 
     linux {
-        LIBS += $$PWD/../libbtc/.libs/libbtc.a $$PWD/../libbtc/src/secp256k1/.libs/libsecp256k1.a
+        !contains( LIBS, -lz ): LIBS += -lz
+        !contains( LIBS, -lcrypto ): LIBS += -lcrypto
+        !contains( LIBS, -lssl ): LIBS += -lssl
+        !contains( LIBS, libbtc.a ):                    LIBS += $$PWD/../libbtc/.libs/libbtc.a
+        !contains( LIBS, libsecp256k1.a ):              LIBS += $$PWD/../libbtc/src/secp256k1/.libs/libsecp256k1.a
     }
 
     macos {
-        LIBS += $$PWD/../MacDeps/libbtc.a $$PWD/../MacDeps/libsecp256k1.a
+        INCLUDEPATH += /usr/local/opt/openssl/include
+
+        !contains( LIBS, /usr/local/opt/openssl/lib ):  LIBS += -L /usr/local/opt/openssl/lib
+        !contains( LIBS, -lssl ):                       LIBS += -lssl
+        !contains( LIBS, -lcrypto ):                    LIBS += -lcrypto
+        !contains( LIBS, libbtc.a ):                    LIBS += $$PWD/../MacDeps/libbtc.a
+        !contains( LIBS, libsecp256k1.a ):              LIBS += $$PWD/../MacDeps/libsecp256k1.a
     }
 
     ios {
-        LIBS += $$PWD/../iOSDeps/libbtc.a $$PWD/../iOSDeps/libsecp256k1.a
-    }
+        INCLUDEPATH += /usr/local/opt/openssl/include
 
-    include($$PWD/../CertLib/CertLib.pri)
+        !contains( LIBS, libssl.a ):        LIBS += $$PWD/../iOSDeps/libssl.a
+        !contains( LIBS, libcrypto.a ):     LIBS += $$PWD/../iOSDeps/libcrypto.a
+        !contains( LIBS, libbtc.a ):        LIBS += $$PWD/../iOSDeps/libbtc.a
+        !contains( LIBS, libsecp256k1.a ):  LIBS += $$PWD/../iOSDeps/libsecp256k1.a
+    }
 
     INCLUDEPATH += $$PWD
 
     HEADERS += \
         $$PWD/core.h \
+        $$PWD/sslbio.h \
+        $$PWD/encryptionkey.h \
+        $$PWD/certificate.h \
+        $$PWD/digest.h \
         $$PWD/qstringmath.h \
         $$PWD/walletdatacore.h \
         $$PWD/wallet.h \
@@ -52,6 +69,10 @@
         $$PWD/wcpmessages.h
 
     SOURCES += \
+        $$PWD/sslbio.cpp \
+        $$PWD/encryptionkey.cpp \
+        $$PWD/certificate.cpp \
+        $$PWD/digest.cpp \
         $$PWD/qstringmath.cpp \
         $$PWD/walletdatacore.cpp \
         $$PWD/bitcoinwallet.cpp \
