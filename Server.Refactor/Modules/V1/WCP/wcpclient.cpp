@@ -1,0 +1,217 @@
+#include "wcpclient.h"
+#include "wcpserverhandler.h"
+#include "wcpmessages.h"
+#include "digest.h"
+#include "app.h"
+
+void WCPClient::_getBTCFees(BitcoinWallet::ChainType iChain, QStringMath &oBaseFee, QStringMath &oInputFee, QStringMath &oOutputFee)
+{
+    QStringList                     lFeeGroup;
+    QMap< QString, QStringMath >    lFeeResult;
+
+    switch( iChain ) {
+    case BitcoinWallet::ChainType::TestNet:
+        lFeeGroup = QStringList()
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetBaseFee)
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetInputFee)
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetOutputFee);
+        lFeeResult = mServerV1->feeEstimator()->getFees(QStringLiteral("BTC"), lFeeGroup);
+        oBaseFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetBaseFee);
+        oInputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetInputFee);
+        oOutputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetOutputFee);
+        break;
+
+    case BitcoinWallet::ChainType::Main:
+    default:
+        lFeeGroup = QStringList()
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetBaseFee)
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetInputFee)
+               << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetOutputFee);
+        lFeeResult = mServerV1->feeEstimator()->getFees(QStringLiteral("BTC"), lFeeGroup);
+        oBaseFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetBaseFee);
+        oInputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetInputFee);
+        oOutputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetOutputFee);
+        break;
+    }
+}
+
+bool WCPClient::_authenticateMessage(const WCPMessage &iMessage)
+{
+    QByteArray      lPubKey     = mServerV1->database()->publicKeyForAddress(iMessage.username());
+    if( ! lPubKey.isEmpty() && iMessage.signatureKeyEncoding() == WCPMessage::KeyEncoding::SHA512 ) {
+        return Digest::verify(lPubKey, iMessage.dataForSignature(), iMessage.signature(), Digest::HashTypes::SHA512);
+    }
+    return false;
+}
+
+void WCPClient::_createMicroWalletPackage(const WCPMessage &iMessage)
+{
+    WCPMessageCreateMicroWalletPackageRequest   lReq{iMessage};
+
+    if( lReq.cryptoTypeShortName().toLower() == QStringLiteral("btc") ) {
+        _createMicroWalletPackageBTC(iMessage);
+        return;
+    }
+
+    sendMessage(WCPMessageCreateMicroWalletPackageReply::create(
+                    WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType,
+                    QList<QByteArray>(),
+                    lReq.transactionId(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
+}
+
+void WCPClient::_createMicroWalletPackageBTC(const WCPMessage &iMessage)
+{
+    WCPMessageCreateMicroWalletPackageReply::ReplyCode  lReplyCode          = WCPMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized;
+    WCPMessageCreateMicroWalletPackageRequest           lRequest{iMessage};
+    QList<QByteArray>                                   lMicroWalletsData;
+    QStringMath                                         lEstimatedFees;
+    QStringList                                         lGrinderList;
+    QStringMath                                         lBaseFee;
+    QStringMath                                         lInputFee;
+    QStringMath                                         lOutputFee;
+    double                                              lInputs             = lRequest.inputCount();
+    double                                              lOutputs            = lRequest.outputCount();
+    double                                              lEstimatedFeesD;
+    QStringMath                                         lPostFeeValue;
+    QList<BitcoinWallet>                                lBTCWallets;
+    QString                                             lWalletIdPrefix;
+    quint64                                             lWalletIdPrefixValue;
+    qint64                                              lNow;
+    QString                                             lWalletId;
+    QMap< QString, QByteArray >                         lStoreInDB;
+
+    if( _authenticateMessage(iMessage) ) {
+        lReplyCode      = WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnknownFailure;
+        lGrinderList    = mServerV1->grinder()->grindValues(lRequest.cryptoValue(),QStringLiteral("BTC"));
+        if( ! lGrinderList.isEmpty() ) {
+            // Now we have a rough idea of how many wallets we would need, we need to estimate the fees with the given inputs and outputs
+            _getBTCFees(lRequest.chainType(), lBaseFee, lInputFee, lOutputFee);
+            lOutputs        += lGrinderList.size();
+
+            lEstimatedFeesD = (lInputs * lInputFee.toDouble()) + (lOutputs * lOutputFee.toDouble()) + lBaseFee.toDouble();
+            lEstimatedFees  = QStringMath(QString::number(lEstimatedFeesD));
+            lEstimatedFees  = QStringMath::roundUpToNearest0001(lEstimatedFees.toString());
+            lPostFeeValue   = QStringMath(lRequest.cryptoValue());
+            lPostFeeValue   = lPostFeeValue.subtract(lEstimatedFees);
+
+            // Now grind that up
+            lGrinderList    = mServerV1->grinder()->grindValues(lPostFeeValue.toString(),QStringLiteral("BTC"));
+
+            if( mServerV1->database()->microWalletAcquireFreeWalletIdPrefixBlock( static_cast<unsigned int>(lGrinderList.size()), lWalletIdPrefix ) ) {
+                lWalletIdPrefixValue = lWalletIdPrefix.toULongLong();
+
+                // Now create the wallets
+                for( int lIndex = 0; lIndex < lGrinderList.size(); lIndex++ )
+                { lBTCWallets << BitcoinWallet::createNewBitcoinWallet(lRequest.chainType()); }
+
+                lNow = QDateTime::currentSecsSinceEpoch();
+
+                int         lIndex = 0;
+                QByteArray  lPrivKey;
+                QByteArray  lPrivKeyRight;
+                QByteArray  lPrivKeyLeft;
+                int         lPrivKeyLen;
+                int         lPrivKeyMid;
+
+                for( BitcoinWallet & lMW : lBTCWallets ) {
+                    lMW.setValue(lGrinderList[lIndex]);
+                    lMW.setIsMicroWallet(true);
+
+                    lPrivKey        = lMW.privateKey();
+                    lPrivKeyLen     = lPrivKey.size();
+                    lPrivKeyMid     = lPrivKeyLen / 2;
+                    lPrivKeyLeft    = lPrivKey.left(lPrivKeyMid);
+                    lPrivKeyRight   = lPrivKey.mid(lPrivKeyMid);
+
+                    lMW.setPrivateKey(lPrivKeyLeft);
+                    lMW.setWif(QByteArray()); // Clear the Wif.
+
+                    // Generate the WalletId
+                    lWalletId = QStringLiteral("%1.%2").arg(lWalletIdPrefixValue,16,16,QChar{'0'}).arg(lNow);
+                    lMW.setWalletId(lWalletId);
+                    lStoreInDB[lWalletId] = lPrivKeyRight;
+                    lMicroWalletsData << lMW.toData();
+                    lWalletIdPrefixValue++;
+                }
+
+                // Store the wallet data in the db
+                if( mServerV1->database()->microWalletScratchCreates(lStoreInDB,lRequest.username(),lNow) ) {
+                    lReplyCode = WCPMessageCreateMicroWalletPackageReply::ReplyCode::Success;
+                }else{
+                    lReplyCode = WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError3;
+                }
+            }else{
+                lReplyCode = WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError2;
+            }
+        }else{
+            lReplyCode = WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency;
+        }
+    }else{
+        lReplyCode = WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1;
+    }
+
+    sendMessage(WCPMessageCreateMicroWalletPackageReply::createBtc(
+                    lReplyCode,
+                    lMicroWalletsData,
+                    lRequest.transactionId(),
+                    lEstimatedFees.toString(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
+}
+
+void WCPClient::_checkOwnershipOfMicroWallets(const WCPMessage &iMessage)
+{
+
+}
+
+void WCPClient::_completeMicroWallets(const WCPMessage &iMessage)
+{
+
+}
+
+void WCPClient::_createAccount(const WCPMessage &iMessage)
+{
+
+}
+
+void WCPClient::_reassignMicroWallets(const WCPMessage &iMessage)
+{
+
+}
+
+void WCPClient::_ping(const WCPMessage &iMessage)
+{
+
+}
+
+WCPClient::WCPClient(WCPConnection *iConnection, WCPServerHandler *iServer, QObject *iParent)
+    : WCPClientInterface(iConnection,iServer,iParent), mServerV1(iServer)
+{ }
+
+void WCPClient::processMessage(const QString iWCPVersion, const QString iCommand, const WCPMessage &iMessage)
+{
+    if( iWCPVersion != kWCPVersionV2 ) {
+        mConnection->close();
+        return;
+    }
+
+    if( iCommand == WCPMessageCreateMicroWalletPackageRequest::commandValue() ) {
+        _createMicroWalletPackage(iMessage);
+    } else if( iCommand == WCPMessageCheckOwnershipOfMicroWalletsRequest::commandValue() ) {
+        _checkOwnershipOfMicroWallets(iMessage);
+    } else if( iCommand == WCPMessageCompleteMicroWalletsRequest::commandValue() ) {
+        _completeMicroWallets(iMessage);
+    } else if( iCommand == WCPMessageCreateAccountRequest::commandValue() ) {
+        _createAccount(iMessage);
+    } else if( iCommand == WCPMessageReassignMicroWalletsRequest::commandValue() ) {
+        _reassignMicroWallets(iMessage);
+    } else if( iCommand == WCPMessagePingRequest::commandValue() ) {
+        _ping(iMessage);
+    } else {
+        mConnection->close();
+    }
+}
