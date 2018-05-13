@@ -13,5 +13,7 @@
 #include "wcpmessages/wcpmessagepingrequest.h"
 #include "wcpmessages/wcpmessagereassignmicrowalletsreply.h"
 #include "wcpmessages/wcpmessagereassignmicrowalletsrequest.h"
+#include "wcpmessages/wcpmessageclaimnewmicrowalletsreply.h"
+#include "wcpmessages/wcpmessageclaimnewmicrowalletsrequest.h"
 
 #endif // WCPMESSAGES_H
