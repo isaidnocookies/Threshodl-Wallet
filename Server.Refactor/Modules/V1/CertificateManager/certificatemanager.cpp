@@ -243,7 +243,10 @@ bool CertificateManagerML::start(void *pointerToThis, void *pointerToAppObject)
 
     if( lCM ) {
         lCM->loadConfigurationValues();
-        return lCM->loadCertificates();
+        if( lCM->loadCertificates() ) {
+            lCM->mApp->setCertificates(lCM);
+            return true;
+        }
     }
 
     return false;

@@ -48,7 +48,7 @@ void WCPServerHandler::newConnectionArrived()
 
 WCPServerHandlerML::WCPServerHandlerML()
 {
-    QStringList lDependencies = QStringList() << QStringLiteral("Database-1") << QStringLiteral("Grinder-1") << QStringLiteral("FeeEstimator-1");
+    QStringList lDependencies = QStringList() << QStringLiteral("CertificateManager-1") << QStringLiteral("Database-1") << QStringLiteral("Grinder-1") << QStringLiteral("FeeEstimator-1");
     ModuleLinker::registerModuleWithDependencies(QStringLiteral("WCPServerHandler-1"),lDependencies,WCPServerHandlerML::creator,WCPServerHandlerML::doInit,WCPServerHandlerML::start,WCPServerHandlerML::startInOwnThread);
 }
 
@@ -66,10 +66,7 @@ void *WCPServerHandlerML::creator(void *pointerToAppObject)
         ! lGrinder                                          ||
         ! lFeeEstimator                                     ||
         ! lConfig->contains(QStringLiteral("WCPPort"))      ||
-        ! lConfig->contains(QStringLiteral("ServerName"))   ||
-        lApp->caCertificatePEM().isEmpty()                  ||
-        lApp->serverCertificatePEM().isEmpty()              ||
-        lApp->serverPrivateKeyPEM().isEmpty()
+        ! lConfig->contains(QStringLiteral("ServerName"))
     ) {
         return nullptr;
     }
@@ -79,17 +76,12 @@ void *WCPServerHandlerML::creator(void *pointerToAppObject)
         lListenAddress = QHostAddress(lConfig->toString(QStringLiteral("WCPListenAddress")));
     }
 
-    QSslConfiguration   lSslConfig = QSslConfiguration::defaultConfiguration();
-    lSslConfig.setCaCertificates( lSslConfig.caCertificates() << QSslCertificate{lApp->caCertificatePEM(), QSsl::Pem} );
-    lSslConfig.setPrivateKey( QSslKey{lApp->serverPrivateKeyPEM(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, QByteArray()} );
-    lSslConfig.setLocalCertificate( QSslCertificate{lApp->serverCertificatePEM(), QSsl::Pem} );
 
     WCPServerHandler *  lServer = new WCPServerHandler;
     lServer->mApp               = lApp;
     lServer->mPort              = lConfig->toUInt16(QStringLiteral("WCPPort"));
     lServer->mServerNames       = lConfig->toStringList(QStringLiteral("ServerName"));
     lServer->mListenAddress     = lListenAddress;
-    lServer->mSslConfiguration  = lSslConfig;
     lServer->mDB                = lDB;
     lServer->mGrinder           = lGrinder;
     lServer->mFeeEstimator      = lFeeEstimator;
@@ -111,6 +103,23 @@ bool WCPServerHandlerML::start(void *pointerToThis, void *pointerToAppObject)
     Q_UNUSED(pointerToAppObject)
 
     WCPServerHandler *  lServer = reinterpret_cast<WCPServerHandler *>(pointerToThis);
+    App *               lApp    = lServer->mApp;
+
+    if(
+        lApp->caCertificatePEM().isEmpty()                  ||
+        lApp->serverCertificatePEM().isEmpty()              ||
+        lApp->serverPrivateKeyPEM().isEmpty()
+        )
+    {
+        return false;
+    }
+
+    QSslConfiguration   lSslConfig = QSslConfiguration::defaultConfiguration();
+    lSslConfig.setCaCertificates( lSslConfig.caCertificates() << QSslCertificate{lApp->caCertificatePEM(), QSsl::Pem} );
+    lSslConfig.setPrivateKey( QSslKey{lApp->serverPrivateKeyPEM(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, QByteArray()} );
+    lSslConfig.setLocalCertificate( QSslCertificate{lApp->serverCertificatePEM(), QSsl::Pem} );
+    lServer->mSslConfiguration = lSslConfig;
+
     lServer->setWCPServer(new WCPServer{lServer});
     lServer->getWCPServer()->startListening(lServer->mListenAddress,lServer->mPort,lServer->mServerNames.first(),lServer->mSslConfiguration);
     return true;
