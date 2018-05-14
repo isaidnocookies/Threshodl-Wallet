@@ -9,11 +9,9 @@ public:
     enum ReplyCode {
         UnknownFailure                  = 0x0,
         Success                         = 0x1,
-        OneOrMoreMicroWalletsDoNotExist = 0x2,
-        OneOrMoreUnauthorized           = 0x3,
-        InternalServerError1            = 0xA0,
-        InternalServerError2            = 0xA1,
-        InternalServerError3            = 0xA2
+        Unauthorized                    = 0x2,
+        OneOrMoreMicroWalletsDoNotExist = 0x3,
+        InternalServerError1            = 0xA0
     };
 
     typedef enum ReplyCode ReplyCode;

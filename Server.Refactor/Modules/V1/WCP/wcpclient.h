@@ -15,8 +15,9 @@ protected:
     void _getBTCFees(BitcoinWallet::ChainType iChain, QStringMath &oBaseFee, QStringMath &oInputFee, QStringMath &oOutputFee);
 
     bool _authenticateMessage(const WCPMessage &iMessage);
-    void _createMicroWalletPackage(const WCPMessage &iMessage);
-    void _createMicroWalletPackageBTC(const WCPMessage &iMessage);
+    void _createMicroWallets(const WCPMessage &iMessage);
+    void _createMicroWalletsBTC(const WCPMessage &iMessage);
+    void _claimNewMicroWallets(const WCPMessage &iMessage);
     void _checkOwnershipOfMicroWallets(const WCPMessage &iMessage);
     void _completeMicroWallets(const WCPMessage &iMessage);
     void _createAccount(const WCPMessage &iMessage);

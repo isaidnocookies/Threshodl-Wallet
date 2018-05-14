@@ -44,12 +44,12 @@ bool WCPClient::_authenticateMessage(const WCPMessage &iMessage)
     return false;
 }
 
-void WCPClient::_createMicroWalletPackage(const WCPMessage &iMessage)
+void WCPClient::_createMicroWallets(const WCPMessage &iMessage)
 {
     WCPMessageCreateMicroWalletPackageRequest   lReq{iMessage};
 
     if( lReq.cryptoTypeShortName().toLower() == QStringLiteral("btc") ) {
-        _createMicroWalletPackageBTC(iMessage);
+        _createMicroWalletsBTC(iMessage);
         return;
     }
 
@@ -62,7 +62,7 @@ void WCPClient::_createMicroWalletPackage(const WCPMessage &iMessage)
                     ));
 }
 
-void WCPClient::_createMicroWalletPackageBTC(const WCPMessage &iMessage)
+void WCPClient::_createMicroWalletsBTC(const WCPMessage &iMessage)
 {
     WCPMessageCreateMicroWalletPackageReply::ReplyCode  lReplyCode          = WCPMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized;
     WCPMessageCreateMicroWalletPackageRequest           lRequest{iMessage};
@@ -163,9 +163,35 @@ void WCPClient::_createMicroWalletPackageBTC(const WCPMessage &iMessage)
                     ));
 }
 
+void WCPClient::_claimNewMicroWallets(const WCPMessage &iMessage)
+{
+    WCPMessageClaimNewMicroWalletsRequest           lRequest{iMessage};
+    WCPMessageClaimNewMicroWalletsReply::ReplyCode  lReplyCode              = WCPMessageClaimNewMicroWalletsReply::ReplyCode::Unauthorized;
+    QStringList                                     lClaimedWalletIds;
+
+    if( _authenticateMessage(iMessage) ) {
+        lReplyCode = WCPMessageClaimNewMicroWalletsReply::ReplyCode::InternalServerError1;
+        if( mServerV1->database()->microWalletMoveFromScratch(lRequest.walletIds(),lRequest.username()) ) {
+            lReplyCode = WCPMessageClaimNewMicroWalletsReply::ReplyCode::Success;
+            lClaimedWalletIds = lRequest.walletIds();
+        }else{
+            lReplyCode = WCPMessageClaimNewMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist;
+        }
+    }
+
+    sendMessage(WCPMessageClaimNewMicroWalletsReply::create(
+                    lReplyCode,
+                    lClaimedWalletIds,
+                    lRequest.transactionId(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
+}
+
 void WCPClient::_checkOwnershipOfMicroWallets(const WCPMessage &iMessage)
 {
-
+    WCPMessageCheckOwnershipOfMicroWalletsRequest           lRequest{iMessage};
+    WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode  lReplyCode;
 }
 
 void WCPClient::_completeMicroWallets(const WCPMessage &iMessage)
@@ -185,7 +211,8 @@ void WCPClient::_reassignMicroWallets(const WCPMessage &iMessage)
 
 void WCPClient::_ping(const WCPMessage &iMessage)
 {
-
+    WCPMessagePingRequest   lRequest{iMessage};
+    sendMessage(WCPMessagePingReply::create(lRequest.payload(),mServerV1->app()->productFQDN()));
 }
 
 WCPClient::WCPClient(WCPConnection *iConnection, WCPServerHandler *iServer, QObject *iParent)
@@ -200,7 +227,9 @@ void WCPClient::processMessage(const QString iWCPVersion, const QString iCommand
     }
 
     if( iCommand == WCPMessageCreateMicroWalletPackageRequest::commandValue() ) {
-        _createMicroWalletPackage(iMessage);
+        _createMicroWallets(iMessage);
+    } else if( iCommand == WCPMessageClaimNewMicroWalletsRequest::commandValue() ) {
+        _claimNewMicroWallets(iMessage);
     } else if( iCommand == WCPMessageCheckOwnershipOfMicroWalletsRequest::commandValue() ) {
         _checkOwnershipOfMicroWallets(iMessage);
     } else if( iCommand == WCPMessageCompleteMicroWalletsRequest::commandValue() ) {
