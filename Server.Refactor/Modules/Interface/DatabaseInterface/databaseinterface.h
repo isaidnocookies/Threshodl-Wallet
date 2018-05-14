@@ -4,6 +4,8 @@
 #include <QReadWriteLock>
 #include <QByteArray>
 #include <QString>
+#include <QStringList>
+#include <QRegExp>
 
 class DatabaseInterface
 {
@@ -21,6 +23,8 @@ public:
 
     virtual QString                     databaseType() const                                    { QReadLocker l{&mObjectLock};  return mDatabaseType; }
     virtual void                        setDatabaseType(const QString iDatabaseType)            { QWriteLocker l{&mObjectLock}; mDatabaseType = iDatabaseType; }
+
+    virtual QString                     sanatizedUsername(const QString iAccountName)           { return iAccountName.trimmed().split(QRegExp(QStringLiteral("\\W"))).join(QStringLiteral("_")).toLower(); }
 
     virtual bool                        createTables()                                                                                                                                  = 0;
 

@@ -191,22 +191,112 @@ void WCPClient::_claimNewMicroWallets(const WCPMessage &iMessage)
 void WCPClient::_checkOwnershipOfMicroWallets(const WCPMessage &iMessage)
 {
     WCPMessageCheckOwnershipOfMicroWalletsRequest           lRequest{iMessage};
-    WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode  lReplyCode;
+    WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode  lReplyCode              = WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::UnknownFailure;
+
+    if( mServerV1->database()->microWalletsExists(lRequest.walletIds()) ) {
+        if( mServerV1->database()->microWalletsOwnershipCheck(lRequest.walletIds(),lRequest.owner()) ) {
+            lReplyCode = WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::Success;
+        }else{
+            lReplyCode = WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized;
+        }
+    }else{
+        lReplyCode = WCPMessageCheckOwnershipOfMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist;
+    }
+
+    sendMessage(WCPMessageCheckOwnershipOfMicroWalletsReply::create(
+                    lReplyCode,
+                    lRequest.transactionId(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
 }
 
 void WCPClient::_completeMicroWallets(const WCPMessage &iMessage)
 {
+    WCPMessageCompleteMicroWalletsRequest           lRequest{iMessage};
+    WCPMessageCompleteMicroWalletsReply::ReplyCode  lReplyCode              = WCPMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure;
+    QMap< QString, QByteArray >                     lWalletPartialKeys;
+    QMap< QString, QByteArray >                     lWalletPartialKeysTemp;
 
+    if( _authenticateMessage(iMessage) ) {
+        lWalletPartialKeysTemp = mServerV1->database()->microWalletsCopyPayload(lRequest.walletIds(),lRequest.username());
+        if( mServerV1->database()->microWalletsExists(lRequest.walletIds()) ) {
+            if( mServerV1->database()->microWalletsOwnershipCheck(lRequest.walletIds(),lRequest.username()) ) {
+                if( lWalletPartialKeysTemp.size() == lRequest.walletIds().size() ) {
+                    lWalletPartialKeys = lWalletPartialKeysTemp;
+                    lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::Success;
+                }else{
+                    lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1;
+                }
+            }else{
+                lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized;
+            }
+        }else{
+            lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist;
+        }
+    }
+
+    sendMessage(WCPMessageCompleteMicroWalletsReply::create(
+                    lReplyCode,
+                    lWalletPartialKeys,
+                    lRequest.transactionId(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
 }
 
 void WCPClient::_createAccount(const WCPMessage &iMessage)
 {
+    WCPMessageCreateAccountRequest          lRequest{iMessage};
+    WCPMessageCreateAccountReply::ReplyCode lReplyCode              = WCPMessageCreateAccountReply::ReplyCode::UnknownFailure;
+    QByteArray                              lPublicKey              = lRequest.publicKey();
+    QString                                 lReplyUsername          = mServerV1->database()->sanatizedUsername(lRequest.username());
 
+    if( ! mServerV1->database()->addressExists(lReplyUsername) ) {
+        if( lRequest.signatureKeyEncoding() == WCPMessage::KeyEncoding::SHA512 ) {
+            if( Digest::verify(lPublicKey,lRequest.dataForSignature(),lRequest.signature(),Digest::HashTypes::SHA512) ) {
+                if( mServerV1->database()->addressCreate(lReplyUsername,lPublicKey) ) {
+                    lReplyCode = WCPMessageCreateAccountReply::ReplyCode::Success;
+                }else{
+                    lReplyCode = WCPMessageCreateAccountReply::ReplyCode::UsernameTaken;
+                }
+            }else{
+                lReplyCode = WCPMessageCreateAccountReply::ReplyCode::KeyInvalid;
+            }
+        }else{
+            lReplyCode = WCPMessageCreateAccountReply::ReplyCode::KeyTypeInvalid;
+        }
+    }else{
+        lReplyCode = WCPMessageCreateAccountReply::ReplyCode::UsernameTaken;
+    }
+
+    sendMessage(WCPMessageCreateAccountReply::create(
+                    lReplyCode,
+                    lReplyUsername,
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
 }
 
 void WCPClient::_reassignMicroWallets(const WCPMessage &iMessage)
 {
+    WCPMessageReassignMicroWalletsRequest           lRequest{iMessage};
+    WCPMessageReassignMicroWalletsReply::ReplyCode  lReplyCode          = WCPMessageReassignMicroWalletsReply::ReplyCode::UnknownFailure;
 
+    if( _authenticateMessage(iMessage) ) {
+        if( mServerV1->database()->microWalletsChangeOwnership(lRequest.microWalletIds(),lRequest.username(),lRequest.destination()) ) {
+            lReplyCode = WCPMessageReassignMicroWalletsReply::ReplyCode::Success;
+        }else{
+            lReplyCode = WCPMessageReassignMicroWalletsReply::ReplyCode::Failure;
+        }
+    }
+
+    sendMessage(WCPMessageReassignMicroWalletsReply::create(
+                    lReplyCode,
+                    lRequest.transactionId(),
+                    mServerV1->app()->productFQDN(),
+                    mServerV1->app()->serverPrivateKeyPEM()
+                    ));
 }
 
 void WCPClient::_ping(const WCPMessage &iMessage)

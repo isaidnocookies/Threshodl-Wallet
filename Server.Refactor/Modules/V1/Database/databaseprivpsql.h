@@ -21,11 +21,11 @@ protected:
 
     static QString _stringListToWhereIn(const QStringList iList);
 
-    QString _sanitizeAccountName(const QString iAccountName);
     QString _storageTableNameForAccount(const QString iAccountName);
     QString _createStorageTableSqlQueryForAccount(const QString iAccountName);
 
     App *               mApp            = nullptr;
+    Database *          mDatabase       = nullptr;
     QString             mDBUserName;
     QString             mDBPassword;
     QString             mDBName;
@@ -47,6 +47,7 @@ protected:
 public:
     DatabasePrivPSQL();
 
+    QString                     sanatizedUsername(const QString iAccountName);
     bool                        createTables() override;
     bool                        addressExists( const QString iAddress ) override;
     bool                        addressCreate( const QString iAddress, const QByteArray iPublicKey ) override;

@@ -60,6 +60,7 @@ bool Database::_createPriv()
     if( lType == QStringLiteral("psql") || lType == QStringLiteral("qpsql") ) {
         DatabasePrivPSQL *  lPriv   = new DatabasePrivPSQL;
         lPriv->mApp                 = mApp;
+        lPriv->mDatabase            = this;
         mPriv                       = dynamic_cast<DatabasePriv *>(lPriv);
         return lPriv->_init();
     }

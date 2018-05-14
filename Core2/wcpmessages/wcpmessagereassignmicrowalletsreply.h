@@ -13,6 +13,7 @@ public:
         DestinationDoesNotExist         = 0x3,
         OneOrMoreWalletsUnauthorized    = 0x4,
         OneOrMoreWalletsDoNotExist      = 0x5,
+        Failure                         = 0x6,
         InternalServerError1            = 0xA0,
         InternalServerError2            = 0xA1,
         InternalServerError3            = 0xA2

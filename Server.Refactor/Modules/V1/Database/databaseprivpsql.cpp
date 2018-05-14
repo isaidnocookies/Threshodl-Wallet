@@ -1,4 +1,5 @@
 #include "databaseprivpsql.h"
+#include "database.h"
 
 #include <QString>
 #include <QDebug>
@@ -27,11 +28,8 @@ QString DatabasePrivPSQL::_stringListToWhereIn(const QStringList iList)
     return lWhereIn;
 }
 
-QString DatabasePrivPSQL::_sanitizeAccountName(const QString iAccountName)
-{ return iAccountName.trimmed().split(QRegExp(QStringLiteral("\\W"))).join(QStringLiteral("_")).toLower(); }
-
 QString DatabasePrivPSQL::_storageTableNameForAccount(const QString iAccountName)
-{ return QStringLiteral("storage_%1").arg(_sanitizeAccountName(iAccountName)); }
+{ return QStringLiteral("storage_%1").arg(sanatizedUsername(iAccountName)); }
 
 QString DatabasePrivPSQL::_createStorageTableSqlQueryForAccount(const QString iAccountName)
 {
@@ -133,6 +131,9 @@ bool DatabasePrivPSQL::_startTransactionAndOpenAndLockTables(QSqlDatabase &oData
 DatabasePrivPSQL::DatabasePrivPSQL()
 { }
 
+QString DatabasePrivPSQL::sanatizedUsername(const QString iAccountName)
+{ return mDatabase->sanatizedUsername(iAccountName); }
+
 bool DatabasePrivPSQL::createTables()
 {
     QSqlDatabase    lDB;
@@ -174,7 +175,7 @@ bool DatabasePrivPSQL::createTables()
 bool DatabasePrivPSQL::addressExists(const QString iAddress)
 {
     QSqlDatabase        lDB;
-    QString             lAddress = _sanitizeAccountName(iAddress);
+    QString             lAddress = sanatizedUsername(iAddress);
 
     if( ! lAddress.isEmpty() && _startTransactionAndOpenAndLockTables(lDB, QStringList() << QStringLiteral("addresses")) ) {
         QSqlQuery   lQuery{lDB};
@@ -203,7 +204,7 @@ bool DatabasePrivPSQL::addressExists(const QString iAddress)
 bool DatabasePrivPSQL::addressCreate(const QString iAddress, const QByteArray iPublicKey)
 {
     QSqlDatabase        lDB;
-    QString             lAddress = _sanitizeAccountName(iAddress);
+    QString             lAddress = sanatizedUsername(iAddress);
 
     if( ! lAddress.isEmpty() && _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << QStringLiteral("addresses")) ) {
         QSqlQuery   lQuery{lDB};
@@ -224,7 +225,7 @@ bool DatabasePrivPSQL::addressCreate(const QString iAddress, const QByteArray iP
 bool DatabasePrivPSQL::addressValidate(const QString iAddress, const QByteArray iPublicKey)
 {
     QSqlDatabase        lDB;
-    QString             lAddress = _sanitizeAccountName(iAddress);
+    QString             lAddress = sanatizedUsername(iAddress);
 
     if( ! lAddress.isEmpty() && _startTransactionAndOpenAndLockTables(lDB, QStringList() << QStringLiteral("addresses")) ) {
         QSqlQuery   lQuery{lDB};
@@ -255,7 +256,7 @@ bool DatabasePrivPSQL::addressValidate(const QString iAddress, const QByteArray 
 bool DatabasePrivPSQL::addressDelete(const QString iAddress)
 {
     QSqlDatabase        lDB;
-    QString             lAddress = _sanitizeAccountName(iAddress);
+    QString             lAddress = sanatizedUsername(iAddress);
 
     if( ! lAddress.isEmpty() && _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << QStringLiteral("addresses") << _storageTableNameForAccount(iAddress)) ) {
         QSqlQuery   lDeleteUserQuery(lDB);
@@ -276,7 +277,7 @@ QByteArray DatabasePrivPSQL::publicKeyForAddress(const QString iAddress)
 {
     QSqlDatabase        lDB;
     QByteArray          lResult;
-    QString             lAddress = _sanitizeAccountName(iAddress);
+    QString             lAddress = sanatizedUsername(iAddress);
 
     if( ! lAddress.isEmpty() && _startTransactionAndOpenAndLockTables(lDB, QStringList() << QStringLiteral("addresses")) ) {
         QSqlQuery   lQuery{lDB};
@@ -442,7 +443,7 @@ bool DatabasePrivPSQL::microWalletScratchCreates(const QMap<QString, QByteArray>
     QSqlDatabase    lDB;
     QStringList     lWalletIds      = iMicroWalletIdsAndPayloads.keys();
     int             lWalletIdsCount = lWalletIds.size();
-    QString         lAddress        = _sanitizeAccountName(iAddress);
+    QString         lAddress        = sanatizedUsername(iAddress);
 
     if( iMicroWalletIdsAndPayloads.isEmpty() || iAddress.isEmpty() ) return false;
 
@@ -484,7 +485,7 @@ bool DatabasePrivPSQL::microWalletScratchCreates(const QMap<QString, QByteArray>
 bool DatabasePrivPSQL::microWalletMoveFromScratch(const QStringList iMicroWalletIds, const QString iAddress)
 {
     QSqlDatabase    lDB;
-    QString         lAddress        = _sanitizeAccountName(iAddress);
+    QString         lAddress        = sanatizedUsername(iAddress);
     QString         lTable          = _storageTableNameForAccount(iAddress);
     int             lWalletIdsCount = iMicroWalletIds.size();
     QString         lWhereInString  = _stringListToWhereIn(iMicroWalletIds);
