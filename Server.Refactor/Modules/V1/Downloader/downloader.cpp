@@ -188,7 +188,7 @@ void Downloader::_networkReplyFinished(const QUrl iUrl, QNetworkReply *iSource)
     mDownloadEventsLock.unlock();
 
     if( ! lData.isEmpty() ) {
-        qDebug() << "Downloaded" << lData.size() << "bytes from" << iUrl.toString();
+//        qDebug() << "Downloaded" << lData.size() << "bytes from" << iUrl.toString();
         emit downloaded(iUrl, lData);
     }else{
         qDebug() << "Failed to download from" << iUrl.toString();

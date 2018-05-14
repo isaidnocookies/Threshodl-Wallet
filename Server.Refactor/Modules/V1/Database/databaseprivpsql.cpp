@@ -8,6 +8,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QSqlError>
 
 static QMutex       _connectionCounterLock;
 static quint64      _connectionCounter      = 0;
@@ -458,7 +459,7 @@ bool DatabasePrivPSQL::microWalletScratchCreates(const QMap<QString, QByteArray>
 
         lInUseQueryString = lInUseQueryString.append(QStringLiteral("('%1')").arg(lWalletIds.at(lIndex)));
         lScratchQueryString = lScratchQueryString.append(
-                    QStringLiteral("('%1','%2','%3',%4)")
+                    QStringLiteral("('%1','%2','%3',%4,%5)")
                     .arg(lWalletIds.at(lIndex))
                     .arg(QString::fromUtf8(iMicroWalletIdsAndPayloads[lWalletIds.at(lIndex)].toBase64()))
                     .arg(lAddress)
@@ -492,12 +493,12 @@ bool DatabasePrivPSQL::microWalletMoveFromScratch(const QStringList iMicroWallet
 
     if( iMicroWalletIds.isEmpty() || iAddress.isEmpty() ) return false;
 
-    QString     lMoveQueryString    = QStringLiteral("INSERT INTO %1 (walletid,state,payload) SELECT walletid,state,payload FROM wallet_scratch_creation_area WHERE owner = %2 AND walletid IN(%3)")
+    QString     lMoveQueryString    = QStringLiteral("INSERT INTO %1 (walletid,state,payload) SELECT walletid,state,payload FROM wallet_scratch_creation_area WHERE owner = '%2' AND walletid IN(%3)")
             .arg(lTable)
             .arg(lAddress)
             .arg(lWhereInString);
 
-    QString     lDeleteQueryString  = QStringLiteral("DELETE FROM wallet_scratch_creation_area WHERE owner = %1 AND walletid IN(%2)")
+    QString     lDeleteQueryString  = QStringLiteral("DELETE FROM wallet_scratch_creation_area WHERE owner = '%1' AND walletid IN(%2)")
             .arg(lAddress)
             .arg(lWhereInString);
 
@@ -578,7 +579,7 @@ QMap<QString, QByteArray> DatabasePrivPSQL::microWalletsCopyPayload(const QStrin
         if( lSelectQuery.exec(lSelectQueryString) ) {
             int lWalletIdNo = lSelectQuery.record().indexOf(QStringLiteral("walletid"));
             int lPayloadNo  = lSelectQuery.record().indexOf(QStringLiteral("payload"));
-            while( ! lSelectQuery.next() ) {
+            while( lSelectQuery.next() ) {
                 lResult[lSelectQuery.value(lWalletIdNo).toString()] = QByteArray::fromBase64(lSelectQuery.value(lPayloadNo).toString().toUtf8());
             }
         }

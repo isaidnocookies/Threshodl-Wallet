@@ -16,9 +16,9 @@ void WCPClient::_getBTCFees(BitcoinWallet::ChainType iChain, QStringMath &oBaseF
                << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetInputFee)
                << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetOutputFee);
         lFeeResult = mServerV1->feeEstimator()->getFees(QStringLiteral("BTC"), lFeeGroup);
-        oBaseFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetBaseFee);
-        oInputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetInputFee);
-        oOutputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetOutputFee);
+        oBaseFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetBaseFee)];
+        oInputFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetInputFee)];
+        oOutputFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::TestNetOutputFee)];
         break;
 
     case BitcoinWallet::ChainType::Main:
@@ -28,9 +28,9 @@ void WCPClient::_getBTCFees(BitcoinWallet::ChainType iChain, QStringMath &oBaseF
                << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetInputFee)
                << mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetOutputFee);
         lFeeResult = mServerV1->feeEstimator()->getFees(QStringLiteral("BTC"), lFeeGroup);
-        oBaseFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetBaseFee);
-        oInputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetInputFee);
-        oOutputFee = mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetOutputFee);
+        oBaseFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetBaseFee)];
+        oInputFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetInputFee)];
+        oOutputFee = lFeeResult[mServerV1->feeEstimator()->commonTypeToString(CommonFeeType::MainNetOutputFee)];
         break;
     }
 }
@@ -135,6 +135,7 @@ void WCPClient::_createMicroWalletsBTC(const WCPMessage &iMessage)
                     lStoreInDB[lWalletId] = lPrivKeyRight;
                     lMicroWalletsData << lMW.toData();
                     lWalletIdPrefixValue++;
+                    lIndex++;
                 }
 
                 // Store the wallet data in the db
@@ -222,11 +223,15 @@ void WCPClient::_completeMicroWallets(const WCPMessage &iMessage)
         lWalletPartialKeysTemp = mServerV1->database()->microWalletsCopyPayload(lRequest.walletIds(),lRequest.username());
         if( mServerV1->database()->microWalletsExists(lRequest.walletIds()) ) {
             if( mServerV1->database()->microWalletsOwnershipCheck(lRequest.walletIds(),lRequest.username()) ) {
-                if( lWalletPartialKeysTemp.size() == lRequest.walletIds().size() ) {
-                    lWalletPartialKeys = lWalletPartialKeysTemp;
-                    lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::Success;
+                if( mServerV1->database()->microWalletsDelete(lRequest.walletIds(),lRequest.username()) ) {
+                    if( lWalletPartialKeysTemp.size() == lRequest.walletIds().size() ) {
+                        lWalletPartialKeys = lWalletPartialKeysTemp;
+                        lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::Success;
+                    }else{
+                        lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1;
+                    }
                 }else{
-                    lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1;
+                    lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2;
                 }
             }else{
                 lReplyCode = WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized;
