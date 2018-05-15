@@ -104,7 +104,7 @@ void App::setCertificates(CertificateManagerInterface *iCertificateManager)
     mCAPrivateKey       = mServerPrivateKey     = nullptr;
     mCACertificatePEM   = mCAPrivateKeyPEM      = mServerCertificatePEM     = mServerPrivateKeyPEM  = QByteArray();
 
-    if( iCertificateManager ) return;
+    if( ! iCertificateManager ) return;
 
     mCACertificate              = iCertificateManager->caCertificate();
     mCACertificatePEM           = iCertificateManager->caCertificatePEM();

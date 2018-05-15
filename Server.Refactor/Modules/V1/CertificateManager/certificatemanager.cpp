@@ -128,13 +128,15 @@ bool CertificateManager::loadCertificates()
     bool    lServerPrivKeyLoaded    = CertificateManager::_loadEncryptionKeyPEMOrFile( ServerPrivateKeyPEM, ServerPrivateKeyFilename, &(ServerPrivateKey) );
 
     // Do optional load but ignore the result
-    CertificateManager::_loadEncryptionKeyPEMOrFile( CAPrivateKeyPEM, CACertificateFilename, &(CAPrivateKey) );
+    CertificateManager::_loadEncryptionKeyPEMOrFile( CAPrivateKeyPEM, CAPrivateKeyFilename, &(CAPrivateKey) );
 
     return (lCACertLoaded && lServerCertLoaded && lServerPrivKeyLoaded);
 }
 
 bool CertificateManager::generateCertificates()
 {
+    Certificate::initializeLibrary();
+
     loadCertificates(); // Ignore the results
 
     auto lConfig                    = mApp->configuration();
@@ -243,7 +245,10 @@ bool CertificateManagerML::start(void *pointerToThis, void *pointerToAppObject)
 
     if( lCM ) {
         lCM->loadConfigurationValues();
-        return lCM->loadCertificates();
+        if( lCM->loadCertificates() ) {
+            lCM->mApp->setCertificates(lCM);
+            return true;
+        }
     }
 
     return false;

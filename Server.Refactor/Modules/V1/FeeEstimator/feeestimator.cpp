@@ -212,11 +212,17 @@ void FeeEstimator::downloaded(const QUrl iUrl, const QByteArray iData)
                     lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] = lValueD * 10.0f;
                     lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = lValueD * 180.0f;
                     lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = lValueD * 34.0f;
+
+                    qDebug() << "Setting BTC fees for TestNet to:" << lValue << (lValueD * 180.0f) << (lValueD * 34.0f);
+
                     setFees(lCrypto,lFees);
                 }else if( lChain == QStringLiteral("MainNet") ) {
                     lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = lValueD * 10.0f;
                     lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = lValueD * 180.0f;
                     lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = lValueD * 34.0f;
+
+                    qDebug() << "Setting BTC fees for MainNet to:" << (lValueD * 10.0f) << (lValueD * 180.0f) << (lValueD * 34.0f);
+
                     setFees(lCrypto,lFees);
                 }else{
                     qWarning() << "Unhandled BTC chain type:" << lChain;
