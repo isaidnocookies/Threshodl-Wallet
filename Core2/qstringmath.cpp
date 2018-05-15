@@ -29,6 +29,12 @@ QStringMath QStringMath::subtract(const QStringMath &other)
     return (*this - other);
 }
 
+QStringMath QStringMath::divide(const unsigned int iDivisor)
+{ return QStringMath{divideStringValue(mValue,iDivisor)}; }
+
+QStringMath QStringMath::multiply(const unsigned int iMultiplyBy)
+{ return QStringMath{multiplyStringValue(mValue,iMultiplyBy)}; }
+
 QStringMath QStringMath::operator +(const QString other) { return (*this + QStringMath(other)); }
 QStringMath QStringMath::operator +(const QStringMath &other)
 {
@@ -379,4 +385,116 @@ void QStringMath::standardizeStrings(const QString iValue1, const QString iValue
 
     oValue1Out = lValue1.prepend("0").append("0");
     oValue2Out = lValue2.prepend("0").append("0");
+}
+
+bool QStringMath::normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative)
+{
+    oIsNegative = false;
+    oOutput     = iInput.trimmed();
+
+    if( oOutput.isEmpty() )
+        return false;
+
+    if( oOutput.startsWith(QChar{'-'}) ) {
+        oIsNegative = true;
+        oOutput = oOutput.mid(1).trimmed();
+    }else if( oOutput.startsWith(QChar{'+'}) ) {
+        oIsNegative = false;
+        oOutput = oOutput.mid(1).trimmed();
+    }
+
+    if( oOutput.startsWith(QChar{'.'}) )
+        oOutput.prepend(QChar{'0'});
+
+    if( ! oOutput.contains(QChar{'.'}) )
+        oOutput.append(QStringLiteral(".0"));
+
+    return true;
+}
+
+QString QStringMath::divideStringValue(const QString iValue, unsigned int iDivisor)
+{
+    QString         lValue;
+    QString         lResult;
+    bool            lIsNegative;
+    QString         lValueLeftString;
+    QString         lValueRightString;
+    unsigned int    lModuloLeft;
+    unsigned int    lModuloRight;
+    int             lDecPos;
+    unsigned int    lWorkingValue;
+    bool            lOk;
+    unsigned int    lModuloBalance;
+    int             lModLimitor;
+
+    try {
+        if( ! normalizeString(iValue,lValue,lIsNegative) )  throw __LINE__;
+
+        lDecPos = lValue.indexOf(QChar{'.'});
+        if( lDecPos < 0 ) throw __LINE__;
+
+        lValueLeftString = lValue.left(lDecPos);
+        lValueRightString = lValue.mid(lDecPos+1); // Skip '.'
+
+        lWorkingValue = lValueLeftString.toUInt(&lOk,10);
+        if( ! lOk ) throw __LINE__;
+
+        lModuloLeft         = (lWorkingValue % iDivisor) * (10 * lValueRightString.length());
+        lWorkingValue       = lWorkingValue / iDivisor;
+        lValueLeftString    = QString::number(lWorkingValue,10);
+
+        lWorkingValue = lValueRightString.toUInt(&lOk,10);
+        if( ! lOk ) throw __LINE__;
+
+        lModuloRight        = (lWorkingValue % iDivisor) + (lModuloLeft % iDivisor);
+        lWorkingValue       = (lWorkingValue / iDivisor) + (lModuloLeft / iDivisor);
+
+        lResult             = QStringLiteral("%1.%2").arg(lValueLeftString).arg(lWorkingValue,lValueRightString.length(),10,QChar{'0'});
+
+        for( lModLimitor = 0; lModLimitor < 16 && lModuloRight > 0; lModLimitor++ ) {
+            lModuloRight = lModuloRight * 10;
+            lModuloBalance = lModuloRight % iDivisor;
+            lWorkingValue = lModuloRight / iDivisor;
+            lResult = lResult.append(QString::number(lWorkingValue,10));
+            lModuloRight = lModuloBalance;
+        }
+
+        if( lIsNegative )
+            return QStringLiteral("-%1").arg(lResult);
+        return lResult;
+
+    } catch(int iLine) {
+        qDebug() << "Error line" << iLine;
+        return QStringLiteral("0.0");
+    }
+}
+
+QString QStringMath::multiplyStringValue(const QString iValue, unsigned int iMultiplyBy)
+{
+    QString     lValue;
+    bool        lIsNegative;
+
+    // https://www.mathsisfun.com/multiplying-decimals.html
+    try {
+        if( ! normalizeString(iValue,lValue,lIsNegative) ) throw __LINE__;
+
+        int lPosFromRight   = lValue.size() - lValue.indexOf(QChar{'.'}) - 1;
+        int lPadding        = lValue.size()-1;
+
+        lValue = lValue.remove(QChar{'.'});
+
+        lValue = QString::number(lValue.toUInt() * iMultiplyBy);
+        if( lValue.size() < lPadding )
+            lValue = QStringLiteral("%1").arg(lValue.toUInt(),lPadding,10,QChar{'0'});
+
+        lValue = lValue.insert((lValue.size() - lPosFromRight),QChar{'.'});
+
+        while( lValue.endsWith(QChar{'0'}) )
+        { lValue = lValue.left(lValue.size()-1); }
+
+        return lValue;
+    } catch(int iLine) {
+        qDebug() << "Error line" << iLine;
+        return QStringLiteral("0.0");
+    }
 }

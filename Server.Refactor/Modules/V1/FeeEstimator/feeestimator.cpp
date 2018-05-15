@@ -194,7 +194,6 @@ void FeeEstimator::downloaded(const QUrl iUrl, const QByteArray iData)
     if( mUrlToCryptoSource.contains(iUrl) ) {
         // Its for us
         QMap< QString, QString >    lFees;
-        double                      lValueD;
         QVariantMap                 lCryptoSource   = mUrlToCryptoSource[iUrl];
         QString                     lValue          = __getInsightAPIValue(iData);
         QString                     lCrypto         = lCryptoSource[QStringLiteral("crypto")].toString();
@@ -206,22 +205,20 @@ void FeeEstimator::downloaded(const QUrl iUrl, const QByteArray iData)
 
                 emit recordFee(lCrypto,lChain,lValue);
 
-                lValueD = lValue.toDouble();
-
                 if( lChain == QStringLiteral("TestNet") ) {
-                    lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] = lValueD * 10.0f;
-                    lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = lValueD * 180.0f;
-                    lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = lValueD * 34.0f;
+                    lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] = QStringMath(lValue).multiply(10).toString();
+                    lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = QStringMath(lValue).multiply(180).toString();
+                    lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = QStringMath(lValue).multiply(34).toString();
 
-                    qDebug() << "Setting BTC fees for TestNet to:" << lValue << (lValueD * 180.0f) << (lValueD * 34.0f);
+                    qDebug() << "TestNet fees:" << lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] << lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] << lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)];
 
                     setFees(lCrypto,lFees);
                 }else if( lChain == QStringLiteral("MainNet") ) {
-                    lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = lValueD * 10.0f;
-                    lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = lValueD * 180.0f;
-                    lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = lValueD * 34.0f;
+                    lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = QStringMath(lValue).multiply(10).toString();
+                    lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = QStringMath(lValue).multiply(180).toString();
+                    lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = QStringMath(lValue).multiply(34).toString();
 
-                    qDebug() << "Setting BTC fees for MainNet to:" << (lValueD * 10.0f) << (lValueD * 180.0f) << (lValueD * 34.0f);
+                    qDebug() << "MainNet fees:" << lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] << lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] << lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)];
 
                     setFees(lCrypto,lFees);
                 }else{

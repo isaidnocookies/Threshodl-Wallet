@@ -16,6 +16,9 @@ public:
     QStringMath subtract (const QString other);
     QStringMath subtract (const QStringMath &other);
 
+    QStringMath divide (const unsigned int iDivisor);
+    QStringMath multiply(const unsigned int iMultiplyBy);
+
     QStringMath operator +(const QString other);
     QStringMath operator +(const QStringMath &other);
 
@@ -52,6 +55,9 @@ public:
 
 private:
     QString mValue;
+    static bool normalizeString(const QString iInput, QString &oOutput, bool &oIsNegative);
+    static QString divideStringValue(const QString iValue, unsigned int iDivisor);
+    static QString multiplyStringValue(const QString iValue, unsigned int iMultiplyBy);
     static void standardizeStrings(const QString iValue1, const QString iValue2, QString &oValue1Out, QString &oValue2Out);
 };
 

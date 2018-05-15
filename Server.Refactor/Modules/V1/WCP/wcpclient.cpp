@@ -72,9 +72,6 @@ void WCPClient::_createMicroWalletsBTC(const WCPMessage &iMessage)
     QStringMath                                         lBaseFee;
     QStringMath                                         lInputFee;
     QStringMath                                         lOutputFee;
-    double                                              lInputs             = lRequest.inputCount();
-    double                                              lOutputs            = lRequest.outputCount();
-    double                                              lEstimatedFeesD;
     QStringMath                                         lPostFeeValue;
     QList<BitcoinWallet>                                lBTCWallets;
     QString                                             lWalletIdPrefix;
@@ -89,10 +86,9 @@ void WCPClient::_createMicroWalletsBTC(const WCPMessage &iMessage)
         if( ! lGrinderList.isEmpty() ) {
             // Now we have a rough idea of how many wallets we would need, we need to estimate the fees with the given inputs and outputs
             _getBTCFees(lRequest.chainType(), lBaseFee, lInputFee, lOutputFee);
-            lOutputs        += lGrinderList.size();
-
-            lEstimatedFeesD = (lInputs * lInputFee.toDouble()) + (lOutputs * lOutputFee.toDouble()) + lBaseFee.toDouble();
-            lEstimatedFees  = QStringMath(QString::number(lEstimatedFeesD));
+            lInputFee       = lInputFee.multiply(lRequest.inputCount());
+            lOutputFee      = lOutputFee.multiply(lRequest.outputCount() + lGrinderList.size());
+            lEstimatedFees  = lBaseFee.add(lInputFee).add(lOutputFee);
             lEstimatedFees  = QStringMath::roundUpToNearest0001(lEstimatedFees.toString());
             lPostFeeValue   = QStringMath(lRequest.cryptoValue());
             lPostFeeValue   = lPostFeeValue.subtract(lEstimatedFees);
