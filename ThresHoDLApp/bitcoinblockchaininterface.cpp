@@ -253,7 +253,7 @@ QByteArray BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWal
 
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
-    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    QNetworkRequest         lRequest(QUrl(BITCOIN_NODE_IP_ADDRESS));
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -284,7 +284,7 @@ bool BitcoinBlockchainInterface::createBitcoinTransaction(QList<BitcoinWallet> i
 {
     QEventLoop          lMyEventLoop;
     QNetworkReply       *lReply;
-    QNetworkRequest     lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    QNetworkRequest     lRequest(QUrl(BITCOIN_NODE_IP_ADDRESS));
     QByteArray          lUrlData;
     QStringList         lTxids;
     QStringList         lValues;
@@ -390,6 +390,8 @@ QString BitcoinBlockchainInterface::estimateMinerFee(int iInputs, int iOutputs, 
         double lTransactionSizeEstimateInBytes = ((iInputs * 180) + (iOutputs * 34) + 10 );
         double lTransactionFee = lMediumMinerFeesRate * (lTransactionSizeEstimateInBytes);
 
+        // need to divide by 1000 to get the correct fee.
+
         if (iRoundUp) {
             lEstimatedFee = QStringMath::roundUpToNearest0001(QString::number(lTransactionFee)).toString();
         } else {
@@ -410,7 +412,7 @@ bool BitcoinBlockchainInterface::signRawTransaction(QByteArray iRawTransaction, 
     bool                    lCompleteSigning = false;
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
-    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    QNetworkRequest         lRequest(QUrl(BITCOIN_NODE_IP_ADDRESS));
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -463,7 +465,7 @@ bool BitcoinBlockchainInterface::sendRawTransaction(QByteArray iSignedHex)
 {
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
-    QNetworkRequest         lRequest(QUrl("http://test:test@24.234.113.55:8332"));
+    QNetworkRequest         lRequest(QUrl(BITCOIN_NODE_IP_ADDRESS));
     connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 

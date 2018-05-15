@@ -1,7 +1,7 @@
 #ifndef DARKSENDVIEW_H
 #define DARKSENDVIEW_H
 
-#include "rpcconnection.h"
+#include "core.h"
 #include "darksendconfirm.h"
 #include "qrreader.h"
 #include "useraccount.h"
@@ -58,7 +58,7 @@ signals:
 
 private:
     Ui::DarkSendView        *ui;
-    RPCConnection           *mConnection;
+    WCPConnection           *mConnection;
     QSslConfiguration       mSslConfiguration;
     DarkSendConfirm         *mDarkSendConfirmationView;
     QrReader                *mQrReaderView;

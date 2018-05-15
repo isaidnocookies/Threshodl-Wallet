@@ -1,7 +1,7 @@
 #ifndef SENDTOBRIGHTVIEW_H
 #define SENDTOBRIGHTVIEW_H
 
-#include "rpcconnection.h"
+#include "core.h"
 #include "useraccount.h"
 #include "breakdownmicrowallet.h"
 
@@ -48,7 +48,7 @@ signals:
 private:
     Ui::SendToBrightView *ui;
 
-    RPCConnection           *mConnection;
+    WCPConnection           *mConnection;
     QSslConfiguration       mSslConfiguration;
     QString                 mTransactionId;
     UserAccount             *mActiveUser;

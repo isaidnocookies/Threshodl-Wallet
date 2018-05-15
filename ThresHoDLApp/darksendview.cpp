@@ -10,13 +10,6 @@
 #include "SmtpClient/mimehtml.h"
 #include "SmtpClient/mimemultipart.h"
 
-#include "rpcmessagereassignmicrowalletsrequest.h"
-#include "rpcmessagereassignmicrowalletsreply.h"
-#include "rpcmessagecompletemicrowalletsrequest.h"
-#include "rpcmessagecompletemicrowalletsreply.h"
-#include "rpcmessagecreatemicrowalletpackagerequest.h"
-#include "rpcmessagecreatemicrowalletpackagereply.h"
-
 #include <QJsonArray>
 #include <QFile>
 #include <QStandardPaths>
@@ -36,15 +29,15 @@ DarkSendView::DarkSendView(QWidget *parent) :
     ui->sendConfirmationLabel->setText("");
     ui->progressBar->setVisible(false);
 
-    mConnection = new RPCConnection{this};
+    mConnection = new WCPConnection{this};
 
-    connect( mConnection, &RPCConnection::connected, this, &DarkSendView::connectedToServer );
-    connect( mConnection, &RPCConnection::disconnected, this, &DarkSendView::disconnectedFromServer );
-    connect( mConnection, &RPCConnection::socketError, this, &DarkSendView::socketError );
-    connect( mConnection, &RPCConnection::sslErrors, this, &DarkSendView::sslErrors );
-    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &DarkSendView::failedToSendMessage );
-    connect( mConnection, &RPCConnection::sentTextMessage, this, &DarkSendView::sentMessage );
-    connect( mConnection, &RPCConnection::textMessageReceived, this, &DarkSendView::receivedMessage );
+    connect( mConnection, &WCPConnection::connected, this, &DarkSendView::connectedToServer );
+    connect( mConnection, &WCPConnection::disconnected, this, &DarkSendView::disconnectedFromServer );
+    connect( mConnection, &WCPConnection::socketError, this, &DarkSendView::socketError );
+    connect( mConnection, &WCPConnection::sslErrors, this, &DarkSendView::sslErrors );
+    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &DarkSendView::failedToSendMessage );
+    connect( mConnection, &WCPConnection::sentTextMessage, this, &DarkSendView::sentMessage );
+    connect( mConnection, &WCPConnection::textMessageReceived, this, &DarkSendView::receivedMessage );
 
     QFile lFile{QStringLiteral(":/ca.pem")};
     if( lFile.open(QIODevice::ReadOnly) ) {
@@ -107,7 +100,7 @@ void DarkSendView::on_sendTransactionButton_pressed()
 
     if (lAmount == "0.0" || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
-    } else if (lAmount > mActiveUser->getDarkBalance()) {
+    } else if (false){//lAmount > mActiveUser->getDarkBalance()) {
         ui->sendWarningLabel->setText("You do not have enough Bitcoin");
     } else {
         QByteArray lTestMessage;
@@ -315,7 +308,7 @@ void DarkSendView::connectedToServer()
         lWalletList.append(w.walletId());
     }
 
-    mConnection->sendTextMessage(RPCMessageReassignMicroWalletsRequest::create(ui->addressLineEdit->text(), lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+    mConnection->sendTextMessage(WCPMessageReassignMicroWalletsRequest::create(ui->addressLineEdit->text(), lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
 }
 
 void DarkSendView::disconnectedFromServer()
@@ -347,7 +340,7 @@ void DarkSendView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    RPCMessageReassignMicroWalletsReply lReply{lMessage};
+    WCPMessageReassignMicroWalletsReply lReply{lMessage};
 
     if (mTransactionID != lReply.transactionId()) {
         //message isnt ours
@@ -355,40 +348,40 @@ void DarkSendView::receivedMessage()
     }
 
     switch(lReply.replyCode()) {
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::Success:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::Success:
         qDebug() << "FUCK YEAH!!!";
         sentConfirmation(true);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsDoNotExist:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsDoNotExist:
         // Server doesnt know where a wallet came from
         qDebug() << "FUCK 1";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsUnauthorized:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::OneOrMoreWalletsUnauthorized:
         // I dont have ownership of one or more wallets - whole transfer failed
         qDebug() << "FUCK 2";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::SourceDoesNotExist:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::SourceDoesNotExist:
         qDebug() << "FUCK 3";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::DestinationDoesNotExist:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::DestinationDoesNotExist:
         // Destination doesnt exist
         qDebug() << "FUCK 4";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError1:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::InternalServerError1:
         // Transfer never happen. internal problem
         qDebug() << "FUCK 5";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError2:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::InternalServerError2:
         // Wallets had to be rolled back (ownership) so proceed with caution - reintroduce wallets into dark - FAIL IT TODO:
         qDebug() << "FUCK 6";
         sentConfirmation(false);
         break;
-    case RPCMessageReassignMicroWalletsReply::ReplyCode::InternalServerError3:
+    case WCPMessageReassignMicroWalletsReply::ReplyCode::InternalServerError3:
         // Lock all wallets. Wait for manual help
         qDebug() << "FUCK 7";
         sentConfirmation(false);

@@ -1,9 +1,7 @@
 #ifndef SENDTODARKVIEW_H
 #define SENDTODARKVIEW_H
 
-#include "rpcconnection.h"
-#include "bitcoinwallet.h"
-#include "qstringmath.h"
+#include "core.h"
 #include "useraccount.h"
 
 #include <QWidget>
@@ -46,7 +44,7 @@ signals:
 
 private:
     Ui::SendToDarkView *ui;
-    RPCConnection       *mConnection;
+    WCPConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
 
     UserAccount         *mActiveUser;
@@ -54,6 +52,9 @@ private:
     QByteArray          mPrivateKey;
     QString             mUsername;
     QString             mTransactionId;
+
+    bool                mConfirmingOwnership;
+    QStringList         mWalletsToConfirm;
 
     void startProgressBarAndDisable();
     void stopProgressBarAndEnable();

@@ -2,18 +2,18 @@
 
 BreakdownMicroWallet::BreakdownMicroWallet(QObject *parent) : QObject(parent)
 {
-    mConnection = new RPCConnection{this};
+    mConnection = new WCPConnection{this};
 
     mCurrentAction = ActionCommands::None;
     mConnectionAttempts = 5;
 
-    connect( mConnection, &RPCConnection::connected, this, &BreakdownMicroWallet::connectedToServer );
-    connect( mConnection, &RPCConnection::disconnected, this, &BreakdownMicroWallet::disconnectedFromServer );
-    connect( mConnection, &RPCConnection::socketError, this, &BreakdownMicroWallet::socketError );
-    connect( mConnection, &RPCConnection::sslErrors, this, &BreakdownMicroWallet::sslErrors );
-    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &BreakdownMicroWallet::failedToSendMessage );
-    connect( mConnection, &RPCConnection::sentTextMessage, this, &BreakdownMicroWallet::sentMessage );
-    connect( mConnection, &RPCConnection::textMessageReceived, this, &BreakdownMicroWallet::receivedMessage );
+    connect( mConnection, &WCPConnection::connected, this, &BreakdownMicroWallet::connectedToServer );
+    connect( mConnection, &WCPConnection::disconnected, this, &BreakdownMicroWallet::disconnectedFromServer );
+    connect( mConnection, &WCPConnection::socketError, this, &BreakdownMicroWallet::socketError );
+    connect( mConnection, &WCPConnection::sslErrors, this, &BreakdownMicroWallet::sslErrors );
+    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &BreakdownMicroWallet::failedToSendMessage );
+    connect( mConnection, &WCPConnection::sentTextMessage, this, &BreakdownMicroWallet::sentMessage );
+    connect( mConnection, &WCPConnection::textMessageReceived, this, &BreakdownMicroWallet::receivedMessage );
 
     QFile lFile{QStringLiteral(":/ca.pem")};
     if( lFile.open(QIODevice::ReadOnly) ) {
@@ -50,9 +50,9 @@ void BreakdownMicroWallet::connectedToServer()
     if (mCurrentAction == ActionCommands::CompleteWallet) {
         QStringList lWalletList;
         lWalletList.append(mBitcoinWalletToComplete.walletId());
-        mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+        mConnection->sendTextMessage(WCPMessageCompleteMicroWalletsRequest::create(lWalletList, mTransactionID, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
     } else if (mCurrentAction == ActionCommands::BreakdownWallet) {
-        mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(
+        mConnection->sendTextMessage(WCPMessageCreateMicroWalletPackageRequest::createBtc(
                         mBitcoinWalletToComplete.value(),
                         1,
                         1,
@@ -102,38 +102,38 @@ void BreakdownMicroWallet::receivedMessage()
     bool lTreatAsFailure = false;
 
     if (mCurrentAction == ActionCommands::CompleteWallet) {
-        RPCMessageCompleteMicroWalletsReply lReply {lMessage};
+        WCPMessageCompleteMicroWalletsReply lReply {lMessage};
         QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-        if (lCommand == RPCMessageCompleteMicroWalletsReply::commandValue()) {
+        if (lCommand == WCPMessageCompleteMicroWalletsReply::commandValue()) {
             switch(lReply.replyCode()) {
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::Success:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::Success:
                 qDebug() << "Successfully completed wallet";
                 break;
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized:
                 qDebug() << "OneOrMoreUnauthorized Error";
                 lTreatAsFailure = true;
                 break;
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist:
                 qDebug() << "OneOrMoreMicroWalletsDoNotExist Error";
                 lTreatAsFailure = true;
                 break;
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1:
                 // Database error, cant talk to database
                 qDebug() << "InternalServerError1";
                 lTreatAsFailure = true;
                 break;
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2:
                 // Some wallets were completed.. Result data--if size of data is the error code, its bad. if its not bad, its not bad (size of error is char)
                 qDebug() << "InternalServerError2 Error";
                 lTreatAsFailure = true; // we are only requesting one wallet...
                 break;
-            case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3:
+            case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3:
                 // Can't delete microwallet from internal database. Microwallets were complete tho... Treat as success.
                 qDebug() << "InternalServerError3 Error";
                 break;
             default:
-                //RPCMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure
+                //WCPMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure
                 qDebug() << "UnknownFailure Error";
                 lTreatAsFailure = true;
                 break;
@@ -147,25 +147,25 @@ void BreakdownMicroWallet::receivedMessage()
             }
         }
     } else {
-        RPCMessageCreateMicroWalletPackageReply lReply {lMessage};
+        WCPMessageCreateMicroWalletPackageReply lReply {lMessage};
         QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-        if (lCommand == RPCMessageCreateMicroWalletPackageReply::commandValue()) {
+        if (lCommand == WCPMessageCreateMicroWalletPackageReply::commandValue()) {
             switch(lReply.replyCode()) {
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-                qDebug() << "Success -- RPCMessageCreateMicroWalletPackageReply";
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::Success:
+                qDebug() << "Success -- WCPMessageCreateMicroWalletPackageReply";
                 getMicroWalletsFromReply(lReply.microWalletsData());
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
                 qDebug() << "Unable to grind up crypto";
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
                 qDebug() << "Unauthorized during create";
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
                 qDebug() << "Unhandled Crypto";
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
                 qDebug() << "Internal Server 1 -- create package";
                 break;
             default:

@@ -1,6 +1,5 @@
 #include "useraccount.h"
 #include "globalsandstyle.h"
-#include "bitcoinwallet.h"
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -394,6 +393,36 @@ void UserAccount::clearAllSavedData()
     emit clearAllSavedDataComplete();
 }
 
+bool UserAccount::getNumberOfUnspentTransactions(QList<BitcoinWallet> iWallets, QString iAmount, int &oNumberOfUnspentTransactions)
+{
+    QStringList lTxids;
+    QStringList lValues;
+    QStringList lVouts;
+    QStringList lScripts;
+    QList<QByteArray> lPrivateKeys;
+
+    QStringMath lCounter = iAmount;
+    int lTransactionCounter = 0;
+
+    if (mBitcoinBlockchainInterface->getUnspentTransactions(iWallets, lTxids, lValues, lVouts, lScripts, lPrivateKeys)) {
+
+        for (auto value : lValues) {
+            if (lCounter - value <= 0) {
+                lTransactionCounter++;
+                break;
+            } else {
+                lTransactionCounter++;
+                lCounter = lCounter - value;
+            }
+        }
+
+        oNumberOfUnspentTransactions = lTransactionCounter;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool UserAccount::backupAccount(QString iEmail)
 {
     QByteArray      lAttachmentData;
@@ -539,7 +568,7 @@ void UserAccount::updateBalancesFromBlockchain()
     mBitcoinBlockchainInterface->updateBrightWalletBalances();
     mBitcoinBlockchainInterface->updateDarkWalletBalances();
 
-    emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkBalance.toString());
+    emit updateBalancesForViews(mBrightPendingBalance.toString(), mDarkPendingBalance.toString());
 }
 
 bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
@@ -591,6 +620,8 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
 
 bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWalletTotal, QString iFeeEstimate)
 {
+    return true; ///// FOR TESTING OF SERVER //TODO: fix
+
     QStringList         lTxids;
     QStringList         lValues;
     QStringList         lVouts;
@@ -604,12 +635,9 @@ bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWa
         lOutputMap[w.address()] = w.value();
     }
 
-    //UNTIL RPC, FEE WILL BE TAKEN FROM BRIGHT WALLETS on top of the dark wallets from server.
-
     if (mBitcoinBlockchainInterface->getUnspentTransactions(mBrightWallet, lTxids, lValues, lVouts, lScriptPubKey, lPrivateKeys)) {
         // Estimate fee and create raw transaction
-        QString lMinerFee = mBitcoinBlockchainInterface->estimateMinerFee(lTxids.count(), iWallets.count(), true);
-//        QString lMinerFee = iFeeEstimate;
+        QString lMinerFee = iFeeEstimate;
 
         if (mBitcoinBlockchainInterface->createBitcoinTransaction(mBrightWallet, lOutputMap, lMinerFee, lPrivateKeys, lTxids, lVouts, lScriptPubKey, lRawTransaction)) {
             // sign transaction

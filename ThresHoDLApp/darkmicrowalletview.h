@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QScroller>
 
-#include "bitcoinwallet.h"
+#include "core.h"
 
 namespace Ui {
 class DarkMicroWalletView;

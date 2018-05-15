@@ -1,15 +1,10 @@
 #include "createaccount.h"
 #include "ui_createaccount.h"
-
 #include "globalsandstyle.h"
-#include "certificate.h"
-#include "encryptionkey.h"
-
-#include "rpcmessagecreateaccountrequest.h"
-#include "rpcmessagecreateaccountreply.h"
 
 #include <QDebug>
 #include <QFile>
+#include "certificate.h"
 
 CreateAccount::CreateAccount(QWidget *parent) :
     QWidget(parent),
@@ -22,14 +17,14 @@ CreateAccount::CreateAccount(QWidget *parent) :
 
     ui->progressBar->setVisible(false);
 
-    mConnection = new RPCConnection{this};
-    connect( mConnection, &RPCConnection::connected, this, &CreateAccount::connectedToServer );
-    connect( mConnection, &RPCConnection::disconnected, this, &CreateAccount::disconnectedFromServer );
-    connect( mConnection, &RPCConnection::socketError, this, &CreateAccount::socketError );
-    connect( mConnection, &RPCConnection::sslErrors, this, &CreateAccount::sslErrors );
-    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &CreateAccount::failedToSendMessage );
-    connect( mConnection, &RPCConnection::sentTextMessage, this, &CreateAccount::sentMessage );
-    connect( mConnection, &RPCConnection::textMessageReceived, this, &CreateAccount::receivedMessage );
+    mConnection = new WCPConnection{this};
+    connect( mConnection, &WCPConnection::connected, this, &CreateAccount::connectedToServer );
+    connect( mConnection, &WCPConnection::disconnected, this, &CreateAccount::disconnectedFromServer );
+    connect( mConnection, &WCPConnection::socketError, this, &CreateAccount::socketError );
+    connect( mConnection, &WCPConnection::sslErrors, this, &CreateAccount::sslErrors );
+    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &CreateAccount::failedToSendMessage );
+    connect( mConnection, &WCPConnection::sentTextMessage, this, &CreateAccount::sentMessage );
+    connect( mConnection, &WCPConnection::textMessageReceived, this, &CreateAccount::receivedMessage );
 
     QFile lFile{QStringLiteral(":/ca.pem")};
     if( lFile.open(QIODevice::ReadOnly) ) {
@@ -75,7 +70,7 @@ void CreateAccount::on_createAccountButton_pressed()
 void CreateAccount::connectedToServer()
 {
     qDebug() << "Connected to server.";
-    mConnection->sendTextMessage(RPCMessageCreateAccountRequest::create(mPublicKey,ui->usernameLineEdit->text(),mPrivateKey));
+    mConnection->sendTextMessage(WCPMessageCreateAccountRequest::create(mPublicKey,ui->usernameLineEdit->text(),mPrivateKey));
 }
 
 void CreateAccount::disconnectedFromServer()
@@ -111,15 +106,15 @@ void CreateAccount::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    RPCMessageCreateAccountReply    lReply{lMessage};
+    WCPMessageCreateAccountReply    lReply{lMessage};
 
     switch(lReply.replyCode()) {
-        case RPCMessageCreateAccountReply::Success:
+        case WCPMessageCreateAccountReply::Success:
             qDebug() << "Success";
             // create account with new username
             emit createUserAccount(lReply.replyUsername(), mPrivateKey, mPublicKey);
             break;
-        case RPCMessageCreateAccountReply::UsernameTaken:
+        case WCPMessageCreateAccountReply::UsernameTaken:
             qDebug() << "Username Taken";
             ui->warningLabel->setText("Username has been taken!");
             break;

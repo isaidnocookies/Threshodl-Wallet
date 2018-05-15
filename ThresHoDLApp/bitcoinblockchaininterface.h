@@ -2,7 +2,7 @@
 #define BITCOINBLOCKCHAININTERFACE_H
 
 #include "globalsandstyle.h"
-#include "bitcoinwallet.h"
+#include "core.h"
 #include "useraccount.h"
 
 #include <QObject>

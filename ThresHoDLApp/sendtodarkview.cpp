@@ -2,11 +2,6 @@
 #include "ui_sendtodarkview.h"
 
 #include "globalsandstyle.h"
-#include "certificate.h"
-#include "encryptionkey.h"
-
-#include "rpcmessagecreatemicrowalletpackagerequest.h"
-#include "rpcmessagecreatemicrowalletpackagereply.h"
 
 SendToDarkView::SendToDarkView(QWidget *parent) :
     QWidget(parent),
@@ -19,15 +14,17 @@ SendToDarkView::SendToDarkView(QWidget *parent) :
 
     ui->progressBar->setVisible(false);
 
-    mConnection = new RPCConnection{this};
+    mConnection = new WCPConnection{this};
 
-    connect( mConnection, &RPCConnection::connected, this, &SendToDarkView::connectedToServer );
-    connect( mConnection, &RPCConnection::disconnected, this, &SendToDarkView::disconnectedFromServer );
-    connect( mConnection, &RPCConnection::socketError, this, &SendToDarkView::socketError );
-    connect( mConnection, &RPCConnection::sslErrors, this, &SendToDarkView::sslErrors );
-    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &SendToDarkView::failedToSendMessage );
-    connect( mConnection, &RPCConnection::sentTextMessage, this, &SendToDarkView::sentMessage );
-    connect( mConnection, &RPCConnection::textMessageReceived, this, &SendToDarkView::receivedMessage );
+    mConfirmingOwnership = false;
+
+    connect( mConnection, &WCPConnection::connected, this, &SendToDarkView::connectedToServer );
+    connect( mConnection, &WCPConnection::disconnected, this, &SendToDarkView::disconnectedFromServer );
+    connect( mConnection, &WCPConnection::socketError, this, &SendToDarkView::socketError );
+    connect( mConnection, &WCPConnection::sslErrors, this, &SendToDarkView::sslErrors );
+    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &SendToDarkView::failedToSendMessage );
+    connect( mConnection, &WCPConnection::sentTextMessage, this, &SendToDarkView::sentMessage );
+    connect( mConnection, &WCPConnection::textMessageReceived, this, &SendToDarkView::receivedMessage );
 
     QFile lFile{QStringLiteral(":/ca.pem")};
     if( lFile.open(QIODevice::ReadOnly) ) {
@@ -98,7 +95,26 @@ void SendToDarkView::connectedToServer()
 {
     qDebug() << "Connected to server.";
     mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(QString::number(qrand() % 10000));
-    mConnection->sendTextMessage(RPCMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),1,1,currentChain(),mTransactionId,mUsername,mPrivateKey));
+    int lAmountOfInputs;
+
+    if (!mConfirmingOwnership) {
+        if (mActiveUser->getNumberOfUnspentTransactions(mActiveUser->getBrightWallets(), ui->amountLineEdit->text(), lAmountOfInputs)) {
+            if (lAmountOfInputs <= 0) {
+                qDebug() << "Bright wallet has no unspent transactions";
+                ui->warningLabel->setWordWrap(true);
+                ui->warningLabel->setText("Your wallet does not have unspent transactions.");
+            }
+            mConnection->sendTextMessage(WCPMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),lAmountOfInputs,1,currentChain(),mTransactionId,mUsername,mPrivateKey));
+        } else {
+            qDebug() << "Failed to get unspent transactions";
+            ui->warningLabel->setWordWrap(true);
+            ui->warningLabel->setText("Failed to get wallet information. Please try again.");
+        }
+    } else {
+        // confirming ownership of wallets with server
+        mConnection->sendTextMessage(WCPMessageClaimNewMicroWalletsRequest::create(mWalletsToConfirm, mTransactionId, mUsername, mPrivateKey));
+    }
+
 }
 
 void SendToDarkView::disconnectedFromServer()
@@ -130,35 +146,66 @@ void SendToDarkView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    RPCMessageCreateMicroWalletPackageReply lReply {lMessage};
+    WCPMessageCreateMicroWalletPackageReply lReply {lMessage};
 
     QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-    if (lCommand == RPCMessageCreateMicroWalletPackageReply::commandValue()) {
+    if (lCommand == WCPMessageCreateMicroWalletPackageReply::commandValue()) {
         if (mTransactionId == lReply.transactionId()) {
             switch(lReply.replyCode()) {
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Success:
-                completeToDarkTransaction(lReply.microWalletsData(),"0.0"); // TODO: ADD the fee to the function
-                ui->warningLabel->setText("Conversion Complete!");
-                ui->amountLineEdit->clear();
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::Success:
+                if (completeToDarkTransaction(lReply.microWalletsData(),lReply.estimatedFees())) {
+                    mConfirmingOwnership = true;
+
+                    if (mConnection->isConnected()) {
+                        connectedToServer();
+                    } else {
+                        QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
+                        mConnection->open(lUrl);
+                    }
+                } else {
+                    ui->warningLabel->setText("Conversion Failed!");
+                    emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                }
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnableToGrindUpCryptoCurrency:
                 ui->warningLabel->setText("Conversion Failed!");
                 emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::Unauthorized:
                 ui->warningLabel->setText("Conversion Failed!");
                 emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::UnhandledCryptoType:
                 ui->warningLabel->setText("Conversion Failed!");
                 emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
                 break;
-            case RPCMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
                 ui->warningLabel->setText("Conversion Failed!");
                 emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
                 break;
             default:
+                break;
+            }
+        }
+    } else if (lCommand == WCPMessageClaimNewMicroWalletsReply::commandValue()) {
+        if (mTransactionId == lReply.transactionId()) {
+            switch(lReply.replyCode()) {
+            case WCPMessageClaimNewMicroWalletsReply::ReplyCode::Success:
+                ui->warningLabel->setText("Conversion Complete!");
+                ui->amountLineEdit->clear();
+                break;
+            case WCPMessageClaimNewMicroWalletsReply::ReplyCode::UnknownFailure:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            case WCPMessageCreateMicroWalletPackageReply::ReplyCode::InternalServerError1:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
+                break;
+            default:
+                ui->warningLabel->setText("Conversion Failed!");
+                emit brightToDarkCompleted(false, QString(), QList<QByteArray>());
                 break;
             }
         }
@@ -223,8 +270,10 @@ bool SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString 
     mActiveUser->setBrightBalance(lTotalBrightCoin);
 
     for (auto w : iData) {
-        lNewDarkWallets.append(BitcoinWallet(w));
-        lDarkWalletTotal = lDarkWalletTotal + BitcoinWallet(w).value();
+        BitcoinWallet lW (w);
+        lNewDarkWallets.append(lW);
+        lDarkWalletTotal = lDarkWalletTotal + lW.value();
+        mWalletsToConfirm.append(lW.walletId());
     }
 
     if (lNewDarkWallets.size() > 0 && lDarkWalletTotal > QStringMath("0.0")) {

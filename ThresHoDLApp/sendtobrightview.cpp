@@ -2,8 +2,6 @@
 #include "ui_sendtobrightview.h"
 
 #include "globalsandstyle.h"
-#include "rpcmessagecompletemicrowalletsreply.h"
-#include "rpcmessagecompletemicrowalletsrequest.h"
 
 #include <QFile>
 
@@ -17,15 +15,15 @@ SendToBrightView::SendToBrightView(QWidget *parent) :
     ui->amountLineEdit->setStyleSheet(darkBackgroundStyleSheet());
     ui->progressBar->setVisible(false);
 
-    mConnection = new RPCConnection{this};
+    mConnection = new WCPConnection{this};
 
-    connect( mConnection, &RPCConnection::connected, this, &SendToBrightView::connectedToServer );
-    connect( mConnection, &RPCConnection::disconnected, this, &SendToBrightView::disconnectedFromServer );
-    connect( mConnection, &RPCConnection::socketError, this, &SendToBrightView::socketError );
-    connect( mConnection, &RPCConnection::sslErrors, this, &SendToBrightView::sslErrors );
-    connect( mConnection, &RPCConnection::failedToSendTextMessage, this, &SendToBrightView::failedToSendMessage );
-    connect( mConnection, &RPCConnection::sentTextMessage, this, &SendToBrightView::sentMessage );
-    connect( mConnection, &RPCConnection::textMessageReceived, this, &SendToBrightView::receivedMessage );
+    connect( mConnection, &WCPConnection::connected, this, &SendToBrightView::connectedToServer );
+    connect( mConnection, &WCPConnection::disconnected, this, &SendToBrightView::disconnectedFromServer );
+    connect( mConnection, &WCPConnection::socketError, this, &SendToBrightView::socketError );
+    connect( mConnection, &WCPConnection::sslErrors, this, &SendToBrightView::sslErrors );
+    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &SendToBrightView::failedToSendMessage );
+    connect( mConnection, &WCPConnection::sentTextMessage, this, &SendToBrightView::sentMessage );
+    connect( mConnection, &WCPConnection::textMessageReceived, this, &SendToBrightView::receivedMessage );
 
     QFile lFile{QStringLiteral(":/ca.pem")};
     if( lFile.open(QIODevice::ReadOnly) ) {
@@ -120,7 +118,7 @@ void SendToBrightView::connectedToServer()
 
         qDebug() << "Connected to server.";
         mTransactionId = QString("%1.%2").arg(QDateTime::currentMSecsSinceEpoch()).arg(qrand() % 100);
-        mConnection->sendTextMessage(RPCMessageCompleteMicroWalletsRequest::create(lWalletIds, mTransactionId, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
+        mConnection->sendTextMessage(WCPMessageCompleteMicroWalletsRequest::create(lWalletIds, mTransactionId, mActiveUser->getUsername(), mActiveUser->getPrivateKey()));
     }
 
 }
@@ -154,7 +152,7 @@ void SendToBrightView::receivedMessage()
 
     // got reply
     QString lMessage = mConnection->nextTextMessage();
-    RPCMessageCompleteMicroWalletsReply lReply {lMessage};
+    WCPMessageCompleteMicroWalletsReply lReply {lMessage};
     bool lTreatAsFailure = false;
 
     if (lReply.transactionId() != mTransactionId) {
@@ -165,34 +163,34 @@ void SendToBrightView::receivedMessage()
 
     QString lCommand = lReply.fieldValue(QStringLiteral(kFieldKey_Command)).toString();
 
-    if (lCommand == RPCMessageCompleteMicroWalletsReply::commandValue()) {
+    if (lCommand == WCPMessageCompleteMicroWalletsReply::commandValue()) {
         switch(lReply.replyCode()) {
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::Success:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::Success:
             qDebug() << "Success";
             break;
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreUnauthorized:
             qDebug() << "OneOrMoreUnauthorized Error";
             lTreatAsFailure = true;
             break;
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::OneOrMoreMicroWalletsDoNotExist:
             qDebug() << "OneOrMoreMicroWalletsDoNotExist Error";
             lTreatAsFailure = true;
             break;
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError1:
             // Database error, cant talk to database
             qDebug() << "InternalServerError1";
             lTreatAsFailure = true;
             break;
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError2:
             // Some wallets were completed.. Result data--if size of data is the error code, its bad. if its not bad, its not bad (size of error is char)
             qDebug() << "InternalServerError2 Error";
             break;
-        case RPCMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3:
+        case WCPMessageCompleteMicroWalletsReply::ReplyCode::InternalServerError3:
             // Can't delete microwallet from internal database. Microwallets were complete tho... Treat as success.
             qDebug() << "InternalServerError3 Error";
             break;
         default:
-            //RPCMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure
+            //WCPMessageCompleteMicroWalletsReply::ReplyCode::UnknownFailure
             qDebug() << "UnknownFailure Error";
             lTreatAsFailure = true;
             break;
@@ -259,7 +257,7 @@ void SendToBrightView::completeWalletsAndAdd(QMap<QString, QByteArray> iData)
     for (auto w: lPartialWallets) {
         BitcoinWallet lWallet = w;
 
-        if (*(static_cast<char *>(iData[w.walletId()].data())) == RPCMessageCompleteMicroWalletsReply::InternalServerError2) {
+        if (*(static_cast<char *>(iData[w.walletId()].data())) == WCPMessageCompleteMicroWalletsReply::InternalServerError2) {
             // key is an error, dont complete wallet
             lWallet.setOwner(mActiveUser->getUsername());
             lWallet.setIsMicroWallet(true);

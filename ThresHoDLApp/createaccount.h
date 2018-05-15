@@ -1,7 +1,7 @@
 #ifndef CREATEACCOUNT_H
 #define CREATEACCOUNT_H
 
-#include "rpcconnection.h"
+#include "core.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -36,7 +36,7 @@ signals:
 
 private:
     Ui::CreateAccount   *ui;
-    RPCConnection       *mConnection;
+    WCPConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
 
     QByteArray          mPrivateKey;

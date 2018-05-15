@@ -1,14 +1,9 @@
 #ifndef BREAKDOWNMICROWALLET_H
 #define BREAKDOWNMICROWALLET_H
 
-#include "useraccount.h"
-#include "bitcoinwallet.h"
-#include "rpcconnection.h"
+#include "core.h"
 #include "globalsandstyle.h"
-#include "rpcmessagecompletemicrowalletsreply.h"
-#include "rpcmessagecompletemicrowalletsrequest.h"
-#include "rpcmessagecreatemicrowalletpackagereply.h"
-#include "rpcmessagecreatemicrowalletpackagerequest.h"
+#include "useraccount.h"
 
 #include <QDir>
 #include <QList>
@@ -59,7 +54,7 @@ signals:
 
 private:
     QString             mTransactionID;
-    RPCConnection       *mConnection;
+    WCPConnection       *mConnection;
     QSslConfiguration   mSslConfiguration;
     BitcoinWallet       mBitcoinWalletToComplete;
     bool                mBitcoinWasCompleted;

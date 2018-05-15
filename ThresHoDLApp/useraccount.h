@@ -1,8 +1,7 @@
 #ifndef USERACCOUNT_H
 #define USERACCOUNT_H
 
-#include "bitcoinwallet.h"
-#include "qstringmath.h"
+#include "core.h"
 #include "bitcoinblockchaininterface.h"
 
 #include <QString>
@@ -71,6 +70,8 @@ public:
     bool sendDarkWalletsToBrightWallet(QList<BitcoinWallet> iWallets);
     void removeBrightWallets(QString iAmount); //for testing...
     void clearAllSavedData();
+
+    bool getNumberOfUnspentTransactions (QList<BitcoinWallet> iWallets, QString iAmount, int &oNumberOfUnspentTransactions);
 
     bool backupAccount(QString iEmail);
     bool importAccount(QByteArray iData);

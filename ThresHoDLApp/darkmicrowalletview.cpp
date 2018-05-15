@@ -2,7 +2,6 @@
 #include "ui_darkmicrowalletview.h"
 
 #include "globalsandstyle.h"
-#include "qstringmath.h"
 
 #include <QtDebug>
 

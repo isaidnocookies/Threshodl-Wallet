@@ -16,9 +16,9 @@ NotificationsAndSettingsView::NotificationsAndSettingsView(QWidget *parent) :
     /// INCLUDED FOR TESTING ONLY
     //////////////////////////////////////////////
     ///
-    ui->resetBalancePushButton->setVisible(false);
-    ui->addPushButton->setVisible(false);
-    ui->amountLineEdit->setVisible(false);
+//    ui->resetBalancePushButton->setVisible(false);
+//    ui->addPushButton->setVisible(false);
+//    ui->amountLineEdit->setVisible(false);
     ///
     //////////////////////////////////////////////
     //////////////////////////////////////////////
