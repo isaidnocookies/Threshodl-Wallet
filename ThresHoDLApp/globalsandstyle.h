@@ -6,11 +6,14 @@
 
 #include "bitcoinwallet.h"
 
+// turn off and on the use of the blockchain for transactions between dark and bright
+#define USE_BLOCKCHAIN true
+
 #define BLOCKCYPER_API_URL "https://api.blockcypher.com/v1/btc/test3"
 
 //#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.38:4431"
-#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
-//#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
+//#define TEST_SERVER_IP_ADDRESS "wss://bluewallet.threebx.com:4431"
+#define TEST_SERVER_IP_ADDRESS "wss://10.10.0.78:4431"
 
 //#define BITCOIN_NODE_IP_ADDRESS "http://test:test@10.10.0.158:8332"
 #define BITCOIN_NODE_USERNAME "threshodl"

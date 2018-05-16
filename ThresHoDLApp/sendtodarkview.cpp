@@ -64,9 +64,16 @@ void SendToDarkView::on_convertButton_pressed()
     QStringMath lValue = ui->amountLineEdit->text();
     ui->warningLabel->setText("");
 
-    if (lValue <= "0.0" || lValue > mActiveUser->getBrightBalance()) {
+    if (lValue <= "0.0") {
         ui->warningLabel->setText("Please input valid amount");
         return;
+    }
+
+    if (USE_BLOCKCHAIN) {
+        if (lValue > mActiveUser->getBrightBalance()) {
+            ui->warningLabel->setText("Not enough BTC in Bright wallet");
+            return;
+        }
     }
 
     if (lValue >= "0.0" && !QStringMath::isMultipleOf(lValue.toString(), "0.0001")) {
@@ -74,10 +81,12 @@ void SendToDarkView::on_convertButton_pressed()
         return;
     }
 
-    if (!mActiveUser->isBrightWalletSettled()) {
-        ui->warningLabel->setWordWrap(true);
-        ui->warningLabel->setText("Bright wallet is unconfirmed! Please wait and try again when it is settled.");
-        return;
+    if (USE_BLOCKCHAIN) {
+        if (!mActiveUser->isBrightWalletSettled()) {
+            ui->warningLabel->setWordWrap(true);
+            ui->warningLabel->setText("Bright wallet is unconfirmed! Please wait and try again when it is settled.");
+            return;
+        }
     }
 
     if (ui->confirmCheckBox->isChecked()) {
@@ -103,8 +112,9 @@ void SendToDarkView::connectedToServer()
                 qDebug() << "Bright wallet has no unspent transactions";
                 ui->warningLabel->setWordWrap(true);
                 ui->warningLabel->setText("Your wallet does not have unspent transactions.");
+            } else {
+                mConnection->sendTextMessage(WCPMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),lAmountOfInputs,1,currentChain(),mTransactionId,mUsername,mPrivateKey));
             }
-            mConnection->sendTextMessage(WCPMessageCreateMicroWalletPackageRequest::createBtc(ui->amountLineEdit->text(),lAmountOfInputs,1,currentChain(),mTransactionId,mUsername,mPrivateKey));
         } else {
             qDebug() << "Failed to get unspent transactions";
             ui->warningLabel->setWordWrap(true);
@@ -113,6 +123,7 @@ void SendToDarkView::connectedToServer()
     } else {
         // confirming ownership of wallets with server
         mConnection->sendTextMessage(WCPMessageClaimNewMicroWalletsRequest::create(mWalletsToConfirm, mTransactionId, mUsername, mPrivateKey));
+
     }
 
 }
@@ -156,7 +167,6 @@ void SendToDarkView::receivedMessage()
             case WCPMessageCreateMicroWalletPackageReply::ReplyCode::Success:
                 if (completeToDarkTransaction(lReply.microWalletsData(),lReply.estimatedFees())) {
                     mConfirmingOwnership = true;
-
                     if (mConnection->isConnected()) {
                         connectedToServer();
                     } else {
@@ -194,6 +204,8 @@ void SendToDarkView::receivedMessage()
             case WCPMessageClaimNewMicroWalletsReply::ReplyCode::Success:
                 ui->warningLabel->setText("Conversion Complete!");
                 ui->amountLineEdit->clear();
+                mConfirmingOwnership = false;
+                mWalletsToConfirm.clear();
                 break;
             case WCPMessageClaimNewMicroWalletsReply::ReplyCode::UnknownFailure:
                 ui->warningLabel->setText("Conversion Failed!");
@@ -266,6 +278,8 @@ bool SendToDarkView::completeToDarkTransaction(QList<QByteArray> iData, QString 
 
     mBalance = QStringMath(lTotalBrightCoin);
     ui->availableBalanceLabel->setText(QString("(Available Balance: %1)").arg(mBalance.toString()));
+
+    qDebug() << "Estimated fee amount: " << iFeeAmount;
 
     mActiveUser->setBrightBalance(lTotalBrightCoin);
 

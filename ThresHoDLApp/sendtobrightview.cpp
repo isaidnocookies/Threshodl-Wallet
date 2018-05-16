@@ -56,9 +56,11 @@ void SendToBrightView::on_closeButton_pressed()
 
 void SendToBrightView::on_convertButton_pressed()
 {
-    if (!mActiveUser->isDarkWalletsSettled()) {
-        ui->warningLabel->setWordWrap(true);
-        ui->warningLabel->setText("Please wait for dark wallet to be confirmed");
+    if (USE_BLOCKCHAIN) {
+        if (!mActiveUser->isDarkWalletsSettled()) {
+            ui->warningLabel->setWordWrap(true);
+            ui->warningLabel->setText("Please wait for dark wallet to be confirmed");
+        }
     }
 
     QStringMath lValue = ui->amountLineEdit->text();

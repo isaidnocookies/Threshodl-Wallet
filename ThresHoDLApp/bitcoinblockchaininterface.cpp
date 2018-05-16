@@ -158,9 +158,6 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
 
             for (auto utxo : lMyArray) {
                 auto lTempMap = utxo.toMap();
-
-//                qDebug() << lTempMap["address"].toString();
-
                 if (lTempMap["confirmations"].toInt() >= iConfirmations) {
                     oValues << lTempMap["amount"].toString();
                     oTxids << lTempMap["txid"].toString();
@@ -175,6 +172,11 @@ bool BitcoinBlockchainInterface::getUnspentTransactions(QList<BitcoinWallet> iWa
             lSuccess = false;
         }
     }
+
+    if (!USE_BLOCKCHAIN) {
+        return true;
+    }
+
     return lSuccess;
 }
 

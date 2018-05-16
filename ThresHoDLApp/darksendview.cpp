@@ -100,7 +100,7 @@ void DarkSendView::on_sendTransactionButton_pressed()
 
     if (lAmount == "0.0" || lAddress.isEmpty() || lEmailAddress.isEmpty() || !ui->confirmCheckBox->isChecked()) {
         ui->sendWarningLabel->setText("Please complete all fields and confirm!");
-    } else if (false){//lAmount > mActiveUser->getDarkBalance()) {
+    } else if (lAmount > mActiveUser->getDarkBalance()) {
         ui->sendWarningLabel->setText("You do not have enough Bitcoin");
     } else {
         QByteArray lTestMessage;

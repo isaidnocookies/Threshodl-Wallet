@@ -421,6 +421,11 @@ bool UserAccount::getNumberOfUnspentTransactions(QList<BitcoinWallet> iWallets, 
     } else {
         return false;
     }
+
+    if (!USE_BLOCKCHAIN) {
+        oNumberOfUnspentTransactions = 1;
+        return true;
+    }
 }
 
 bool UserAccount::backupAccount(QString iEmail)
@@ -620,7 +625,9 @@ bool UserAccount::sendBrightTransaction(QString iToAddress, QString iAmount)
 
 bool UserAccount::fillDarkWallets(QList<BitcoinWallet> iWallets, QString iDarkWalletTotal, QString iFeeEstimate)
 {
-    return true; ///// FOR TESTING OF SERVER //TODO: fix
+    if (!USE_BLOCKCHAIN) {
+        return true;
+    }
 
     QStringList         lTxids;
     QStringList         lValues;
