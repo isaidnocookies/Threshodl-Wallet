@@ -20,6 +20,18 @@
 
 #include "bitcoinwallet.h"
 
+typedef struct myBtcTx {
+    QList<QByteArray> inputTxids;
+    QList<int> inputVouts;
+    QList<QByteArray> inputScript;
+    QList<QByteArray> inputPublicKey;
+    QList<QString> inputAmount;
+
+    QStringList outputAddress;
+    QStringList outputAmount;
+    QList<QByteArray> outputScript;
+} myBtcTx;
+
 class BlockchainTool : public QObject
 {
     Q_OBJECT
@@ -31,9 +43,15 @@ public:
     static bool createRawTransactionUsingBitcoinNode(QStringList iInputUtxids, QStringList iInputVouts, QStringList iOutputAddresses, QStringList iOutputAmountsInBTC, QByteArray &oRawTransaction);
     static bool checkAddressBalance(QString iAddress, QString &oBalance, QString &oPendingBalance);
     static bool getUnspentTransactions(QString iAddress, QStringList &oUtxids, QStringList &oVouts, QStringList &oAmounts);
-    static bool decodeRawTransaction(QByteArray iRawHex, QString &oOutputText, BitcoinWallet::ChainType iChainType);
+    static bool decodeRawTransaction(QByteArray iRawHex, QString &oOutputText, myBtcTx &oTx, BitcoinWallet::ChainType iChainType);
     static bool decodeRawTransactionFromTx(btc_tx iTx, BitcoinWallet::ChainType iChainType, QString &oOutputText);
     static bool signRawTransaction(QByteArray iRawHex, QList<QByteArray> iPrivateKeys, BitcoinWallet::ChainType iChainType, QByteArray &oSignedTransactionHex);
+
+    static bool signRawTransactionV2(QByteArray iRawHex, QList<QByteArray> iPrivateKeys, QList<QByteArray> iScripts, QList<QByteArray> iPublicKeys);
+
+    static bool getPublicKeyFromAddress(QString iAddress, QByteArray &oPublicKey);
+    static bool getPublicKeyScriptFromAddress(QString iAddress, QByteArray &oPublicKeyScript);
+    static bool getAddressAndScriptFromUtxo(QString iUtxo, int iVout, QByteArray &oAddress, QByteArray &oScriptPubKey);
 };
 
 #endif // BLOCKCHAINTOOL_H

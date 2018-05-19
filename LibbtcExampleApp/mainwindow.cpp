@@ -240,8 +240,9 @@ void MainWindow::on_decodeTransactionPushButton_released()
 
     QString lOutput;
     btc_tx *lTx = btc_tx_new();
+    myBtcTx lMyTx;
 
-    if (BlockchainTool::decodeRawTransaction(QString(ui->rawTransactionPlainTextEdit->document()->toPlainText()).toUtf8(), lOutput, currentChain())) {
+    if (BlockchainTool::decodeRawTransaction(QString(ui->rawTransactionPlainTextEdit->document()->toPlainText()).toUtf8(), lOutput, lMyTx, currentChain())) {
         ui->statusBar->showMessage("Decode successful", 2000);
         ui->rawTransactionOutputLabel->setText(lOutput);
     } else {
@@ -324,7 +325,7 @@ void MainWindow::on_addOutputPushButton_2_released()
 
 void MainWindow::on_removeOutputPushButton_3_released()
 {
-    ui->outputsTableWidget_2->removeRow(ui->outputsTableWidget_2->rowCount());
+    ui->outputsTableWidget_2->removeRow(ui->outputsTableWidget_2->rowCount() - 1);
 }
 
 void MainWindow::on_signTransactionPushButton_released()
@@ -338,6 +339,9 @@ void MainWindow::on_signTransactionPushButton_released()
     QByteArray          lRawTransactionHex = lRawTransaction.toUtf8();
     QByteArray          lSignedRawTransaction;
 
+    QList<QByteArray>   lScripts;
+    QList<QByteArray>   lPublicKeys;
+
     for (int i = 0; i < ui->privateKeyForSigningTableWidget->rowCount(); i++) {
         auto lPString = ui->privateKeyForSigningTableWidget->item(i,0)->text();
         lPrivateKeyStrings << lPString;
@@ -347,15 +351,28 @@ void MainWindow::on_signTransactionPushButton_released()
     savePrivateKeysToSettings(lPrivateKeyStrings);
     saveRawTransactionForSigningToSettings(lRawTransaction);
 
-    ui->statusBar->showMessage("Signing Transaction...");
+    QString lOutputText;
+    myBtcTx lMyTx;
+    if (BlockchainTool::decodeRawTransaction(lRawTransactionHex, lOutputText, lMyTx, currentChain())) {
+        ui->statusBar->showMessage("Signing Transaction...");
 
-    if (BlockchainTool::signRawTransaction(lRawTransactionHex, lPrivateKeys, currentChain(), lSignedRawTransaction)) {
-        ui->signedTransactionHexPlainTextEdit->document()->setPlainText(QString(lSignedRawTransaction));
-        ui->statusBar->clearMessage();
-        ui->statusBar->showMessage("Signing Transaction Complete", 2000);
+        for (int i = 0; i < lMyTx.inputTxids.size(); i++) {
+
+        }
+
+        lScripts = lMyTx.inputScript;
+        lPublicKeys = lMyTx.inputPublicKey;
+
+        if (BlockchainTool::signRawTransactionV2(lRawTransactionHex, lPrivateKeys, lScripts, lPublicKeys)) {
+            ui->signedTransactionHexPlainTextEdit->document()->setPlainText(QString(lSignedRawTransaction));
+            ui->statusBar->clearMessage();
+            ui->statusBar->showMessage("Signing Transaction Complete", 2000);
+        } else {
+            ui->signedTransactionHexPlainTextEdit->document()->setPlainText("Fuck... Failed to Sign Transaction");
+            ui->statusBar->clearMessage();
+            ui->statusBar->showMessage("Signing Transaction Failed", 2000);
+        }
     } else {
-        ui->signedTransactionHexPlainTextEdit->document()->setPlainText("Fuck... Failed to Sign Transaction");
-        ui->statusBar->clearMessage();
         ui->statusBar->showMessage("Signing Transaction Failed", 2000);
     }
 }

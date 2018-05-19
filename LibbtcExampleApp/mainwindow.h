@@ -36,15 +36,10 @@ private slots:
     void openBlockExplorerAction();
     void openTestFaucetManu();
     void openTestFaucetTest3();
-
     void on_forNodeGetUtxoPushButton_released();
-
     void on_addOutputNodeCreateRawPushButton_2_released();
-
     void on_deleteOutputNodeCreateRawPushButton_3_released();
-
     void on_createRawTransactionFromNodePushButton_released();
-
     void on_fromNodeUtxoTableWidget_itemSelectionChanged();
 
 private:

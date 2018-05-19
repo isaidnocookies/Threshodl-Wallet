@@ -216,11 +216,12 @@ bool BlockchainTool::getUnspentTransactions(QString iAddress, QStringList &oUtxi
     return lSuccess;
 }
 
-bool BlockchainTool::decodeRawTransaction(QByteArray iRawHex, QString &oOutputText, BitcoinWallet::ChainType iChainType)
+bool BlockchainTool::decodeRawTransaction(QByteArray iRawHex, QString &oOutputText, myBtcTx &oTx, BitcoinWallet::ChainType iChainType)
 {
     btc_tx*         lTx = btc_tx_new();
     bool            lSuccess = true;
     char*           lRawHex = iRawHex.data();
+    myBtcTx         lMyTx;
 
     const btc_chainparams *     lChain;
     switch( iChainType ) {
@@ -267,6 +268,8 @@ bool BlockchainTool::decodeRawTransaction(QByteArray iRawHex, QString &oOutputTe
         utils_reverse_hex(lInHex, 64);
 
         oOutputText.append(QString("Utxo:   %1\nVout:   %2\n").arg(QString(lInHex)).arg(QString::number(lTx_in->prevout.n)));
+        lMyTx.inputTxids << lInHex;
+        lMyTx.inputVouts << lTx_in->prevout.n;
         btc_tx_in_free(lTx_in);
     }
 
@@ -289,6 +292,10 @@ bool BlockchainTool::decodeRawTransaction(QByteArray iRawHex, QString &oOutputTe
                   oOutputText.append(QString("Script PublicKey:   %1\n"
                                              "Address:   %2\n"
                                              "Output Amount:   %3\n").arg(lScriptPubKey).arg(lAddress).arg(QString::number(lTx_out->value)));
+
+                  lMyTx.outputAddress.append(lAddress);
+                  lMyTx.outputAmount.append(QString::number(lTx_out->value));
+                  lMyTx.outputScript.append(lScriptPubKey);
             }
             delete[] lAddress;
         } else {
@@ -299,6 +306,8 @@ bool BlockchainTool::decodeRawTransaction(QByteArray iRawHex, QString &oOutputTe
         vector_free(lVec, true);
         btc_tx_out_free(lTx_out);
     }
+
+    oTx = lMyTx;
 
     free(lData_bin);
     return lSuccess;
@@ -447,6 +456,164 @@ bool BlockchainTool::signRawTransaction(QByteArray iRawHex, QList<QByteArray> iP
     } else {
         qDebug() << "Failed to sign Transaction...";
         btc_tx_free(lTx);
+        lSuccess = false;
+    }
+
+    return lSuccess;
+}
+
+bool BlockchainTool::signRawTransactionV2(QByteArray iRawHex, QList<QByteArray> iPrivateKeys, QList<QByteArray> iScripts, QList<QByteArray> iPublicKeys)
+{
+    bool lSuccess;
+    int lSigHashType = 1;
+    int lAmount = 0;
+
+    const btc_chainparams *     lChain;
+
+    switch( currentChain() ) {
+    case BitcoinWallet::ChainType::TestNet:
+        lChain = &btc_chainparams_test;
+        break;
+    case BitcoinWallet::ChainType::RegressionNet:
+        lChain = &btc_chainparams_regtest;
+        break;
+    default:
+        lChain = &btc_chainparams_main;
+        break;
+    }
+
+    for (int i = 0; i < iScripts.size(); i++) {
+        QByteArray lScriptHex = iScripts.at(i);
+        auto lPrivateKey = iPrivateKeys.at(i).constData();
+        if(iRawHex.isEmpty() || lScriptHex.isEmpty()) {
+            qDebug() << "Missing / Invalid iRawHex or ScriptHex";
+            return false;
+        }
+
+        if (strlen(iRawHex) > 1024*100) {
+            qDebug() << "Tx too large (max 100kb)";
+            return false;
+        }
+
+        //deserialize transaction
+        btc_tx* tx = btc_tx_new();
+        uint8_t* data_bin = reinterpret_cast<uint8_t*>(btc_malloc(strlen(iRawHex) / 2 + 1));
+        int outlen = 0;
+        utils_hex_to_bin(iRawHex, data_bin, strlen(iRawHex), &outlen);
+        if (!btc_tx_deserialize(data_bin, outlen, tx, NULL, true)) {
+            free(data_bin);
+            btc_tx_free(tx);
+            qDebug() << "Invalid tx hex";
+        }
+        free(data_bin);
+
+        btc_tx_in *tx_in = reinterpret_cast<btc_tx_in*>(vector_idx(tx->vin, i));
+
+        uint8_t script_data[strlen(lScriptHex) / 2 + 1];
+        utils_hex_to_bin(lScriptHex, script_data, strlen(lScriptHex), &outlen);
+        cstring* script = cstr_new_buf(script_data, outlen);
+
+        uint256 sighash;
+        memset(sighash, 0, sizeof(sighash));
+        btc_tx_sighash(tx, script, i, lSigHashType, 0, SIGVERSION_BASE, sighash);
+
+        char *hex = utils_uint8_to_hex(sighash, 32);
+        utils_reverse_hex(hex, 64);
+
+        enum btc_tx_out_type type = btc_script_classify(script, NULL);
+        qDebug() << QString("script: %1").arg(QString(lScriptHex));
+        qDebug() << QString("script-type: %1").arg(btc_tx_out_type_to_str(type));
+        qDebug() << QString("inputindex: %1").arg(i);
+        qDebug() << QString("sighashtype: %1").arg(lSigHashType);
+        qDebug() << QString("hash: %1").arg(hex);
+
+        // sign
+        btc_bool sign = false;
+        btc_key key;
+        btc_privkey_init(&key);
+        if (btc_privkey_decode_wif(lPrivateKey, lChain, &key)) {
+            sign = true;
+        }
+        else {
+            if (strlen(lPrivateKey) > 50) {
+                btc_tx_free(tx);
+                cstr_free(script, true);
+                qDebug() << "Invalid Private Key";
+                lSuccess = false;
+            }
+            qDebug() << "No private key provided, signing failed";
+        }
+        if (sign) {
+            uint8_t sigcompact[64] = {0};
+            int sigderlen = 74+1; //&hashtype
+            uint8_t sigder_plus_hashtype[75] = {0};
+            enum btc_tx_sign_result res = btc_tx_sign_input(tx, script, lAmount, &key, i, lSigHashType, sigcompact, sigder_plus_hashtype, &sigderlen);
+            cstr_free(script, true);
+
+            if (res != BTC_SIGN_OK) {
+                qDebug() << QString("Sign error: %1").arg(btc_tx_sign_result_to_str(res));
+                lSuccess = false;
+            }
+
+            char sigcompacthex[64*2+1] = {0};
+            utils_bin_to_hex((unsigned char *)sigcompact, 64, sigcompacthex);
+
+            char sigderhex[74*2+2+1]; //74 der, 2 hashtype, 1 nullbyte
+            memset(sigderhex, 0, sizeof(sigderhex));
+            utils_bin_to_hex((unsigned char *)sigder_plus_hashtype, sigderlen, sigderhex);
+
+            cstring* signed_tx = cstr_new_sz(1024);
+            btc_tx_serialize(signed_tx, tx, true);
+
+            char signed_tx_hex[signed_tx->len*2+1];
+            utils_bin_to_hex((unsigned char *)signed_tx->str, signed_tx->len, signed_tx_hex);
+            printf("signed TX: %s\n", signed_tx_hex);
+            cstr_free(signed_tx, true);
+        }
+        btc_tx_free(tx);
+    }
+
+    return lSuccess;
+}
+
+bool BlockchainTool::getPublicKeyFromAddress(QString iAddress, QByteArray &oPublicKey)
+{
+
+}
+
+bool BlockchainTool::getPublicKeyScriptFromAddress(QString iAddress, QByteArray &oPublicKeyScript)
+{
+
+}
+
+bool BlockchainTool::getAddressAndScriptFromUtxo(QString iUtxo, int iVout, QByteArray &oAddress, QByteArray &oScriptPubKey)
+{
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    bool                    lSuccess = true;
+    QNetworkAccessManager   *lNetworkAccessManager = new QNetworkAccessManager();
+
+    connect(lNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    lReply = lNetworkAccessManager->get(QNetworkRequest(QUrl(QString("%1/tx/%2").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(iUtxo))));
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+        auto            lMyArray = lMyMap["vout"].toList();
+
+        auto            lVoutMap = lMyArray[iVout].toMap();
+        auto            lScriptFields = lVoutMap["scriptPubKey"].toMap();
+        auto            lAddresses = lScriptFields["addresses"].toList();
+        auto            lScriptHex = lScriptFields["hex"].toByteArray();
+        auto            lAddress = lAddresses.first().toByteArray();
+
+        oAddress = lAddress;
+        oScriptPubKey = lScriptHex;
+
+        lSuccess = true;
+    } else {
         lSuccess = false;
     }
 

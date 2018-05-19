@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>startPage.qml</file>
+        <file>createUsernamePage.qml</file>
+        <file>newRecoveryPhrasePage.qml</file>
+        <file>dashboardPage.qml</file>
+        <file>DashboardListModel.qml</file>
+        <file>CryptoWalletDelegate.qml</file>
+        <file>ExpandedCellComponent.qml</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>assets/threshodlLogo_landing.png</file>
+        <file>assets/backButtonIcon.png</file>
+        <file>assets/bitcoinIcon.png</file>
+        <file>assets/brightBitcoinIcon.png</file>
+        <file>assets/darkBitcoinIcon.png</file>
+        <file>assets/dashIcon.png</file>
+        <file>assets/downNavArrowIcon.png</file>
+        <file>assets/ethereumIcon.png</file>
+        <file>assets/litecoinIcon.png</file>
+        <file>assets/mailButtonIcon.png</file>
+        <file>assets/refreshButtonIcon.png</file>
+        <file>assets/settingsButtonIcon.png</file>
+        <file>assets/upNavArrowIcon.png</file>
+    </qresource>
+</RCC>
