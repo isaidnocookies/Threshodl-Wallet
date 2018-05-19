@@ -1,13 +1,12 @@
 #ifndef RESTNODERELAYINTERFACE_H
 #define RESTNODERELAYINTERFACE_H
 
-#include <QNetworkRequest>
 #include <QNetworkReply>
 
-class RESTNodeRelayInterfaceInterface
+class RESTNodeRelayInterface
 {
 public:
-    virtual ~RESTNodeRelayInterfaceInterface()
+    virtual ~RESTNodeRelayInterface()
     { }
 
     virtual QNetworkReply * get(const QString iCryptoTypeShortName, const QString iUrlPath)                                                         = 0;
