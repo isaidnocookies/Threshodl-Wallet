@@ -16,6 +16,8 @@ protected:
     QNetworkAccessManager *             mNAM                = nullptr;
     QMap< QString, QString >            mCryptoToUrlBase;
 
+    void loadConfigurationValues();
+
 public:
     RESTNodeRelay();
     virtual ~RESTNodeRelay();

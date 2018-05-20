@@ -4,6 +4,22 @@
 #include "digest.h"
 #include "app.h"
 
+void WCPClient::_startPendingNodeRelayOperationsCleanUpTimer()
+{
+    if( mPendingNodeRelayOperationsCleanUpTimer->isActive() || mPendingNodeRelayOperations.isEmpty() )
+        return;
+
+    mPendingNodeRelayOperationsCleanUpTimer->start();
+}
+
+void WCPClient::_stopPendingNodeRelayOperationsCleanUpTimer()
+{
+    if( ! mPendingNodeRelayOperationsCleanUpTimer->isActive() || ! mPendingNodeRelayOperations.isEmpty() )
+        return;
+
+    mPendingNodeRelayOperationsCleanUpTimer->stop();
+}
+
 void WCPClient::_getBTCFees(BitcoinWallet::ChainType iChain, QStringMath &oBaseFee, QStringMath &oInputFee, QStringMath &oOutputFee)
 {
     QStringList                     lFeeGroup;
@@ -306,9 +322,117 @@ void WCPClient::_ping(const WCPMessage &iMessage)
     sendMessage(WCPMessagePingReply::create(lRequest.payload(),mServerV1->app()->productFQDN()));
 }
 
+void WCPClient::_sendNodeRestMessage(const WCPMessage &iMessage)
+{
+    WCPMessageSendNodeRestMessageRequest    lRequest{iMessage};
+    QNetworkReply *                         lNetReply           = nullptr;
+
+    if( lRequest.method() == WCPMessageSendNodeRestMessageRequest::Method::Get ) {
+        lNetReply = mServerV1->restNodeRelay()->get(lRequest.cryptoTypeShortName(),lRequest.urlPath());
+    } else if( lRequest.method() == WCPMessageSendNodeRestMessageRequest::Method::Post ) {
+        lNetReply = mServerV1->restNodeRelay()->post(lRequest.cryptoTypeShortName(),lRequest.urlPath(),lRequest.payloadType(),lRequest.payload());
+    }
+
+    if( lNetReply ) {
+        QSharedPointer<PendingNodeRelayOp> lOp = QSharedPointer<PendingNodeRelayOp>(new PendingNodeRelayOp);
+        lOp->DelayedProcessing = false;
+        lOp->TransactionId = lRequest.transactionId();
+        connect( lNetReply, &QNetworkReply::finished, this, &WCPClient::_nodeRelayFinished );
+        mPendingNodeRelayOperations[lNetReply] = lOp;
+        lOp->Timer.start();
+    }else{
+        sendMessage(WCPMessageSendNodeRestMessageReply::create(
+                        lRequest.transactionId(),
+                        QByteArray(),
+                        QNetworkReply::ProtocolFailure,
+                        mServerV1->app()->productFQDN(),
+                        mServerV1->app()->serverPrivateKeyPEM()
+                        ));
+    }
+}
+
+void WCPClient::_nodeRelayCleanUpTimer()
+{
+    QList< QString >            lTimedOutTIDs;
+    QList< QString >            lDeleteNowTIDs;
+
+    for( QNetworkReply * lReply : mPendingNodeRelayOperations.keys() )
+    {
+        bool    lDeleteNow = false;
+        if( lReply->isFinished() ) {
+            auto lOP = mPendingNodeRelayOperations[lReply];
+            if( lOP->DelayedProcessing ) {
+                lDeleteNow = true;
+            }else{
+                lOP->DelayedProcessing = true;
+                continue;
+            }
+        }
+
+        if( mPendingNodeRelayOperations[lReply]->Timer.elapsed() > mPendingNodeRelayOperationsTimeOutInMS || lDeleteNow == true ) {
+            disconnect( lReply, nullptr, this, nullptr );
+            auto lOP = mPendingNodeRelayOperations.take(lReply);
+            lReply->deleteLater();
+
+            if( lDeleteNow )
+                lDeleteNowTIDs << lOP->TransactionId;
+            else
+                lTimedOutTIDs << lOP->TransactionId;
+            continue;
+        }
+    }
+
+    for( QString lTID : lTimedOutTIDs )
+    {
+        sendMessage( WCPMessageSendNodeRestMessageReply::create(
+                         lTID,
+                         QByteArray(),
+                         QNetworkReply::ProxyTimeoutError,
+                         mServerV1->app()->productFQDN(),
+                         mServerV1->app()->serverPrivateKeyPEM()
+                         ));
+    }
+
+    for( QString lTID : lDeleteNowTIDs )
+    {
+        sendMessage( WCPMessageSendNodeRestMessageReply::create(
+                         lTID,
+                         QByteArray(),
+                         QNetworkReply::UnknownProxyError,
+                         mServerV1->app()->productFQDN(),
+                         mServerV1->app()->serverPrivateKeyPEM()
+                         ));
+    }
+}
+
+void WCPClient::_nodeRelayFinished()
+{
+    QNetworkReply * lNetReply = qobject_cast<QNetworkReply *>(sender());
+
+    if( mPendingNodeRelayOperations.contains(lNetReply) ) {
+        auto lOp = mPendingNodeRelayOperations.take(lNetReply);
+
+        sendMessage(WCPMessageSendNodeRestMessageReply::create(
+                        lOp->TransactionId,
+                        lNetReply->readAll(),
+                        QNetworkReply::NoError,
+                        mServerV1->app()->productFQDN(),
+                        mServerV1->app()->serverPrivateKeyPEM()
+                        ));
+    }
+
+    lNetReply->deleteLater();
+}
+
 WCPClient::WCPClient(WCPConnection *iConnection, WCPServerHandler *iServer, QObject *iParent)
-    : WCPClientInterface(iConnection,iServer,iParent), mServerV1(iServer)
-{ }
+    : WCPClientInterface(iConnection,iServer,iParent)
+    , mServerV1(iServer)
+    , mPendingNodeRelayOperationsCleanUpTimer(new QTimer{this})
+{
+    mPendingNodeRelayOperationsCleanUpTimer->setSingleShot(false);
+    mPendingNodeRelayOperationsCleanUpTimer->setInterval(mPendingNodeRelayOperationsCleanUpTimerInterval);
+    connect( mPendingNodeRelayOperationsCleanUpTimer, &QTimer::timeout, this, &WCPClient::_nodeRelayCleanUpTimer );
+}
 
 void WCPClient::processMessage(const QString iWCPVersion, const QString iCommand, const WCPMessage &iMessage)
 {
@@ -329,6 +453,8 @@ void WCPClient::processMessage(const QString iWCPVersion, const QString iCommand
         _createAccount(iMessage);
     } else if( iCommand == WCPMessageReassignMicroWalletsRequest::commandValue() ) {
         _reassignMicroWallets(iMessage);
+    } else if( iCommand == WCPMessageSendNodeRestMessageRequest::commandValue() ) {
+        _sendNodeRestMessage(iMessage);
     } else if( iCommand == WCPMessagePingRequest::commandValue() ) {
         _ping(iMessage);
     } else {
