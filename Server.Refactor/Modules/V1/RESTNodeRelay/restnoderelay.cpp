@@ -45,7 +45,7 @@ void RESTNodeRelay::loadConfigurationValues()
             QVariantMap lVM = lEntry.toMap();
             if( lVM.contains(QStringLiteral("cryptoTypeShortName")) && lVM.contains(QStringLiteral("urlBase")) )
             {
-                mCryptoToUrlBase[lVM[QStringLiteral("cryptoTypeShortName")].toString()] = lVM[QStringLiteral("urlBase")].toString();
+                mCryptoToUrlBase[lVM[QStringLiteral("cryptoTypeShortName")].toString().toLower()] = lVM[QStringLiteral("urlBase")].toString();
             }
         }
     }
