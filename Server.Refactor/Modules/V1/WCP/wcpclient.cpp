@@ -434,6 +434,15 @@ WCPClient::WCPClient(WCPConnection *iConnection, WCPServerHandler *iServer, QObj
     connect( mPendingNodeRelayOperationsCleanUpTimer, &QTimer::timeout, this, &WCPClient::_nodeRelayCleanUpTimer );
 }
 
+WCPClient::~WCPClient()
+{
+    for( QNetworkReply * lNetReply : mPendingNodeRelayOperations.keys() )
+    {
+        mPendingNodeRelayOperations.remove(lNetReply);
+        lNetReply->deleteLater();
+    }
+}
+
 void WCPClient::processMessage(const QString iWCPVersion, const QString iCommand, const WCPMessage &iMessage)
 {
     if( iWCPVersion != kWCPVersionV2 ) {

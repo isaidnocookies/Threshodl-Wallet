@@ -48,8 +48,7 @@ protected slots:
 public:
     explicit WCPClient(WCPConnection * iConnection, WCPServerHandler * iServer, QObject *iParent = nullptr);
 
-    virtual ~WCPClient()
-    { }
+    virtual ~WCPClient();
 
     virtual void processMessage(const QString iWCPVersion, const QString iCommand, const WCPMessage &iMessage);
 };
