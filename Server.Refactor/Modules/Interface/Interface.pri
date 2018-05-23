@@ -11,4 +11,5 @@
     include($$PWD/WCPInterface/WCPInterface.pri)
     include($$PWD/GrinderInterface/GrinderInterface.pri)
     include($$PWD/FeeEstimatorInterface/FeeEstimatorInterface.pri)
+    include($$PWD/RESTNodeRelayInterface/RESTNodeRelayInterface.pri)
 }

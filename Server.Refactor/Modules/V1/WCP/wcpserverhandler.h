@@ -5,6 +5,7 @@
 #include "../../Interface/DatabaseInterface/databaseinterface.h"
 #include "../../Interface/GrinderInterface/grinderinterface.h"
 #include "../../Interface/FeeEstimatorInterface/feeestimatorinterface.h"
+#include "../../Interface/RESTNodeRelayInterface/restnoderelayinterface.h"
 
 #include <QMutex>
 #include <QList>
@@ -18,15 +19,16 @@ class WCPServerHandler : public WCPServerHandlerInterface
     Q_OBJECT
     friend class WCPServerHandlerML;
 protected:
-    App *                   mApp;
-    DatabaseInterface *     mDB;
-    GrinderInterface *      mGrinder;
-    FeeEstimatorInterface * mFeeEstimator;
+    App *                       mApp;
+    DatabaseInterface *         mDB;
+    GrinderInterface *          mGrinder;
+    FeeEstimatorInterface *     mFeeEstimator;
+    RESTNodeRelayInterface *    mRESTNodeRelay;
 
-    quint16                 mPort;
-    QStringList             mServerNames;
-    QHostAddress            mListenAddress          = QHostAddress::Any;
-    QSslConfiguration       mSslConfiguration;
+    quint16                     mPort;
+    QStringList                 mServerNames;
+    QHostAddress                mListenAddress          = QHostAddress::Any;
+    QSslConfiguration           mSslConfiguration;
 
 public:
     explicit WCPServerHandler(QObject * iParent = nullptr);
@@ -36,6 +38,7 @@ public:
     DatabaseInterface *         database() const            { return mDB; }
     GrinderInterface *          grinder() const             { return mGrinder; }
     FeeEstimatorInterface *     feeEstimator() const        { return mFeeEstimator; }
+    RESTNodeRelayInterface *    restNodeRelay() const       { return mRESTNodeRelay; }
 
 public slots:
     virtual void serverStarted();

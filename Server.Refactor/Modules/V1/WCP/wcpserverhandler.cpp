@@ -48,23 +48,25 @@ void WCPServerHandler::newConnectionArrived()
 
 WCPServerHandlerML::WCPServerHandlerML()
 {
-    QStringList lDependencies = QStringList() << QStringLiteral("CertificateManager-1") << QStringLiteral("Database-1") << QStringLiteral("Grinder-1") << QStringLiteral("FeeEstimator-1");
+    QStringList lDependencies = QStringList() << QStringLiteral("CertificateManager-1") << QStringLiteral("Database-1") << QStringLiteral("Grinder-1") << QStringLiteral("FeeEstimator-1") << QStringLiteral("RESTNodeRelay-1");
     ModuleLinker::registerModuleWithDependencies(QStringLiteral("WCPServerHandler-1"),lDependencies,WCPServerHandlerML::creator,WCPServerHandlerML::doInit,WCPServerHandlerML::start,WCPServerHandlerML::startInOwnThread);
 }
 
 void *WCPServerHandlerML::creator(void *pointerToAppObject)
 {
-    App *                   lApp                = reinterpret_cast<App *>(pointerToAppObject);
-    auto                    lConfig             = lApp->configuration();
-    QHostAddress            lListenAddress      = QHostAddress::Any;
-    DatabaseInterface *     lDB                 = reinterpret_cast<DatabaseInterface *>(lApp->getModuleObject(QStringLiteral("Database-1")));
-    GrinderInterface *      lGrinder            = reinterpret_cast<GrinderInterface *>(lApp->getModuleObject(QStringLiteral("Grinder-1")));
-    FeeEstimatorInterface * lFeeEstimator       = reinterpret_cast<FeeEstimatorInterface *>(lApp->getModuleObject(QStringLiteral("FeeEstimator-1")));
+    App *                       lApp                = reinterpret_cast<App *>(pointerToAppObject);
+    auto                        lConfig             = lApp->configuration();
+    QHostAddress                lListenAddress      = QHostAddress::Any;
+    DatabaseInterface *         lDB                 = reinterpret_cast<DatabaseInterface *>(lApp->getModuleObject(QStringLiteral("Database-1")));
+    GrinderInterface *          lGrinder            = reinterpret_cast<GrinderInterface *>(lApp->getModuleObject(QStringLiteral("Grinder-1")));
+    FeeEstimatorInterface *     lFeeEstimator       = reinterpret_cast<FeeEstimatorInterface *>(lApp->getModuleObject(QStringLiteral("FeeEstimator-1")));
+    RESTNodeRelayInterface *    lRESTNodeRelay      = reinterpret_cast<RESTNodeRelayInterface *>(lApp->getModuleObject(QStringLiteral("RESTNodeRelay-1")));
 
     if(
         ! lDB                                               ||
         ! lGrinder                                          ||
         ! lFeeEstimator                                     ||
+        ! lRESTNodeRelay                                    ||
         ! lConfig->contains(QStringLiteral("WCPPort"))      ||
         ! lConfig->contains(QStringLiteral("ServerName"))
     ) {
@@ -85,6 +87,7 @@ void *WCPServerHandlerML::creator(void *pointerToAppObject)
     lServer->mDB                = lDB;
     lServer->mGrinder           = lGrinder;
     lServer->mFeeEstimator      = lFeeEstimator;
+    lServer->mRESTNodeRelay     = lRESTNodeRelay;
     return lServer;
 }
 

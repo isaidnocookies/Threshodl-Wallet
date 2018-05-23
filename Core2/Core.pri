@@ -68,6 +68,8 @@
         $$PWD/wcpmessages/wcpmessagereassignmicrowalletsrequest.h \
         $$PWD/wcpmessages/wcpmessageclaimnewmicrowalletsreply.h \
         $$PWD/wcpmessages/wcpmessageclaimnewmicrowalletsrequest.h \
+        $$PWD/wcpmessages/wcpmessagesendnoderestmessagerequest.h \
+        $$PWD/wcpmessages/wcpmessagesendnoderestmessagereply.h \
         $$PWD/wcpmessages.h
 
     SOURCES += \
@@ -94,5 +96,7 @@
         $$PWD/wcpmessages/wcpmessagereassignmicrowalletsrequest.cpp \
         $$PWD/wcpmessages/wcpmessagereassignmicrowalletsreply.cpp \
         $$PWD/wcpmessages/wcpmessageclaimnewmicrowalletsreply.cpp \
-        $$PWD/wcpmessages/wcpmessageclaimnewmicrowalletsrequest.cpp
+        $$PWD/wcpmessages/wcpmessageclaimnewmicrowalletsrequest.cpp \
+        $$PWD/wcpmessages/wcpmessagesendnoderestmessagerequest.cpp \
+        $$PWD/wcpmessages/wcpmessagesendnoderestmessagereply.cpp
 }
