@@ -11,6 +11,45 @@ Rectangle {
 
     width: parent.width
 
+    // cryptoType -> BTC, LTC, ETH
+    // mode -> Bright or Dark
+    function getBalances (cryptoType, isBright, isConfirmed) {
+        var lMode
+        if (isBright) {
+            lMode = "Bright"
+        } else {
+            lMode = "Dark"
+        }
+
+        if (cryptoType === "BTC") {
+            return userAccount.getBitcoinBalance(lMode, isConfirmed)
+        } else if (cryptoType === "ETH") {
+            if (isConfirmed) {
+                return userAccount.ethereumConfirmedBalance
+            }
+            return userAccount.ethereumUnonfirmedBalance
+        } else if (cryptoType === "LTC") {
+            if (isConfirmed) {
+                return userAccount.litecoinConfirmedBalance
+            }
+            return userAccount.litecoinUnconfirmedBalance
+        } else {
+            // Error
+            console.log("Error... Unrecognized crypto type")
+        }
+    }
+
+    function getCurrencyValue(cryptoType, currencyType, cryptoAmount) {
+        return "0.00"
+    }
+
+    function isDark() {
+        if (name.search("Dark") != -1) {
+            return true
+        }
+        return false
+    }
+
     Item {
         width: parent.width
         height: 80
@@ -37,7 +76,13 @@ Rectangle {
 
         Text {
             id: totalCryptoTextExpanded
-            text: "0.134" + " " + shortName
+            text: {
+                if (isDark()) {
+                    return getBalances(shortName, false, true) + " " + shortName
+                } else {
+                    return getBalances(shortName, true, true) + " " + shortName
+                }
+            }
             font.pointSize: 16
             font.weight: Font.Thin
 
@@ -48,7 +93,13 @@ Rectangle {
         Text {
             id: currencyValueOfTotalCryptoLabelExpanded
 
-            text: "$100.00 USD"
+            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, "USD", function() {
+                if (isDark) {
+                    return getBalances(shortName, false, true) + " -- " + shortName
+                } else {
+                    return getBalances(shortName, true, true) + " " + shortName
+                }
+            }) + " " + "USD"
             font.pointSize: 12
             font.bold: true
 
@@ -59,8 +110,14 @@ Rectangle {
         Text {
             id: confirmedCrytoStatusExpanded
 
-            text: "(Confirmed)"
-            color: "#116F00"
+            text: getConfirmationText(shortName, "Both");
+            color: {
+                if (confirmedCrytoStatus.text === "(Confirmed)") {
+                    return "#116F00"
+                } else {
+                    return "red"
+                }
+            }
             x: totalCryptoTextExpanded.x
             y: currencyValueOfTotalCryptoLabelExpanded.y + currencyValueOfTotalCryptoLabelExpanded.height + 5
 
@@ -73,8 +130,29 @@ Rectangle {
             anchors.fill: parent
 
             onClicked: {
-                // go to wallet
-                console.log("Clicked dark compatible sub wallet")
+                if (isDark() === false) {
+                    ourStackView.push(expandedBrightWallet)
+                } else {
+                    ourStackView.push(expandedDarkWallet)
+                }
+            }
+        }
+
+        Component {
+            id: expandedBrightWallet
+
+            BrightWalletView {
+                walletShortName: shortName
+                walletIconPath: iconPath
+            }
+        }
+
+        Component {
+            id: expandedDarkWallet
+
+            DarkWalletView {
+                walletShortName: shortName
+                walletIconPath: iconPath
             }
         }
     }

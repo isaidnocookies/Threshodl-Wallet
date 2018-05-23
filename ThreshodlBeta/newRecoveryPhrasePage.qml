@@ -29,6 +29,9 @@ Item {
         height: 30
         width: 30
 
+        enabled: false
+        visible: false
+
         background: Rectangle {
             color: "white"
             width: parent.height

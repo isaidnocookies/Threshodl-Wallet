@@ -1,5 +1,3 @@
-import QtQuick 2.0
-
 import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
@@ -135,11 +133,27 @@ Item {
         width: parent.width
     }
 
-    BusyIndicator {
-        id: mBusyIndicator
-        running: false
-        anchors.centerIn: parent
+    Item {
+        id: mWaitingLayer
+
+        visible: false
+        anchors.fill: parent
+        z:100
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.centerIn: parent
+
+            color: Qt.rgba(0,0,0,0.5)
+        }
+
+        BusyIndicator {
+            z:101
+            running: mWaitingLayer.visible
+            anchors.centerIn: parent
+        }
     }
+
 
     Button {
         id: createNewWalletButton
@@ -147,6 +161,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width / 1.5
         height: 40
+        z: 50
 
         onClicked: {
             var lUsername = usernameField.text
@@ -156,9 +171,31 @@ Item {
             } else {
                 startBusyIndicatorAndDisable()
                 //check username
-                stopBusyIndicatorAndEnable()
+                console.log("Starting to create account");
 
-                ourStackView.push(Qt.resolvedUrl("newRecoveryPhrasePage.qml"))
+                userAccount.setWaiting(true)
+                userAccountSignalConnection.enabled = true
+                userAccount.createNewAccount(lUsername)
+            }
+        }
+
+        Connections {
+            id: userAccountSignalConnection
+            enabled: false
+            target: userAccount
+            onWaitingChanged: {
+                console.log("Waiting Changed : Message from createUsernamePage.qml")
+
+                if (userAccount.currentErrorString === "") {
+                    stopBusyIndicatorAndEnable()
+                    console.log("Create Account Successful");
+                    ourStackView.push(Qt.resolvedUrl("newRecoveryPhrasePage.qml"))
+                } else {
+                    stopBusyIndicatorAndEnable()
+                    warningLabel.text = userAccount.currentErrorString
+                    console.log("Create Account Failed");
+                    //display the currentErrorString...
+                }
             }
         }
 
@@ -192,17 +229,19 @@ Item {
         }
     }
 
+
+
     function startBusyIndicatorAndDisable() {
         backButton.enabled = false
         usernameField.enabled = false
         createNewWalletButton.enabled = false
-        mBusyIndicator.running = true
+        mWaitingLayer.visible = true
     }
 
     function stopBusyIndicatorAndEnable() {
         backButton.enabled = true
         usernameField.enabled = true
         createNewWalletButton.enabled = true
-        mBusyIndicator.running = false
+        mWaitingLayer.visible = false
     }
 }

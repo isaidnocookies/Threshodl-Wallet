@@ -6,6 +6,20 @@ import QtGraphicalEffects 1.0
 Item {
     id: dashboardPage
 
+    function getCurrencySymbol(iCurrency) {
+        if (iCurrency === "USD") {
+            return "$"
+        } else {
+            return ""
+        }
+    }
+
+    Component.onCompleted: {
+        while (ourStackView.depth > 1) {
+            ourStackView.pop(dashboardPage.ourStackView.index - 1);
+        }
+    }
+
     Rectangle {
         id: topBarSpacer
         color: "white"
@@ -26,7 +40,7 @@ Item {
 
     Text {
         id: usernameLabel
-        text: "Hello, Christopher"
+        text: "Hello, " + userAccount.username
         y: titleLabel.y + titleLabel.height + 5
         x: (parent.width / 2) - (width / 2)
         z:10
@@ -38,6 +52,9 @@ Item {
         height: 30
         width: 30
         z:10
+
+        visible: false
+        enabled: false
 
         background: Rectangle {
             color: "white"
@@ -55,7 +72,9 @@ Item {
             width: parent.width
         }
 
-        //onclick: do the mailbox thingy
+        onClicked: {
+            //onclick: do the mailbox thingy
+        }
     }
 
     Button {
@@ -87,14 +106,21 @@ Item {
         id: totalCurrencyLabel
         z:10
 
-        font.pointSize: 50
+        font.pointSize: 60
         wrapMode: Text.NoWrap
 
         font.weight: Font.ExtraLight
 
-        text: "$400.78"
+        text: getCurrencySymbol("USD") + userAccount.getTotalBalance("USD")
         y: usernameLabel.y + usernameLabel.height + 80
         anchors.horizontalCenter: parent.horizontalCenter
+
+        Connections {
+            target: userAccount
+            onCryptoConfirmedBalanceChanged: {
+                totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+            }
+        }
     }
 
     Text {

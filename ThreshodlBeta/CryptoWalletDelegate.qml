@@ -10,6 +10,38 @@ Component {
         width: parent.width
         height: 100
 
+        function getTotalConfirmedCryptoValue (iShortname) {
+            if (iShortname === "BTC") {
+                return userAccount.bitcoinConfirmedBalance
+            } else if (iShortname === "ETH") {
+                return userAccount.ethereumConfirmedBalance
+            } else if (iShortname === "LTC") {
+                return userAccount.litecoinConfirmedBalance
+            }
+        }
+
+        function getConfirmationText (iShortname, walletType) {
+            if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
+                return "(Confirmed)"
+            } else {
+                return "(" + (function() {
+                    if (iShortname === "BTC") {
+                        if (walletType === "Dark") {
+                            userAccount.getBitcoinBalance("Dark", false)
+                        } else if (walletType === "Bright") {
+                            return userAccount.getBitcoinBalance("Bright", false)
+                        } else {
+                            return userAccount.bitcoinUnconfirmedBalance
+                        }
+                    } else if (iShortname === "ETH") {
+                        return userAccount.ethereumUnconfirmedBalance
+                    } else if (iShortname === "LTC") {
+                        return userAccount.litecoinUnconfirmedBalance
+                    }
+                }) + " " + iShortname + ")"
+            }
+        }
+
         Image {
             id: iconImage
             source: Qt.resolvedUrl(imageName)
@@ -42,18 +74,25 @@ Component {
 
         Text {
             id: totalCryptoText
-            text: "0.134" + " " + shortName
+            text: getTotalConfirmedCryptoValue(shortName) + " " + shortName
             font.pointSize: 16
             font.weight: Font.Thin
 
-            y: longNameText.y - 10
+            y: longNameText.y - 8
             x: parent.width / 2 + parent.width * 0.1
+
+            Connections {
+                target: userAccount
+                onCryptoConfirmedBalanceChanged: {
+                    totalCryptoText.text = getTotalConfirmedCryptoValue(shortName) + " " + shortName
+                }
+            }
         }
 
         Text {
             id: currencyValueOfTotalCryptoLabel
 
-            text: "$100.00 USD"
+            text: "$0.00 USD"
             font.pointSize: 12
             font.bold: true
 
@@ -64,8 +103,14 @@ Component {
         Text {
             id: confirmedCrytoStatus
 
-            text: "(Confirmed)"
-            color: "#116F00"
+            text: getConfirmationText(shortName, "Both");
+            color: {
+                if (confirmedCrytoStatus.text === "(Confirmed)") {
+                    return "#116F00"
+                } else {
+                    return "red"
+                }
+            }
             x: totalCryptoText.x
             y: currencyValueOfTotalCryptoLabel.y + currencyValueOfTotalCryptoLabel.height + 5
 
@@ -145,13 +190,25 @@ Component {
                         parent.height = parent.height - 160
                         expandedWalletArea.visible = false
                         expandCellButtonImage.source = "images/assets/downNavArrowIcon.png"
+
                     }
                 } else {
                     //go to wallet
                     console.log("Clicked non-dark wallet")
+                    ourStackView.push(brightWallet)
+//                    ourStackView.push(BrightWalletView{walletShortName: shortName})
                 }
-
             }
         }
+
+        Component {
+            id: brightWallet
+
+            BrightWalletView {
+                walletShortName: shortName
+                walletIconPath: imageName
+            }
+        }
+
     }
 }

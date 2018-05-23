@@ -1,5 +1,5 @@
 QT += quick core network sql
-CONFIG += c++11
+CONFIG += c++11 qzxing_qml qzxing_multimedia
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -12,13 +12,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+ios {
+    QMAKE_INFO_PLIST = ios/Info.plist
+}
+
 include (../Core2/Core.pri)
+include (QzXing/QZXing.pri)
 
 SOURCES += \
         main.cpp \
     useraccount.cpp \
     platforminformation.cpp \
-    marketvalueupdater.cpp
+    marketvalueupdater.cpp \
+    qsettingsmanager.cpp \
+    createusername.cpp
 
 RESOURCES += qml.qrc
 
@@ -37,5 +44,6 @@ HEADERS += \
     useraccount.h \
     platforminformation.h \
     marketvalueupdater.h \
-    blockchaintool.h \
-    globalsandconstants.h
+    globalsandconstants.h \
+    qsettingsmanager.h \
+    createusername.h
