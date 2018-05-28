@@ -11,12 +11,12 @@ Component {
         height: 100
 
         function getTotalConfirmedCryptoValue (iShortname) {
-            if (iShortname === "BTC") {
-                return userAccount.bitcoinConfirmedBalance
-            } else if (iShortname === "ETH") {
-                return userAccount.ethereumConfirmedBalance
-            } else if (iShortname === "LTC") {
-                return userAccount.litecoinConfirmedBalance
+            if (hasDarkWallet === true) {
+                var lBrightBalance = userAccount.getBalance(iShortname, false, true)
+                var lDarkBalance = userAccount.getBalance(iShortname, true, true)
+                return threshodlTools.stringAdd(lBrightBalance, lDarkBalance)
+            } else {
+                return userAccount.getBalance(iShortname, true, true)
             }
         }
 
@@ -24,22 +24,23 @@ Component {
             if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
                 return "(Confirmed)"
             } else {
-                return "(" + (function() {
-                    if (iShortname === "BTC") {
-                        if (walletType === "Dark") {
-                            userAccount.getBitcoinBalance("Dark", false)
-                        } else if (walletType === "Bright") {
-                            return userAccount.getBitcoinBalance("Bright", false)
-                        } else {
-                            return userAccount.bitcoinUnconfirmedBalance
-                        }
-                    } else if (iShortname === "ETH") {
-                        return userAccount.ethereumUnconfirmedBalance
-                    } else if (iShortname === "LTC") {
-                        return userAccount.litecoinUnconfirmedBalance
-                    }
-                }) + " " + iShortname + ")"
+                var lValue
+                if (walletType === "Dark") {
+                    lValue = userAccount.getBalance(iShortname, true, false)
+                } else {
+                    lValue = userAccount.getBalance(iShortname, false, false)
+                }
+                return "(" + lValue + " " + iShortname + ")"
             }
+        }
+
+        Rectangle {
+            y: 0
+            x: parent.width*0.05
+            height: 0.5
+            color: "lightgray"
+            width: parent.width * 0.9
+            anchors.horizontalCenter: parent.horizontalCenter
         }
 
         Image {
@@ -49,7 +50,7 @@ Component {
             width: 50
 
             x: 20
-            y: 10
+            y: 25
         }
 
         Text {
@@ -150,7 +151,7 @@ Component {
             x: 0
 
             width: parent.width
-            height: 150
+            height: 200
 
             ExpandedCellComponent
             {
@@ -169,7 +170,6 @@ Component {
                 iconPath: darkIconName
                 name: "Dark " + shortName
             }
-
         }
 
         MouseArea {
@@ -182,15 +182,14 @@ Component {
                 if (hasDarkWallet) {
                     if (!cellExpanded) {
                         cellExpanded = !cellExpanded
-                        parent.height = parent.height + 160
+                        parent.height = parent.height + 190
                         expandCellButtonImage.source = "images/assets/upNavArrowIcon.png"
                         expandedWalletArea.visible = true
                     } else {
                         cellExpanded = !cellExpanded
-                        parent.height = parent.height - 160
+                        parent.height = parent.height - 190
                         expandedWalletArea.visible = false
                         expandCellButtonImage.source = "images/assets/downNavArrowIcon.png"
-
                     }
                 } else {
                     //go to wallet

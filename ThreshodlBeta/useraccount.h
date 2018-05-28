@@ -2,10 +2,14 @@
 #define USERACCOUNT_H
 
 #include <QObject>
+#include <QMap>
+#include <QThread>
 
-#include "qsettingsmanager.h"
+#include "myqsettingsmanager.h"
 #include "createusername.h"
 #include "globalsandconstants.h"
+#include "walletaccount.h"
+#include "downloadworker.h"
 
 class UserAccount : public QObject
 {
@@ -15,31 +19,20 @@ class UserAccount : public QObject
     Q_PROPERTY(bool waiting READ waiting WRITE setWaiting NOTIFY waitingChanged)
     Q_PROPERTY(QString currentErrorString READ currentErrorString WRITE setCurrentErrorString NOTIFY currentErrorStringChanged)
 
-    // Bitcoin
-    Q_PROPERTY(QString bitcoinConfirmedBalance READ bitcoinConfirmedBalance WRITE setBitcoinConfirmedBalance NOTIFY bitcoinConfirmedBalanceChanged)
-    Q_PROPERTY(QString bitcoinUnconfirmedBalance READ bitcoinUnconfirmedBalance WRITE setBitcoinUnconfirmedBalance NOTIFY bitcoinUnconfirmedBalanceChanged)
-
-    // Ethereum
-    Q_PROPERTY(QString ethereumConfirmedBalance READ ethereumConfirmedBalance WRITE setEthereumConfirmedBalance NOTIFY ethereumConfirmedBalanceChanged)
-    Q_PROPERTY(QString ethereumUnconfirmedBalance READ ethereumUnconfirmedBalance WRITE setEthereumUnconfirmedBalance NOTIFY ethereumUnconfirmedBalanceChanged)
-
-    // Litecoin
-    Q_PROPERTY(QString litecoinConfirmedBalance READ litecoinConfirmedBalance WRITE setLitecoinConfirmedBalance NOTIFY litecoinConfirmedBalanceChanged)
-    Q_PROPERTY(QString litecoinUnconfirmedBalance READ litecoinUnconfirmedBalance WRITE setLitecoinUnconfirmedBalance NOTIFY litecoinUnconfirmedBalanceChanged)
-
 public:
-    explicit UserAccount(QObject *parent = nullptr);
-    Q_INVOKABLE bool exists();
-    Q_INVOKABLE void createNewAccount(QString iUsername);
+    explicit            UserAccount(QObject *parent = nullptr);
+    Q_INVOKABLE bool    exists();
+    Q_INVOKABLE void    createNewAccount(QString iUsername);
     Q_INVOKABLE QString getTotalBalance(QString iCurrency = "USD");
-    Q_INVOKABLE QString getBitcoinBalance(QString iType = "Bright", bool iConfirmed = true);
-    Q_INVOKABLE bool isWalletConfirmed(QString iCurrency = "BTC", QString iWalletType = "Both");
+    Q_INVOKABLE QString getBalance(QString iShortName, bool iIsDark = false, bool iConfirmed = true);
+    Q_INVOKABLE QString getBalanceValue(QString iShortName, bool iIsDark = false, bool iConfirmed = true, QString iCurrency = "USD");
+    Q_INVOKABLE bool    isWalletConfirmed(QString iCurrency = "BTC", QString iWalletType = "Both");
+    Q_INVOKABLE void    setWaiting(bool iWaiting);
+    Q_INVOKABLE bool    waiting();
+    Q_INVOKABLE QString getBrightAddress(QString iShortname);
 
     QString username()                      { return mUsername; }
     void setUsername                        (QString iUsername);
-
-    bool waiting()                          { return mWaiting; }
-    Q_INVOKABLE void setWaiting             (bool iWaiting);
 
     QString currentErrorString()            { return mCurrentErrorString; }
     void setCurrentErrorString              (QString iCurrentErrorString);
@@ -47,35 +40,10 @@ public:
     void publicAndPrivateKeys               (QByteArray &oPublicKey, QByteArray &oPrivateKey);
     void setPublicAndPrivateKeys            (QByteArray iPublicKey, QByteArray iPrivateKey);
 
-    QString bitcoinConfirmedBalance()       { return mBtcConfirmedBalance; }
-    QString bitcoinUnconfirmedBalance()     { return mBtcUnconfirmedBalance; }
-
-    QString ethereumConfirmedBalance()      { return mEthConfirmedBalance; }
-    QString ethereumUnconfirmedBalance()    { return mEthUnconfirmedBalance; }
-
-    QString litecoinConfirmedBalance()      { return mLtcConfirmedBalance; }
-    QString litecoinUnconfirmedBalance()    { return mLtcUnconfirmedBalance; }
-
-    Q_INVOKABLE void setBitcoinConfirmedBalance         (QString iBtcConfirmed);
-    void setBitcoinUnconfirmedBalance       (QString iBtcUnconfirmed);
-
-    void setEthereumConfirmedBalance        (QString iEthConfirmed);
-    void setEthereumUnconfirmedBalance      (QString iEthUnconfirmed);
-
-    void setLitecoinConfirmedBalance        (QString iLtcConfirmed);
-    void setLitecoinUnconfirmedBalance      (QString iLtcUnconfirmed);
-
 signals:
     void usernameChanged();
     void waitingChanged();
     void currentErrorStringChanged();
-
-    void bitcoinConfirmedBalanceChanged();
-    void bitcoinUnconfirmedBalanceChanged();
-    void ethereumConfirmedBalanceChanged();
-    void ethereumUnconfirmedBalanceChanged();
-    void litecoinConfirmedBalanceChanged();
-    void litecoinUnconfirmedBalanceChanged();
 
     void cryptoConfirmedBalanceChanged();
     void darkCryptoConfirmedBalanceChanged();
@@ -86,29 +54,22 @@ public slots:
 
 private:
     void loadAccountFromSettings();
+    void createCryptoWallets();
 
-    QSettingsManager    *mDataManager;
-    CreateUsername      *mCreateUsername;
+    MyQSettingsManager                *mDataManager;
+    CreateUsername                  *mCreateUsername;
 
-    bool                mWaiting;
-    QString             mCurrentErrorString;
-    QString             mUsername;
-    QByteArray          mPrivateKey;
-    QByteArray          mPublicKey;
+    bool                            mWaiting;
+    QString                         mCurrentErrorString;
+    QString                         mUsername;
+    QByteArray                      mPrivateKey;
+    QByteArray                      mPublicKey;
 
-    QString             mBtcConfirmedBalance;
-    QString             mBtcUnconfirmedBalance;
+    QMap<QString, WalletAccount>    mWallets;
 
-    QString             mBrightBitcoinConfirmedBalance;
-    QString             mBrightBitcoinUnconfirmedBalance;
-    QString             mDarkBitcoinConfirmedBalance;
-    QString             mDarkBitcoinUnconfirmedBalance;
 
-    QString             mEthConfirmedBalance;
-    QString             mEthUnconfirmedBalance;
-
-    QString             mLtcConfirmedBalance;
-    QString             mLtcUnconfirmedBalance;
+    QThread                         *mMyDownloaderThread;
+    DownloadWorker                  *mMyDownloaderWorker;
 };
 
 #endif // USERACCOUNT_H

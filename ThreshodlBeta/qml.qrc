@@ -11,6 +11,7 @@
         <file alias="ca.pem">../Certificates/ca.pem</file>
         <file>BrightWalletView.qml</file>
         <file>DarkWalletView.qml</file>
+        <file>QrScannerView.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>assets/threshodlLogo_landing.png</file>
@@ -26,5 +27,10 @@
         <file>assets/refreshButtonIcon.png</file>
         <file>assets/settingsButtonIcon.png</file>
         <file>assets/upNavArrowIcon.png</file>
+        <file>assets/zcashIcon.png</file>
+        <file>assets/scanQrButtonIcon.png</file>
+        <file>assets/whiteBackButtonIcon.png</file>
+        <file>assets/qrScannerGuides.png</file>
+        <file>assets/clipboardPasteIcon.png</file>
     </qresource>
 </RCC>
