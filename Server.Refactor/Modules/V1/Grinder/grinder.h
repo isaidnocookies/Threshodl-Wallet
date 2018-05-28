@@ -10,8 +10,17 @@
 #include <QMap>
 #include <QSharedPointer>
 
+class GrinderML
+{
+public:
+    GrinderML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class GrinderML;
 class Grinder : public GrinderInterface
 {
     friend class GrinderML;
@@ -47,16 +56,6 @@ protected:
     QStringList _sortNumberedQStringList(const QStringList iList, bool iHighestFirst = true);
     QStringList _grindValueOnePass(const QString iValue, GrindingConstraintsRef iConstraints);
 
-};
-
-class GrinderML
-{
-public:
-    GrinderML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // GRINDER_H

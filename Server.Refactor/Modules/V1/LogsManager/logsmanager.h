@@ -10,8 +10,17 @@
 #define kMaxLogFileSizeInBytes      (1024 * 1024 * 1024) /* 1MB */
 #define kMaxLogFileCount            1024
 
+class LogsManagerML
+{
+public:
+    LogsManagerML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class LogsManagerML;
 class LogsManager : public LogsManagerInterface
 {
     Q_OBJECT
@@ -50,16 +59,6 @@ protected:
     QMutex      mWriteLock;
     bool        mBuffered       = false;
     FILE *      mLoggerHandle;
-};
-
-class LogsManagerML
-{
-public:
-    LogsManagerML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // LOGSMANAGERV1_H

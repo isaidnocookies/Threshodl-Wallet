@@ -5,6 +5,45 @@
 
 static DownloaderML _gRegisterModuleLinker;
 
+DownloaderML::DownloaderML()
+{
+    ModuleLinker::registerModule(QStringLiteral("Downloader-1"),DownloaderML::creator,DownloaderML::doInit,DownloaderML::start,DownloaderML::startInOwnThread);
+}
+
+void *DownloaderML::creator(void *pointerToAppObject)
+{
+    Downloader * lDM = new Downloader;
+    lDM->mApp = reinterpret_cast<App *>(pointerToAppObject);
+    return lDM;
+}
+
+bool DownloaderML::doInit(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToThis) Q_UNUSED(pointerToAppObject)
+    return true;
+}
+
+bool DownloaderML::startInOwnThread()
+{ return true; }
+
+bool DownloaderML::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+
+    Downloader * lDM = reinterpret_cast<Downloader *>(pointerToThis);
+
+    lDM->mTimer = new QTimer{lDM};
+    lDM->mTimer->setInterval(lDM->mTimerIntervalInMS);
+    lDM->mTimer->setSingleShot(false);
+
+    lDM->mNAM   = new QNetworkAccessManager{lDM};
+
+    if( ! lDM->loadConfiguration() ) return false;
+    lDM->connectInternalSignalsAndSlots();
+    lDM->_restartTimer();
+    return true;
+}
+
 Downloader::Downloader(QObject *iParent)
     : DownloaderInterface(iParent)
 { }
@@ -129,15 +168,6 @@ void Downloader::_timerFired()
                 lDE->Reply = nullptr;
             }
 
-//            QNetworkRequest lRequest = QNetworkRequest(lDE->Url);
-//            QString         lDigest = QStringLiteral("%1.%2").arg(QDateTime::currentSecsSinceEpoch()).arg(QStringLiteral("YTE2NzlkODZiZjhkNDMyY2FjNzRlYTMwNGUxZWFhMDU"));
-//            QByteArray      lKey = "M2VjN2JmZDBiYTU1NDUwNzk4MzZiNWU2Y2NmYzNkNjRhMjAzMWM1NmNkODU0MTc0YWI5MGQ5OWUwNTY5NDg5MQ";
-//            QByteArray      lDigestHMAC = QMessageAuthenticationCode::hash(lDigest.toUtf8(), lKey, QCryptographicHash::Sha256).toHex();
-//            QByteArray      lHeaderValue = (QStringLiteral("%1.%2").arg(lDigest).arg(lDigestHMAC.constData())).toUtf8();
-//            lRequest.setRawHeader("X-signature", lHeaderValue);
-
-//            lDE->Reply = mNAM->get(QNetworkRequest(lRequest));
-
             lDE->Reply = mNAM->get(QNetworkRequest{lDE->Url});
 
             lDE->Timer.restart();
@@ -188,7 +218,6 @@ void Downloader::_networkReplyFinished(const QUrl iUrl, QNetworkReply *iSource)
     mDownloadEventsLock.unlock();
 
     if( ! lData.isEmpty() ) {
-//        qDebug() << "Downloaded" << lData.size() << "bytes from" << iUrl.toString();
         emit downloaded(iUrl, lData);
     }else{
         qDebug() << "Failed to download from" << iUrl.toString();
@@ -247,43 +276,4 @@ void Downloader::connectInternalSignalsAndSlots()
 {
     connect( mTimer, &QTimer::timeout, this, &Downloader::_timerFired );
     connect( this, &Downloader::urlsChanged, this, &Downloader::_urlsChanged );
-}
-
-DownloaderML::DownloaderML()
-{
-    ModuleLinker::registerModule(QStringLiteral("Downloader-1"),DownloaderML::creator,DownloaderML::doInit,DownloaderML::start,DownloaderML::startInOwnThread);
-}
-
-void *DownloaderML::creator(void *pointerToAppObject)
-{
-    Downloader * lDM = new Downloader;
-    lDM->mApp = reinterpret_cast<App *>(pointerToAppObject);
-    return lDM;
-}
-
-bool DownloaderML::doInit(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToThis) Q_UNUSED(pointerToAppObject)
-    return true;
-}
-
-bool DownloaderML::startInOwnThread()
-{ return true; }
-
-bool DownloaderML::start(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToAppObject)
-
-    Downloader * lDM = reinterpret_cast<Downloader *>(pointerToThis);
-
-    lDM->mTimer = new QTimer{lDM};
-    lDM->mTimer->setInterval(lDM->mTimerIntervalInMS);
-    lDM->mTimer->setSingleShot(false);
-
-    lDM->mNAM   = new QNetworkAccessManager{lDM};
-
-    if( ! lDM->loadConfiguration() ) return false;
-    lDM->connectInternalSignalsAndSlots();
-    lDM->_restartTimer();
-    return true;
 }

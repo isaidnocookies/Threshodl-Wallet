@@ -210,15 +210,11 @@ void FeeEstimator::downloaded(const QUrl iUrl, const QByteArray iData)
                     lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] = QStringMath(lValue).multiply(180).toString();
                     lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)] = QStringMath(lValue).multiply(34).toString();
 
-                    qDebug() << "TestNet fees:" << lFees[commonTypeToString(CommonFeeType::TestNetBaseFee)] << lFees[commonTypeToString(CommonFeeType::TestNetInputFee)] << lFees[commonTypeToString(CommonFeeType::TestNetOutputFee)];
-
                     setFees(lCrypto,lFees);
                 }else if( lChain == QStringLiteral("MainNet") ) {
                     lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] = QStringMath(lValue).multiply(10).toString();
                     lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] = QStringMath(lValue).multiply(180).toString();
                     lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)] = QStringMath(lValue).multiply(34).toString();
-
-                    qDebug() << "MainNet fees:" << lFees[commonTypeToString(CommonFeeType::MainNetBaseFee)] << lFees[commonTypeToString(CommonFeeType::MainNetInputFee)] << lFees[commonTypeToString(CommonFeeType::MainNetOutputFee)];
 
                     setFees(lCrypto,lFees);
                 }else{

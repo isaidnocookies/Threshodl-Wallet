@@ -7,8 +7,17 @@
 #include <QPair>
 #include <QMap>
 
+class FeeEstimatorML
+{
+public:
+    FeeEstimatorML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class FeeEstimatorML;
 class FeeEstimator : public FeeEstimatorInterface
 {
     Q_OBJECT
@@ -29,16 +38,6 @@ public:
 
 public slots:
     void downloaded( const QUrl iUrl, const QByteArray iData );
-};
-
-class FeeEstimatorML
-{
-public:
-    FeeEstimatorML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // FEEESTIMATOR_H

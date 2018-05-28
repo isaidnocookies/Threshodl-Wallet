@@ -11,9 +11,18 @@
 #include <QList>
 #include <QObject>
 
+class WCPServerHandlerML
+{
+public:
+    WCPServerHandlerML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
 class WCPClientInterface;
-class WCPServerHandlerML;
 class WCPServerHandler : public WCPServerHandlerInterface
 {
     Q_OBJECT
@@ -46,16 +55,6 @@ public slots:
     virtual void serverFailedToStart();
     virtual void serverFailedToStop();
     virtual void newConnectionArrived();
-};
-
-class WCPServerHandlerML
-{
-public:
-    WCPServerHandlerML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // WCPSERVERHANDLER_H

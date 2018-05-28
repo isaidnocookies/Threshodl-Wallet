@@ -515,47 +515,6 @@ bool DatabasePrivPSQL::microWalletMoveFromScratch(const QStringList iMicroWallet
     }
 
     return false;
-
-    // OLD WORKING:
-
-//    QSqlDatabase    lDB;
-//    QString         lTable          = _storageTableNameForAccount(iAddress);
-//    QStringList     lWalletIds      = iMicroWalletIdsAndPayloads.keys();
-//    int             lWalletIdsCount = lWalletIds.size();
-
-//    if( iMicroWalletIdsAndPayloads.isEmpty() || iAddress.isEmpty() ) return false;
-
-//    QString     lInUseQueryString   = QStringLiteral("INSERT INTO in_use_walletids (walletid) VALUES ");
-//    QString     lStorageQueryString = QStringLiteral("INSERT INTO %1 (walletid,state,payload) VALUES ").arg(lTable);
-
-//    for( int lIndex = 0; lIndex < lWalletIdsCount; lIndex++ ) {
-//        if( lIndex != 0 ) {
-//            lStorageQueryString = lStorageQueryString.append(QStringLiteral(", "));
-//            lInUseQueryString   = lInUseQueryString.append(QStringLiteral(", "));
-//        }
-
-//        lInUseQueryString = lInUseQueryString.append(QStringLiteral("('%1')").arg(lWalletIds.at(lIndex)));
-//        lStorageQueryString = lStorageQueryString.append(
-//                    QStringLiteral("('%1',%2,'%3')")
-//                    .arg(lWalletIds.at(lIndex))
-//                    .arg(static_cast<int>(StorageRecordState::Unlocked),10)
-//                    .arg(QString::fromUtf8(iMicroWalletIdsAndPayloads[lWalletIds.at(lIndex)].toBase64()))
-//                    );
-//    }
-
-//    if( _startTransactionAndOpenAndLockTables(lDB, QStringList(), QStringList() << lTable << QStringLiteral("in_use_walletids")) ) {
-
-//        QSqlQuery   lInUseQuery{lDB};
-//        QSqlQuery   lStorageQuery{lDB};
-
-//        if( lInUseQuery.exec(lInUseQueryString) && lInUseQuery.numRowsAffected() == lWalletIdsCount && lStorageQuery.exec(lStorageQueryString) && lStorageQuery.numRowsAffected() == lWalletIdsCount ) {
-//            return _commitTransaction(lDB);
-//        }
-
-//        _rollbackTransaction(lDB);
-//    }
-
-//    return false;
 }
 
 QMap<QString, QByteArray> DatabasePrivPSQL::microWalletsCopyPayload(const QStringList iMicroWalletIds, const QString iAddress)

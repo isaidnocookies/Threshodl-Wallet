@@ -28,6 +28,56 @@ static QReadWriteLock           _gGlobalInstanceConstructionDestructionLock;
 static OutputFormat             _gOutputFormat                                  = OutputFormat::Human;
 static LogsManager *            _gGlobalInstance                                = nullptr;
 
+LogsManagerML::LogsManagerML()
+{
+    ModuleLinker::registerModule(QStringLiteral("LogsManager-1"),LogsManagerML::creator,LogsManagerML::doInit,LogsManagerML::start,LogsManagerML::startInOwnThread);
+}
+
+void *LogsManagerML::creator(void *pointerToAppObject)
+{
+    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
+    auto                lConfig         = lApp->configuration();
+
+    if( lConfig->contains(QStringLiteral("LogOutputFormat")) ) {
+        QString     lOutputFormat = lConfig->toString(QStringLiteral("LogOutputFormat")).toLower();
+
+        if( lOutputFormat == QStringLiteral("json") ) {
+            _gOutputFormat = OutputFormat::Json;
+        }
+    }
+
+    qInstallMessageHandler(LogsManager::messageHandler);
+
+    QString             lLogsPath       = lConfig->toString(QStringLiteral("LogsPath"));
+    LogsManager *       lLM             = new LogsManager{lLogsPath};
+    lLM->mApp                           = lApp;
+    return lLM;
+}
+
+bool LogsManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    LogsManager *   lLM = reinterpret_cast<LogsManager *>(pointerToThis);
+    if( lLM ) {
+        return lLM->doInit();
+    }
+    return false;
+}
+
+bool LogsManagerML::startInOwnThread()
+{ return true; }
+
+bool LogsManagerML::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+    LogsManager *    lLM = reinterpret_cast<LogsManager *>(pointerToThis);
+    if( lLM ) {
+        QMetaObject::invokeMethod(lLM,"threadStarted",Qt::QueuedConnection);
+        return true;
+    }
+    return false;
+}
+
 static QByteArray _createJsonOutput(QtMsgType iType, const QMessageLogContext &iContext, const QString &iMessage)
 {
     QByteArray          lResult;
@@ -339,54 +389,4 @@ void LogsManager::_messageHandler(QtMsgType iType, const QMessageLogContext &iCo
         mBuffered = false;
         abort();
     }
-}
-
-LogsManagerML::LogsManagerML()
-{
-    ModuleLinker::registerModule(QStringLiteral("LogsManager-1"),LogsManagerML::creator,LogsManagerML::doInit,LogsManagerML::start,LogsManagerML::startInOwnThread);
-}
-
-void *LogsManagerML::creator(void *pointerToAppObject)
-{
-    App *               lApp            = reinterpret_cast<App *>(pointerToAppObject);
-    auto                lConfig         = lApp->configuration();
-
-    if( lConfig->contains(QStringLiteral("LogOutputFormat")) ) {
-        QString     lOutputFormat = lConfig->toString(QStringLiteral("LogOutputFormat")).toLower();
-
-        if( lOutputFormat == QStringLiteral("json") ) {
-            _gOutputFormat = OutputFormat::Json;
-        }
-    }
-
-    qInstallMessageHandler(LogsManager::messageHandler);
-
-    QString             lLogsPath       = lConfig->toString(QStringLiteral("LogsPath"));
-    LogsManager *       lLM             = new LogsManager{lLogsPath};
-    lLM->mApp                           = lApp;
-    return lLM;
-}
-
-bool LogsManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToAppObject)
-    LogsManager *   lLM = reinterpret_cast<LogsManager *>(pointerToThis);
-    if( lLM ) {
-        return lLM->doInit();
-    }
-    return false;
-}
-
-bool LogsManagerML::startInOwnThread()
-{ return true; }
-
-bool LogsManagerML::start(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToAppObject)
-    LogsManager *    lLM = reinterpret_cast<LogsManager *>(pointerToThis);
-    if( lLM ) {
-        QMetaObject::invokeMethod(lLM,"threadStarted",Qt::QueuedConnection);
-        return true;
-    }
-    return false;
 }

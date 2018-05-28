@@ -10,8 +10,17 @@
 #include <QTimer>
 #include <QNetworkReply>
 
+class DownloaderML
+{
+public:
+    DownloaderML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class DownloaderML;
 class Downloader : public DownloaderInterface
 {
     Q_OBJECT
@@ -60,16 +69,6 @@ protected:
     mutable QMutex                                  mDownloadEventsLock;
     QMap< QUrl, QSharedPointer<DownloadEvent> >     mDownloadEvents;
     QMap< QUrl, PendingUrlCallback >                mNewUrlCallbacks;       // These are new Urls waiting for callbacks to be attached
-};
-
-class DownloaderML
-{
-public:
-    DownloaderML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // DOWNLOADER_H

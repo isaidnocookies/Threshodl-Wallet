@@ -6,8 +6,17 @@
 #include <QByteArray>
 #include <QString>
 
+class CertificateManagerML
+{
+public:
+    CertificateManagerML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class CertificateManagerML;
 class CertificateManager : public CertificateManagerInterface
 {
     friend class CertificateManagerML;
@@ -59,16 +68,6 @@ public:
     Certificate *   serverCertificate() const override      { return ServerCertificate; }
     EncryptionKey * caPrivateKey() const override           { return CAPrivateKey; }
     EncryptionKey * serverPrivateKey() const override       { return ServerPrivateKey; }
-};
-
-class CertificateManagerML
-{
-public:
-    CertificateManagerML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // CERTIFICATEMANAGERV1_H

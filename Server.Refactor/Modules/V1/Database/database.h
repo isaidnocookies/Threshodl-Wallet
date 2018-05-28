@@ -3,8 +3,17 @@
 
 #include "../../Interface/DatabaseInterface/databaseinterface.h"
 
+class DatabaseML
+{
+public:
+    DatabaseML();
+    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
+    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
+    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
+    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
+};
+
 class App;
-class DatabaseML;
 class DatabasePriv;
 class Database : public DatabaseInterface
 {
@@ -51,16 +60,6 @@ public:
     bool                        microWalletDelete( const QString iMicroWalletId, const QString iAddress ) override;
     bool                        microWalletsDelete( const QString iAddress, const QStringList iMicroWalletIds ) override;
     bool                        microWalletsDelete( const QStringList iMicroWalletIds, const QString iAddress ) override;
-};
-
-class DatabaseML
-{
-public:
-    DatabaseML();
-    static void * creator(void * pointerToAppObject);                                      // Returns a pointer to a new object
-    static bool doInit(void * pointerToThis, void * pointerToAppObject);                   // Returns true on DoInit success
-    static bool startInOwnThread();                                                        // Returns true if should be created and started in own thread
-    static bool start(void * pointerToThis, void * pointerToAppObject);                    // Returns true on Start success
 };
 
 #endif // DATABASE_H

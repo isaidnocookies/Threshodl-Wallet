@@ -7,6 +7,52 @@
 
 static CertificateManagerML _gRegisterModuleLinker;
 
+CertificateManagerML::CertificateManagerML()
+{
+    ModuleLinker::registerModule(QStringLiteral("CertificateManager-1"),CertificateManagerML::creator,CertificateManagerML::doInit,CertificateManagerML::start,CertificateManagerML::startInOwnThread);
+}
+
+void *CertificateManagerML::creator(void *pointerToAppObject)
+{
+    CertificateManager * lCM =  new CertificateManager;
+    lCM->mApp = reinterpret_cast<App *>(pointerToAppObject);
+    return lCM;
+}
+
+bool CertificateManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+
+    CertificateManager *    lCM                 = reinterpret_cast<CertificateManager *>(pointerToThis);
+
+    if( lCM ) {
+        lCM->loadConfigurationValues();
+        return lCM->generateCertificates();
+    }
+
+    return false;
+}
+
+bool CertificateManagerML::startInOwnThread()
+{ return false; }
+
+bool CertificateManagerML::start(void *pointerToThis, void *pointerToAppObject)
+{
+    Q_UNUSED(pointerToAppObject)
+
+    CertificateManager *    lCM     = reinterpret_cast<CertificateManager *>(pointerToThis);
+
+    if( lCM ) {
+        lCM->loadConfigurationValues();
+        if( lCM->loadCertificates() ) {
+            lCM->mApp->setCertificates(lCM);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool CertificateManager::_saveFile(const QByteArray &iData, const QString &iFilename)
 {
     QFile lFile{iFilename};
@@ -206,50 +252,4 @@ bool CertificateManager::generateCertificates()
     }
 
     return (lServerFilesSaved && lCAFilesSaved && ! CACertificatePEM.isEmpty() && ! ServerCertificatePEM.isEmpty() && ! ServerPrivateKeyPEM.isEmpty() );
-}
-
-CertificateManagerML::CertificateManagerML()
-{
-    ModuleLinker::registerModule(QStringLiteral("CertificateManager-1"),CertificateManagerML::creator,CertificateManagerML::doInit,CertificateManagerML::start,CertificateManagerML::startInOwnThread);
-}
-
-void *CertificateManagerML::creator(void *pointerToAppObject)
-{
-    CertificateManager * lCM =  new CertificateManager;
-    lCM->mApp = reinterpret_cast<App *>(pointerToAppObject);
-    return lCM;
-}
-
-bool CertificateManagerML::doInit(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToAppObject)
-
-    CertificateManager *    lCM                 = reinterpret_cast<CertificateManager *>(pointerToThis);
-
-    if( lCM ) {
-        lCM->loadConfigurationValues();
-        return lCM->generateCertificates();
-    }
-
-    return false;
-}
-
-bool CertificateManagerML::startInOwnThread()
-{ return false; }
-
-bool CertificateManagerML::start(void *pointerToThis, void *pointerToAppObject)
-{
-    Q_UNUSED(pointerToAppObject)
-
-    CertificateManager *    lCM     = reinterpret_cast<CertificateManager *>(pointerToThis);
-
-    if( lCM ) {
-        lCM->loadConfigurationValues();
-        if( lCM->loadCertificates() ) {
-            lCM->mApp->setCertificates(lCM);
-            return true;
-        }
-    }
-
-    return false;
 }
