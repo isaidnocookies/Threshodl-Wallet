@@ -38,5 +38,9 @@
         <array>
                 <string>1</string>
         </array>
+        <key>NSCameraUsageDescription</key>
+        <string>QR Scanner needs camera access</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>QR Scanner needs camera access</string>
 </dict>
 </plist>

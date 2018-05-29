@@ -6,23 +6,24 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
     qDebug() << "UserAccount created";
 
-    mDataManager = new QSettingsManager;
-
-    mBtcConfirmedBalance = "0.0";
-    mBtcUnconfirmedBalance = "0.0";
-
-    mBrightBitcoinConfirmedBalance = "0.0";
-    mBrightBitcoinUnconfirmedBalance = "0.0";
-    mDarkBitcoinConfirmedBalance = "0.0";
-    mDarkBitcoinUnconfirmedBalance = "0.0";
-
-    mEthConfirmedBalance = "0.0";
-    mEthUnconfirmedBalance = "0.0";
-
-    mLtcConfirmedBalance = "0.0";
-    mLtcUnconfirmedBalance = "0.0";
-
+    mDataManager = new MyQSettingsManager;
     loadAccountFromSettings();
+
+    mWaiting = false;
+    setCurrentErrorString("");
+
+    mMyDownloaderThread = new QThread;
+    mMyDownloaderWorker = new DownloadWorker();
+
+    mMyDownloaderWorker->moveToThread(mMyDownloaderThread);
+
+    connect(mMyDownloaderWorker, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
+    connect(mMyDownloaderThread, SIGNAL (started()), mMyDownloaderWorker, SLOT (startDownloading()));
+    connect(mMyDownloaderWorker, SIGNAL (finished()), mMyDownloaderThread, SLOT (quit()));
+    connect(mMyDownloaderWorker, SIGNAL (finished()), mMyDownloaderWorker, SLOT (deleteLater()));
+    connect(mMyDownloaderThread, SIGNAL (finished()), mMyDownloaderThread, SLOT (deleteLater()));
+
+    mMyDownloaderThread->start();
 }
 
 bool UserAccount::exists()
@@ -32,6 +33,9 @@ bool UserAccount::exists()
 
 void UserAccount::createNewAccount(QString iUsername)
 {
+    emit usernameCreated(true, iUsername, QByteArray("TEst"), QByteArray("test"));
+    return;
+
     mCreateUsername = new CreateUsername;
     connect (mCreateUsername, &CreateUsername::usernameCreated, this, &UserAccount::usernameCreated);
     setWaiting(true);
@@ -49,49 +53,36 @@ QString UserAccount::getTotalBalance(QString iCurrency)
     }
 }
 
-QString UserAccount::getBitcoinBalance(QString iType, bool iConfirmed)
+QString UserAccount::getBalance(QString iShortName, bool iIsDark, bool iConfirmed)
 {
-    if (iType == "Dark") {
-        if (iConfirmed) {
-            return mDarkBitcoinConfirmedBalance;
-        } else {
-            return mDarkBitcoinUnconfirmedBalance;
-        }
-    } else {
-        if (iConfirmed) {
-            return mBrightBitcoinConfirmedBalance;
-        } else {
-            return mBrightBitcoinUnconfirmedBalance;
-        }
-    }
+    Q_UNUSED (iIsDark)
+
+    return mWallets[iShortName].getBalance(iConfirmed);
+}
+
+QString UserAccount::getBalanceValue(QString iShortName, bool iIsDark, bool iConfirmed, QString iCurrency)
+{
+    Q_UNUSED (iIsDark) Q_UNUSED(iCurrency) Q_UNUSED(iConfirmed)
+
+    return mWallets[iShortName].marketValue();
 }
 
 bool UserAccount::isWalletConfirmed(QString iCurrency, QString iWalletType)
 {
-    if (iCurrency == "BTC") {
-        if (iWalletType == "Dark") {
-            if (QStringMath(mDarkBitcoinUnconfirmedBalance) == "0.0")
-                return true;
-            return false;
-        } else if (iWalletType == "Bright") {
-            if (QStringMath(mBrightBitcoinUnconfirmedBalance) == "0.0")
-                return true;
-            return false;
-        } else {
-            //both
-            if (QStringMath(mBrightBitcoinConfirmedBalance) == "0.0" && QStringMath(mDarkBitcoinUnconfirmedBalance) == "0.0")
-                return true;
-            return false;
-        }
-    } else if (iCurrency == "ETH") {
-        if (QStringMath(mEthUnconfirmedBalance) == "0.0")
-            return true;
-        return false;
-    } else if (iCurrency == "LTC") {
-        if (QStringMath(mLtcUnconfirmedBalance) == "0.0")
-            return true;
-        return false;
+    return true;
+    bool lIsDark;
+    if (iWalletType == "Dark") {
+        lIsDark = true;
+    } else {
+        lIsDark = false;
     }
+
+    QString lName = QString(lIsDark ? "d" : "").append(iCurrency);
+
+    if (QStringMath(mWallets[lName].getBalance(false)) == "0.0") {
+        return true;
+    }
+
     return false;
 }
 
@@ -109,6 +100,21 @@ void UserAccount::setWaiting(bool iWaiting)
 
     mWaiting = iWaiting;
     emit waitingChanged();
+}
+
+bool UserAccount::waiting()
+{
+    return mWaiting;
+}
+
+QString UserAccount::getBrightAddress(QString iShortname)
+{
+    auto lAccount = mWallets[iShortname];
+    QString lAddress;
+    if (lAccount.getBrightAddress(lAddress)) {
+        return lAddress;
+    }
+    return "";
 }
 
 void UserAccount::setCurrentErrorString(QString iCurrentErrorString)
@@ -131,57 +137,6 @@ void UserAccount::setPublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPri
     mPrivateKey = iPrivateKey;
 }
 
-void UserAccount::setBitcoinConfirmedBalance(QString iBtcConfirmed)
-{
-    if (iBtcConfirmed == mBtcConfirmedBalance) { return; }
-
-    mBtcConfirmedBalance = iBtcConfirmed;
-    emit bitcoinConfirmedBalanceChanged();
-    emit cryptoConfirmedBalanceChanged();
-}
-
-void UserAccount::setBitcoinUnconfirmedBalance(QString iBtcUnconfirmed)
-{
-    if (iBtcUnconfirmed == mBtcUnconfirmedBalance) { return; }
-
-    mBtcUnconfirmedBalance = iBtcUnconfirmed;
-    emit bitcoinUnconfirmedBalanceChanged();
-}
-
-void UserAccount::setEthereumConfirmedBalance(QString iEthConfirmed)
-{
-    if (iEthConfirmed == mEthConfirmedBalance) { return; }
-
-    mEthConfirmedBalance = iEthConfirmed;
-    emit ethereumConfirmedBalanceChanged();
-    emit cryptoConfirmedBalanceChanged();
-}
-
-void UserAccount::setEthereumUnconfirmedBalance(QString iEthUnconfirmed)
-{
-    if (iEthUnconfirmed == mEthUnconfirmedBalance) { return; }
-
-    mEthUnconfirmedBalance = iEthUnconfirmed;
-    emit ethereumUnconfirmedBalanceChanged();
-}
-
-void UserAccount::setLitecoinConfirmedBalance(QString iLtcConfirmed)
-{
-    if (iLtcConfirmed == mLtcConfirmedBalance) { return; }
-
-    mLtcConfirmedBalance = iLtcConfirmed;
-    emit litecoinConfirmedBalanceChanged();
-    emit cryptoConfirmedBalanceChanged();
-}
-
-void UserAccount::setLitecoinUnconfirmedBalance(QString iLtcUnconfirmed)
-{
-    if (iLtcUnconfirmed == mLtcUnconfirmedBalance) { return; }
-
-    mLtcUnconfirmedBalance = iLtcUnconfirmed;
-    emit litecoinUnconfirmedBalanceChanged();
-}
-
 void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QByteArray iPublicKey, QByteArray iPrivateKey)
 {
     if (iSuccess) {
@@ -192,6 +147,7 @@ void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QByteArray i
         setCurrentErrorString("");
 
         // create wallets for each coin...
+        createCryptoWallets();
     } else {
         setCurrentErrorString("Failed to create account");
         qDebug() << "Error creating account...";
@@ -210,12 +166,34 @@ void UserAccount::loadAccountFromSettings()
 
         setUsername(lUsername);
         setPublicAndPrivateKeys(lPub, lPriv);
+
+        QList<WalletAccount> lWalletAccounts;
+        mDataManager->getWalletAccounts(lWalletAccounts);
+
+        for (auto lWA : lWalletAccounts) {
+            mWallets[lWA.shortName()] = lWA;
+        }
+
     } else {
-        qDebug() << "No account created";
+        qDebug() << "No account created... On load...";
     }
 }
 
 void UserAccount::createCryptoWallets()
 {
+    for (int i = 0; i < AppWallets::walletShortnames().size(); i++) {
+        QString lShortname = AppWallets::walletShortnames().at(i);
+        QString lLongname = AppWallets::walletLongnames().at(i);
 
+        WalletAccount lWA(lShortname, lLongname, CryptoChain::TestNet);
+        lWA.setDataManager(mDataManager);
+
+        if (!lLongname.contains("Dark", Qt::CaseInsensitive)) {
+            lWA.createNewBrightWallet();
+        }
+
+        mWallets.insert(lShortname, lWA);
+
+        mDataManager->saveWalletAccount(lShortname, lLongname, CryptoChain::TestNet);
+    }
 }

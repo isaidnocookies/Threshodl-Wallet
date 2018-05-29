@@ -168,7 +168,6 @@ Item {
 
         onClicked: {
             //do some stuffs
-
             ourStackView.push(Qt.resolvedUrl("dashboardPage.qml"))
         }
 

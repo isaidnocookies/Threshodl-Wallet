@@ -1,4 +1,4 @@
-QT += quick core network sql
+QT += quick core network sql gui
 CONFIG += c++11 qzxing_qml qzxing_multimedia
 
 # The following define makes your compiler emit warnings if you use
@@ -24,8 +24,12 @@ SOURCES += \
     useraccount.cpp \
     platforminformation.cpp \
     marketvalueupdater.cpp \
-    qsettingsmanager.cpp \
-    createusername.cpp
+    createusername.cpp \
+    walletaccount.cpp \
+    threshodltools.cpp \
+    genericwallet.cpp \
+    myqsettingsmanager.cpp \
+    downloadworker.cpp
 
 RESOURCES += qml.qrc
 
@@ -45,5 +49,9 @@ HEADERS += \
     platforminformation.h \
     marketvalueupdater.h \
     globalsandconstants.h \
-    qsettingsmanager.h \
-    createusername.h
+    createusername.h \
+    walletaccount.h \
+    threshodltools.h \
+    genericwallet.h \
+    myqsettingsmanager.h \
+    downloadworker.h

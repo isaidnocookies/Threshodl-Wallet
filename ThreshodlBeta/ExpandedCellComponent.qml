@@ -13,34 +13,12 @@ Rectangle {
 
     // cryptoType -> BTC, LTC, ETH
     // mode -> Bright or Dark
-    function getBalances (cryptoType, isBright, isConfirmed) {
-        var lMode
-        if (isBright) {
-            lMode = "Bright"
-        } else {
-            lMode = "Dark"
-        }
-
-        if (cryptoType === "BTC") {
-            return userAccount.getBitcoinBalance(lMode, isConfirmed)
-        } else if (cryptoType === "ETH") {
-            if (isConfirmed) {
-                return userAccount.ethereumConfirmedBalance
-            }
-            return userAccount.ethereumUnonfirmedBalance
-        } else if (cryptoType === "LTC") {
-            if (isConfirmed) {
-                return userAccount.litecoinConfirmedBalance
-            }
-            return userAccount.litecoinUnconfirmedBalance
-        } else {
-            // Error
-            console.log("Error... Unrecognized crypto type")
-        }
+    function getBalances (cryptoType, isDark, isConfirmed) {
+        return userAccount.getBalance(cryptoType, isDark, isConfirmed)
     }
 
-    function getCurrencyValue(cryptoType, currencyType, cryptoAmount) {
-        return "0.00"
+    function getCurrencyValue(cryptoType, isDark, toCurrency) {
+        return userAccount.getBalanceValue(cryptoType, isDark)
     }
 
     function isDark() {
@@ -54,6 +32,14 @@ Rectangle {
         width: parent.width
         height: 80
 
+        Rectangle {
+            height: 0.5
+            width: parent.width * 0.8
+            y: 0
+            x: parent.width - width - (parent.width * 0.05)
+            color: "lightgray"
+        }
+
         Image {
             id: littleIconImage
             source: Qt.resolvedUrl(iconPath)
@@ -61,7 +47,8 @@ Rectangle {
             width: 20
 
             x: 60
-            y: parent.height/2 - iconImage.height/2
+            y: 35
+//            y: parent.height/2 - iconImage.height/2
         }
 
         Text {
@@ -78,9 +65,9 @@ Rectangle {
             id: totalCryptoTextExpanded
             text: {
                 if (isDark()) {
-                    return getBalances(shortName, false, true) + " " + shortName
-                } else {
                     return getBalances(shortName, true, true) + " " + shortName
+                } else {
+                    return getBalances(shortName, false, true) + " " + shortName
                 }
             }
             font.pointSize: 16
@@ -93,13 +80,7 @@ Rectangle {
         Text {
             id: currencyValueOfTotalCryptoLabelExpanded
 
-            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, "USD", function() {
-                if (isDark) {
-                    return getBalances(shortName, false, true) + " -- " + shortName
-                } else {
-                    return getBalances(shortName, true, true) + " " + shortName
-                }
-            }) + " " + "USD"
+            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, isDark, "USD") + " " + "USD"
             font.pointSize: 12
             font.bold: true
 

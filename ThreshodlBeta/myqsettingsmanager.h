@@ -4,16 +4,26 @@
 #include <QObject>
 #include <QSettings>
 
-class QSettingsManager : public QObject
+#include "globalsandconstants.h"
+#include "walletaccount.h"
+
+class WalletAccount;
+
+class MyQSettingsManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit QSettingsManager(QObject *parent = nullptr);
+    explicit MyQSettingsManager(QObject *parent = nullptr);
 
     bool userAccountExists();
     void saveUsername(QString iUsername);
     void savePublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPrivateKey);
     void usernameAndKeys(QString &oUsername, QByteArray &oPublicKey, QByteArray &oPrivateKey);
+
+    void saveWallet(QByteArray iWalletData, QString iShortname, bool isDark);
+    void saveWalletAccount(QString iShortName, QString iLongName, CryptoChain iChainType);
+
+    void getWalletAccounts(QList<WalletAccount> &oWalletAccounts);
 
 protected:
     QSettings *mAccountData;

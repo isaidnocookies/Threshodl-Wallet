@@ -14,12 +14,6 @@ Item {
         }
     }
 
-    Component.onCompleted: {
-        while (ourStackView.depth > 1) {
-            ourStackView.pop(dashboardPage.ourStackView.index - 1);
-        }
-    }
-
     Rectangle {
         id: topBarSpacer
         color: "white"

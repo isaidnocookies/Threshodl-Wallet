@@ -10,6 +10,17 @@ Item {
     property string walletShortName
     property string walletIconPath
 
+    QrScannerView {
+        id: myQrScanner
+
+        onAddressFromScannerChanged: {
+            console.log("Bright wallet to address changed")
+            addressTextField.text = addressFromScanner
+        }
+
+
+    }
+
     Rectangle {
         id: topBarSpacer
         color: "white"
@@ -263,6 +274,33 @@ Item {
             }
 
             Button {
+                id: scanQrCodeButton
+                height: 30
+                width: 30
+
+                y: addressTextField.y + addressTextField.height + 15
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                background: Rectangle {
+                    color: "white"
+                    width: parent.height
+                    height: parent.width
+                    anchors.centerIn: parent
+                }
+
+                Image {
+                    source: "images/assets/scanQrButtonIcon.png"
+                    fillMode: Image.PreserveAspectFit
+                    width: parent.width
+                }
+
+                onClicked: {
+                    myQrScanner.restartTimer()
+                    ourStackView.push(myQrScanner)
+                }
+            }
+
+            Button {
                 id: sendButton
                 text: "Send"
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -307,7 +345,7 @@ Item {
 
             Image{
                 id: qrCodeForRecieve
-                source: "image://QZXing/encode/" + "testing qr shit";
+                source: "image://QZXing/encode/" + userAccount.getBrightAddress(walletShortName);
                 cache: false;
                 width: parent.width * 0.5
                 height: width
@@ -316,17 +354,82 @@ Item {
                 y: 20
             }
 
-            Text {
+            TextInput {
                 id: qrAddressLabel
-                text: "87uftygihojpuygift7oyguhpijohuo8gy7ft"
+                text: userAccount.getBrightAddress(walletShortName)
                 wrapMode: Text.WrapAnywhere
                 font.pointSize: 13
                 font.weight: Font.Thin
 
                 y: qrCodeForRecieve.y + qrCodeForRecieve.height + 10
                 anchors.horizontalCenter: parent.horizontalCenter
+
+                readOnly: true
+                selectByMouse: true
+            }
+
+            Button {
+                id: copyQrAddressButton
+                height: 20
+                width: 20
+
+                y: qrAddressLabel.y + qrAddressLabel.height + 10
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                background: Rectangle {
+                    color: "white"
+                    width: parent.height
+                    height: parent.width
+                    anchors.centerIn: parent
+                }
+
+                Image {
+                    source: "images/assets/clipboardPasteIcon.png"
+                    fillMode: Image.PreserveAspectFit
+                    width: parent.width
+                }
+
+                onPressed: {
+                    height = height - 2;
+                    width = width - 2;
+                }
+                onReleased: {
+                    height = height + 2;
+                    width = width + 2;
+                }
+
+                onClicked: {
+                    threshodlTools.copyToClipboard(qrAddressLabel.text)
+                    warningLabel.text = "Address Copied!"
+                }
+            }
+
+            Text {
+                id: warningLabel
+                y: copyQrAddressButton.y + copyQrAddressButton.height + 15
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "red"
+                text: ""
+
+                onTextChanged: {
+                    console.log("Warning label text changed")
+                    warningLabelTimer.start()
+                }
+            }
+
+            Timer {
+                id: warningLabelTimer
+                repeat: false
+                running: false
+                interval: 3000
+
+                onTriggered: {
+                    warningLabel.text = ""
+                    console.log("Warning text reset")
+                }
             }
         }
+
         Item {
             id: transactionsTab
         }

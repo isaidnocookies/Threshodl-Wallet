@@ -4,6 +4,7 @@ import QtQuick.Window 2.3
 
 import com.threeb.threshodl.PlatformInformation 1.0
 import com.threeb.threshodl.UserAccount 1.0
+import com.threeb.threshodl.ThreshodlTools 1.0
 
 ApplicationWindow {
     visible: true
@@ -15,6 +16,7 @@ ApplicationWindow {
 
     PlatformInformation { id: platformInformation }
     UserAccount { id: userAccount }
+    ThreshodlTools { id: threshodlTools }
 
     property real topAreaCorrectionHeight: (platformInformation.getTopAreaCorrection())
     property real bottomAreaCorrectionHeight: (platformInformation.getBottomAreaCorrection())
