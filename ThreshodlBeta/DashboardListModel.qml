@@ -12,17 +12,17 @@ ListModel {
         hasDarkWallet: false
         cellExpanded: false
     }
-//    ListElement {
-//        name: "Bitcoin"
-//        shortName: "BTC"
+    ListElement {
+        name: "Bitcoin"
+        shortName: "BTC"
 
-//        imageName: "images/assets/bitcoinIcon.png"
-//        brightIconName: "images/assets/brightBitcoinIcon.png"
-//        darkIconName: "images/assets/darkBitcoinIcon.png"
+        imageName: "images/assets/bitcoinIcon.png"
+        brightIconName: "" //"images/assets/brightBitcoinIcon.png"
+        darkIconName: "" //images/assets/darkBitcoinIcon.png"
 
-//        hasDarkWallet: false
-//        cellExpanded: false
-//    }
+        hasDarkWallet: false
+        cellExpanded: false
+    }
 //    ListElement {
 //        name: "Litecoin"
 //        shortName: "LTC"
@@ -34,17 +34,17 @@ ListModel {
 //        hasDarkWallet: false
 //        cellExpanded: false
 //    }
-//    ListElement {
-//        name: "Dash"
-//        shortName: "DASH"
+    ListElement {
+        name: "Dash"
+        shortName: "DASH"
 
-//        imageName: "images/assets/dashIcon.png"
-//        brightIconName: ""
-//        darkIconName: ""
+        imageName: "images/assets/dashIcon.png"
+        brightIconName: ""
+        darkIconName: ""
 
-//        hasDarkWallet: false
-//        cellExpanded: false
-//    }
+        hasDarkWallet: false
+        cellExpanded: false
+    }
 //    ListElement {
 //        name: "ZCash"
 //        shortName: "ZEC"

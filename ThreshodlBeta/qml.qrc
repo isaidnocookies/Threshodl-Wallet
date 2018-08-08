@@ -8,7 +8,6 @@
         <file>DashboardListModel.qml</file>
         <file>CryptoWalletDelegate.qml</file>
         <file>ExpandedCellComponent.qml</file>
-        <file alias="ca.pem">../Certificates/ca.pem</file>
         <file>BrightWalletView.qml</file>
         <file>DarkWalletView.qml</file>
         <file>QrScannerView.qml</file>

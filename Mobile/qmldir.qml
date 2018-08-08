@@ -1,1 +1,0 @@
-singleton WalletApp walletApp.qml

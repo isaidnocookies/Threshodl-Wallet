@@ -21,15 +21,15 @@ include (QzXing/QZXing.pri)
 
 SOURCES += \
         main.cpp \
-    useraccount.cpp \
-    platforminformation.cpp \
-    marketvalueupdater.cpp \
-    createusername.cpp \
-    walletaccount.cpp \
-    threshodltools.cpp \
-    genericwallet.cpp \
-    myqsettingsmanager.cpp \
-    downloadworker.cpp
+        useraccount.cpp \
+        platforminformation.cpp \
+        marketvalueupdater.cpp \
+        createusername.cpp \
+        walletaccount.cpp \
+        threshodltools.cpp \
+        genericwallet.cpp \
+        myqsettingsmanager.cpp \
+        downloadworker.cpp
 
 RESOURCES += qml.qrc
 

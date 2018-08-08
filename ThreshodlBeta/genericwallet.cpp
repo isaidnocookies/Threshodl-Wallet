@@ -1,14 +1,7 @@
 #include "genericwallet.h"
-#include "bitcoinwallet.h"
 
-#include <QMutex>
-
-extern "C" {
-#include <btc/chainparams.h>
-#include <btc/ecc.h>
-#include <btc/tool.h>
-#include <btc/utils.h>
-}
+#include <QJsonArray>
+#include <QJsonObject>
 
 GenericWallet::GenericWallet() : Wallet()
 { }
@@ -22,7 +15,7 @@ GenericWallet::GenericWallet(const Wallet &iOther) : Wallet(iOther)
 GenericWallet::GenericWallet(const WalletDataCore &iOther) : Wallet(iOther)
 { }
 
-GenericWallet GenericWallet::createWallet(QString iShortname, GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createWallet(QString iShortname, QString iSeed, GenericWallet::ChainType iChainType)
 {
     GenericWallet::ChainType lNetwork = iChainType;
 
@@ -33,48 +26,297 @@ GenericWallet GenericWallet::createWallet(QString iShortname, GenericWallet::Cha
     }
 
     if (iShortname == "BTC") {
-        return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(lNetwork));
+        return createBitcoinWallet(iSeed, lNetwork);
     } else if (iShortname == "tBTC") {
-        return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(lNetwork));
+        return createBitcoinWallet(iSeed, lNetwork);
     }else if (iShortname == "ETH") {
-        return createEthWallet(lNetwork);
+        return createEthWallet(iSeed, lNetwork);
     } else if (iShortname == "LTC") {
-        return createLitecoinWallet(lNetwork);
+        return createLitecoinWallet(iSeed, lNetwork);
     } else if (iShortname == "DASH") {
-        return createDashWallet(lNetwork);
+        return createDashWallet(iSeed, lNetwork);
     } else if (iShortname == "ZEC") {
-        return createZCashWallet(lNetwork);
+        return createZCashWallet(iSeed, lNetwork);
     }
 
     return GenericWallet{};
 }
 
-QByteArray GenericWallet::generateBtcWifFromPrivateKey(const QByteArray iPrivateKey, GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createDashWallet(QString iSeed, GenericWallet::ChainType iChainType)
 {
-    return BitcoinWallet::generateWifFromPrivateKey(iPrivateKey, static_cast<BitcoinWallet::ChainType>(iChainType));
+    Wallet lNewWallet;
+    QString lCoin = "DASH";
+    QString lCoinLong = "Dash";
+    int lNetworkType;
+
+    if (iChainType == GenericWallet::ChainType::TestNet) {
+        lNetworkType = 2;
+    } else {
+        // Mainnet
+        lNetworkType = 1;
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray coinArray;
+
+    coinArray.append(lCoin);
+
+    jsonData.insert("coins", coinArray);
+    jsonData.insert("seed", iSeed);
+    jsonData.insert("network", lNetworkType);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/create/"));
+    qDebug() << lRequestURL;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            auto lCoinMap = lMyMap["message"].toMap();
+            auto lCoinWallet = lCoinMap[lCoin].toMap();
+
+            lNewWallet.setAddress(lCoinWallet["address"].toByteArray());
+            lNewWallet.setIsMicroWallet(false);
+            lNewWallet.setPrivateKey(lCoinWallet["wif"].toByteArray());
+            lNewWallet.setShortNameType(lCoin);
+            lNewWallet.setLongNameType(lCoinLong);
+        } else {
+            qDebug() << "Error(1).... Failed to create wallet " << lCoin;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to create wallet : " << lCoin;
+    }
+
+    return lNewWallet;
 }
 
-GenericWallet GenericWallet::fromBtcWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createLitecoinWallet(QString iSeed, GenericWallet::ChainType iChainType)
 {
-    return BitcoinWallet::fromWifAndPrivateKey(iWif, iPrivateKey, static_cast<BitcoinWallet::ChainType>(iChainType));
+    Wallet lNewWallet;
+    QString lCoin = "LTC";
+    QString lCoinLong = "Litecoin";
+    int lNetworkType;
+
+    if (iChainType == GenericWallet::ChainType::TestNet) {
+        lNetworkType = 2;
+    } else {
+        // Mainnet
+        lNetworkType = 1;
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray coinArray;
+
+    coinArray.append(lCoin);
+
+    jsonData.insert("coins", coinArray);
+    jsonData.insert("seed", iSeed);
+    jsonData.insert("network", lNetworkType);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/create/"));
+    qDebug() << lRequestURL;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            auto lCoinMap = lMyMap["message"].toMap();
+            auto lCoinWallet = lCoinMap[lCoin].toMap();
+
+            lNewWallet.setAddress(lCoinWallet["address"].toByteArray());
+            lNewWallet.setIsMicroWallet(false);
+            lNewWallet.setPrivateKey(lCoinWallet["wif"].toByteArray());
+            lNewWallet.setShortNameType(lCoin);
+            lNewWallet.setLongNameType(lCoinLong);
+        } else {
+            qDebug() << "Error(1).... Failed to create wallet " << lCoin;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to create wallet : " << lCoin;
+    }
+
+    return lNewWallet;
 }
 
-GenericWallet GenericWallet::createDashWallet(GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createZCashWallet(QString iSeed, GenericWallet::ChainType iChainType)
 {
-    return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(iChainType));
+    Wallet lNewWallet;
+    QString lCoin = "ZEC";
+    QString lCoinLong = "ZCash";
+    int lNetworkType;
+
+    if (iChainType == GenericWallet::ChainType::TestNet) {
+        lNetworkType = 2;
+    } else {
+        // Mainnet
+        lNetworkType = 1;
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray coinArray;
+
+    coinArray.append(lCoin);
+
+    jsonData.insert("coins", coinArray);
+    jsonData.insert("seed", iSeed);
+    jsonData.insert("network", lNetworkType);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/create/"));
+    qDebug() << lRequestURL;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            auto lCoinMap = lMyMap["message"].toMap();
+            auto lCoinWallet = lCoinMap[lCoin].toMap();
+
+            lNewWallet.setAddress(lCoinWallet["address"].toByteArray());
+            lNewWallet.setIsMicroWallet(false);
+            lNewWallet.setPrivateKey(lCoinWallet["wif"].toByteArray());
+            lNewWallet.setShortNameType(lCoin);
+            lNewWallet.setLongNameType(lCoinLong);
+        } else {
+            qDebug() << "Error(1).... Failed to create wallet " << lCoin;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to create wallet : " << lCoin;
+    }
+
+    return lNewWallet;
 }
 
-GenericWallet GenericWallet::createLitecoinWallet(GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createEthWallet(QString iSeed, GenericWallet::ChainType iChainType)
 {
-    return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(iChainType));
+    return Wallet();
 }
 
-GenericWallet GenericWallet::createZCashWallet(GenericWallet::ChainType iChainType)
+GenericWallet GenericWallet::createBitcoinWallet(QString iSeed, GenericWallet::ChainType iChainType)
 {
-    return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(iChainType));
-}
+    Wallet lNewWallet;
+    QString lCoin = "BTC";
+    QString lCoinLong = "Bitcoin";
+    int lNetworkType;
 
-GenericWallet GenericWallet::createEthWallet(GenericWallet::ChainType iChainType)
-{
-    return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(iChainType));
+    if (iChainType == GenericWallet::ChainType::TestNet) {
+        lNetworkType = 2;
+    } else {
+        // Mainnet
+        lNetworkType = 1;
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray coinArray;
+
+    coinArray.append(lCoin);
+
+    jsonData.insert("coins", coinArray);
+    jsonData.insert("seed", iSeed);
+    jsonData.insert("network", lNetworkType);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/create/"));
+    qDebug() << lRequestURL;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            auto lCoinMap = lMyMap["message"].toMap();
+            auto lCoinWallet = lCoinMap[lCoin].toMap();
+
+            if (iChainType == GenericWallet::ChainType::TestNet) {
+                lNewWallet.setShortNameType("tBTC");
+                lNewWallet.setLongNameType("Testnet Bitcoin");
+            } else {
+                lNewWallet.setShortNameType(lCoin);
+                lNewWallet.setLongNameType(lCoinLong);
+            }
+
+            lNewWallet.setAddress(lCoinWallet["address"].toByteArray());
+            lNewWallet.setIsMicroWallet(false);
+            lNewWallet.setPrivateKey(lCoinWallet["wif"].toByteArray());
+        } else {
+            qDebug() << "Error(1).... Failed to create wallet " << lCoin;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to create wallet : " << lCoin;
+    }
+
+    return lNewWallet;
 }

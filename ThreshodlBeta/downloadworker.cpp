@@ -7,6 +7,7 @@
 #include <QNetworkRequest>
 #include <QThread>
 #include <QMutex>
+#include <QJsonDocument>
 
 DownloadWorker::DownloadWorker()
 {
@@ -24,7 +25,7 @@ void DownloadWorker::startDownloading()
     while (mDownloading) {
         downloadMarketValues();
         downloadBalances();
-        QThread::sleep(45);
+        QThread::sleep(60);
     }
 
     emit finished();

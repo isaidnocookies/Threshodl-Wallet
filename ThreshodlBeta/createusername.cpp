@@ -1,8 +1,7 @@
 #include "createusername.h"
 
-#include "certificate.h"
 #include "globalsandconstants.h"
-
+#include <QJsonDocument>
 #include <QJsonObject>
 
 CreateUsername::CreateUsername(QObject *parent) : QObject(parent)

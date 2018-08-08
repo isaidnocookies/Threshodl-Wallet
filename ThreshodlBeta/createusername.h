@@ -8,6 +8,7 @@
 #include <QSslCertificate>
 #include <QSslKey>
 #include <QDebug>
+#include <QNetworkReply>
 
 class CreateUsername : public QObject
 {

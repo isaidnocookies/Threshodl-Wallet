@@ -2,6 +2,7 @@
 
 #include <QClipboard>
 #include <QGuiApplication>
+#include <QDebug>
 
 ThreshodlTools::ThreshodlTools(QObject *parent) : QObject(parent){}
 

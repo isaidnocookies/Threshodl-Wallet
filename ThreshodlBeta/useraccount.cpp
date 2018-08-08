@@ -244,7 +244,7 @@ void UserAccount::createCryptoWallets()
         QString lShortname = AppWallets::walletShortnames().at(i);
         QString lLongname = AppWallets::walletLongnames().at(i);
 
-        WalletAccount lWA(lShortname, lLongname, CryptoChain::TestNet);
+        WalletAccount lWA(lShortname, lLongname, mRecoverySeed, CryptoChain::TestNet);
         lWA.setDataManager(mDataManager);
 
         if (!lLongname.contains("Dark", Qt::CaseInsensitive)) {

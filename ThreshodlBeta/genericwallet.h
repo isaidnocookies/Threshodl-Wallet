@@ -2,6 +2,14 @@
 #define GENERICWALLET_H
 
 #include "wallet.h"
+#include "globalsandconstants.h"
+
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QJsonDocument>
+#include <QObject>
 
 class GenericWallet : public Wallet
 {
@@ -34,17 +42,14 @@ public:
     virtual void setBalance(const QString iValue)               { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericBalance"),iValue); }
     virtual void setUnconfirmedBalance(const QString iValue)    { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericUnconfirmedBalance"),iValue); }
 
-    static GenericWallet createWallet(QString iShortname, ChainType iChainType = ChainType::TestNet);
-
-    static QByteArray generateBtcWifFromPrivateKey(const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
-    static GenericWallet fromBtcWifAndPrivateKey(const QByteArray iWif, const QByteArray iPrivateKey, ChainType iChainType = ChainType::Main);
+    static GenericWallet createWallet(QString iShortname, QString iSeed, ChainType iChainType = ChainType::TestNet);
 
 private:
-    static GenericWallet createDashWallet(ChainType iChainType = ChainType::TestNet);
-    static GenericWallet createLitecoinWallet(ChainType iChainType = ChainType::TestNet);
-    static GenericWallet createZCashWallet(ChainType iChainType = ChainType::TestNet);
-    static GenericWallet createEthWallet(ChainType iChainType = ChainType::TestNet);
-    static GenericWallet createBitcoinWallet(ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createDashWallet(QString iSeed, ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createLitecoinWallet(QString iSeed, ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createZCashWallet(QString iSeed, ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createEthWallet(QString iSeed, ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createBitcoinWallet(QString iSeed, ChainType iChainType = ChainType::TestNet);
 };
 
 #endif // GENERICWALLET_H

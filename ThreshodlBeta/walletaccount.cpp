@@ -4,12 +4,13 @@ WalletAccount::WalletAccount()
 {
 }
 
-WalletAccount::WalletAccount(QString iShortName, QString iLongName, CryptoChain iChain)
+WalletAccount::WalletAccount(QString iShortName, QString iLongName, QString iSeed, CryptoChain iChain)
 {
     mShortName = iShortName;
     mLongName = iLongName;
     mChain = iChain;
     mName = name();
+    mSeed = iSeed;
 
     WalletAccount();
 }
@@ -23,6 +24,7 @@ WalletAccount::WalletAccount(QByteArray iData)
         mShortName = lDataMap["shortname"].toString();
         mLongName = lDataMap["longname"].toString();
         mName = lDataMap["mName"].toString();
+        mSeed = lDataMap["seed"].toString();
         mIsDark = lDataMap["isDark"].toBool();
         mConfirmedBalance = lDataMap["confirmedBalance"].toString();
         mUnconfirmedBalance = lDataMap["unconfirmedBalance"].toString();
@@ -59,6 +61,11 @@ QString WalletAccount::shortName()
 QString WalletAccount::longName()
 {
     return mLongName;
+}
+
+QString WalletAccount::seed()
+{
+    return mSeed;
 }
 
 void WalletAccount::setExchangeCurrency(QString iCurrency)
@@ -181,7 +188,7 @@ bool WalletAccount::getBrightAddress(QString &oAddress)
 
 void WalletAccount::createNewBrightWallet()
 {
-    GenericWallet lNewWallet = GenericWallet::createWallet(mShortName, static_cast<GenericWallet::ChainType>(mChain));
+    GenericWallet lNewWallet = GenericWallet::createWallet(mShortName, mSeed, static_cast<GenericWallet::ChainType>(mChain));
     mWallets.append(lNewWallet);
     mAccountData->saveWallet(lNewWallet.toData(), mShortName, false);
 }
@@ -194,6 +201,7 @@ const QByteArray WalletAccount::toData()
     lDataMap["shortname"] = mShortName;
     lDataMap["longname"] = mLongName;
     lDataMap["mName"] = mName;
+    lDataMap["seed"] = mSeed;
     lDataMap["isDark"] = mIsDark;
     lDataMap["confirmedBalance"] = mConfirmedBalance;
     lDataMap["unconfirmedBalance"] = mUnconfirmedBalance;

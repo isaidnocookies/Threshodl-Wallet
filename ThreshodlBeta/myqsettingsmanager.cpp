@@ -81,8 +81,9 @@ void MyQSettingsManager::getWalletAccounts(QList<WalletAccount> &oWalletAccounts
 
         QString lShortName = mAccountData->value(DataKeys::shortNameDataKey()).toString();
         QString lLongName = mAccountData->value(DataKeys::longNameDataKey()).toString();
+        QString lSeed = mAccountData->value(DataKeys::recoverySeedDataKey()).toString();
         CryptoChain lChain = static_cast<CryptoChain>(mAccountData->value(DataKeys::chainDataKey()).toInt());
-        WalletAccount lNewWalletAccount(lShortName, lLongName, lChain);
+        WalletAccount lNewWalletAccount(lShortName, lLongName, lSeed, lChain);
         QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
 
         lNewWalletAccount.setExchangeCurrency(mAccountData->value(DataKeys::exchangeCurrencyDataKey()).toString());

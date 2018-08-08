@@ -14,7 +14,7 @@ class WalletAccount
 {
 public:
     WalletAccount();
-    WalletAccount(QString iShortName, QString iLongName, CryptoChain iChain);
+    WalletAccount(QString iShortName, QString iLongName, QString iSeed, CryptoChain iChain);
     WalletAccount(QByteArray iData);
 
     void setDataManager(MyQSettingsManager *iDataMananger);
@@ -22,6 +22,7 @@ public:
     QString name();
     QString shortName();
     QString longName();
+    QString seed();
 
     void setExchangeCurrency(QString iCurrency);
     void setMarketValue(QString iCurrentValue);
@@ -57,6 +58,7 @@ private:
     QString                 mLongName;
     QString                 mName;
     bool                    mIsDark;
+    QString                 mSeed;
 
     QString                 mConfirmedBalance;
     QString                 mUnconfirmedBalance;
