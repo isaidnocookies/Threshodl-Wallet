@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 
+#include "globalsandconstants.h"
+
 class DownloadWorker : public QObject
 {
     Q_OBJECT
@@ -14,18 +16,27 @@ signals:
     void finished();
     void error(QString err);
     void marketValueUpdated(QString oShortname, QString oValue);
-    void allMarketValuesUpdated(QMap<QString, QString> oValues);
+    void allMarketValuesUpdated(QStringList oNames, QStringList oValues);
+    void walletAddressesUpdated(QString oShortname, QStringList oAddresses, QStringList oBalances, QStringList oPendingBalances);
+    void balancesUpdated();
 
 public slots:
     void startDownloading();
     void stopDownloading();
 
-private:
-    int                     mInterval;
-    QNetworkAccessManager   *mNetworkManager;
-    bool                    mDownloading;
+    void setAddresses(QString iShortname, QStringList iAddresses);
 
-    void downloadData();
+private:
+    int mInterval;
+    bool                        mDownloading;
+    QMap<QString, QStringList>  mAddressesToCheck;
+    QMutex                      mAddressMapMutex;
+
+    void downloadMarketValues();
+    void downloadBalances();
+
+    void downloadBitcoinBalances(QStringList iAddresses);
+
 };
 
 #endif // DOWNLOADWORKER_H

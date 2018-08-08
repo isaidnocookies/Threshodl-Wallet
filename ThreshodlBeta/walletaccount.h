@@ -33,13 +33,14 @@ public:
     QString marketValue();
     QString exchangeCurrency();
 
-    void updateBalance(QString iAddress);
+    void updateBalance(QString iAddress, QString iBalance, QString iUnconfirmedBalance);
 
     void addWallet(Wallet iWallet);
 
     bool removeWallet(QString iAddress);
     bool getWallet(QByteArray &oWallet, QString iAddress);
     bool getWallet(Wallet &oWallet, QString iAddress);
+    QStringList getWalletAddresses();
     bool getBrightAddress(QString &oAddress);
 
     void createNewBrightWallet();

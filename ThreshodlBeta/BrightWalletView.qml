@@ -105,7 +105,7 @@ Item {
 
         Connections {
             target: userAccount
-            onCryptoConfirmedBalanceChanged: {
+            onCryptoBalanceUpdated: {
                 totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
             }
         }

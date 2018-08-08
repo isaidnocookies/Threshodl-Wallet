@@ -18,11 +18,15 @@ class UserAccount : public QObject
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(bool waiting READ waiting WRITE setWaiting NOTIFY waitingChanged)
     Q_PROPERTY(QString currentErrorString READ currentErrorString WRITE setCurrentErrorString NOTIFY currentErrorStringChanged)
+    Q_PROPERTY(QString recoverySeed READ recoverySeed WRITE setRecoverySeed NOTIFY recoverySeedChanged)
 
 public:
     explicit            UserAccount(QObject *parent = nullptr);
+    ~UserAccount();
     Q_INVOKABLE bool    exists();
     Q_INVOKABLE void    createNewAccount(QString iUsername);
+    Q_INVOKABLE QString getRecoverySeed();
+
     Q_INVOKABLE QString getTotalBalance(QString iCurrency = "USD");
     Q_INVOKABLE QString getBalance(QString iShortName, bool iIsDark = false, bool iConfirmed = true);
     Q_INVOKABLE QString getBalanceValue(QString iShortName, bool iIsDark = false, bool iConfirmed = true, QString iCurrency = "USD");
@@ -30,9 +34,13 @@ public:
     Q_INVOKABLE void    setWaiting(bool iWaiting);
     Q_INVOKABLE bool    waiting();
     Q_INVOKABLE QString getBrightAddress(QString iShortname);
+    Q_INVOKABLE QString getMarketValue(QString iShortname, QString iCurrency = "USD");
 
     QString username()                      { return mUsername; }
     void setUsername                        (QString iUsername);
+
+    QString recoverySeed()                  { return mRecoverySeed; }
+    void setRecoverySeed                    (QString iSeed);
 
     QString currentErrorString()            { return mCurrentErrorString; }
     void setCurrentErrorString              (QString iCurrentErrorString);
@@ -43,25 +51,33 @@ public:
 signals:
     void usernameChanged();
     void waitingChanged();
+    void recoverySeedChanged();
     void currentErrorStringChanged();
+    void marketValueChanged();
 
-    void cryptoConfirmedBalanceChanged();
+    void cryptoBalanceUpdated();
     void darkCryptoConfirmedBalanceChanged();
     void darkCryptoUnconfirmedBalanceChanged();
 
+    void setDownloaderAddresses(QString iShortName, QStringList iAddresses);
+
 public slots:
-    void usernameCreated (bool iSuccess, QString iUsername, QByteArray iPublicKey, QByteArray iPrivateKey);
+    void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey);
+    void marketValuesUpdated(QStringList iNames, QStringList iValues);
+    void walletBalancesUpdated(QString iShortname, QStringList iAddresses, QStringList iBalances, QStringList iPendingBalances);
+    void downloaderErrorString(QString iError);
 
 private:
     void loadAccountFromSettings();
     void createCryptoWallets();
 
-    MyQSettingsManager                *mDataManager;
+    MyQSettingsManager              *mDataManager;
     CreateUsername                  *mCreateUsername;
 
     bool                            mWaiting;
     QString                         mCurrentErrorString;
     QString                         mUsername;
+    QString                         mRecoverySeed;
     QByteArray                      mPrivateKey;
     QByteArray                      mPublicKey;
 

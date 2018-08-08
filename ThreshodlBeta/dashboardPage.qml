@@ -93,7 +93,9 @@ Item {
             width: parent.width
         }
 
-        //onclick: do the settings thingy
+        onClicked: {
+            ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
+        }
     }
 
     Text {
@@ -111,7 +113,7 @@ Item {
 
         Connections {
             target: userAccount
-            onCryptoConfirmedBalanceChanged: {
+            onCryptoBalanceUpdated: {
                 totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
             }
         }

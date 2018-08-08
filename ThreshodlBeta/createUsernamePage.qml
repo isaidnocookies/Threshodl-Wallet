@@ -170,7 +170,7 @@ Item {
                 warningLabel.text = "Please input username"
             } else {
                 startBusyIndicatorAndDisable()
-                //check username
+                //check username - TODO???
                 console.log("Starting to create account");
 
                 userAccount.setWaiting(true)

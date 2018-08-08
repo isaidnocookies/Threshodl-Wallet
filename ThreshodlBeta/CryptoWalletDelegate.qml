@@ -20,6 +20,10 @@ Component {
             }
         }
 
+        function getMarketValue(iShortname) {
+            return userAccount.getMarketValue(iShortname)
+        }
+
         function getConfirmationText (iShortname, walletType) {
             if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
                 return "(Confirmed)"
@@ -65,12 +69,19 @@ Component {
 
         Text {
             id: marketValueText
-            text: "$10,000 USD"
+            text: ""
             font.pointSize: 12
             font.weight: Font.Thin
 
             x: longNameText.x
             y: longNameText.y + longNameText.height + 10
+
+            Connections {
+                target: userAccount
+                onMarketValueChanged: {
+                    marketValueText.text = "$" + threshodlTools.formatMarketValueString(getMarketValue(shortName))
+                }
+            }
         }
 
         Text {
@@ -84,7 +95,8 @@ Component {
 
             Connections {
                 target: userAccount
-                onCryptoConfirmedBalanceChanged: {
+                onCryptoBalanceUpdated: {
+                    console.log("Balances updated")
                     totalCryptoText.text = getTotalConfirmedCryptoValue(shortName) + " " + shortName
                 }
             }

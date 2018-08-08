@@ -109,9 +109,14 @@ QString WalletAccount::exchangeCurrency()
     return mExchangeCurrency;
 }
 
-void WalletAccount::updateBalance(QString iAddress)
+void WalletAccount::updateBalance(QString iAddress, QString iBalance, QString iUnconfirmedBalance)
 {
-    // TODO: Update balance of address..
+    for (int i = 0; i < mWallets.size(); i++) {
+        if (mWallets.at(i).address() == iAddress) {
+            mWallets[i].setBalance(iBalance);
+            mWallets[i].setUnconfirmedBalance(iUnconfirmedBalance);
+        }
+    }
 }
 
 void WalletAccount::addWallet(Wallet iWallet)
@@ -157,6 +162,15 @@ bool WalletAccount::getWallet(Wallet &oWallet, QString iAddress)
         }
     }
     return false;
+}
+
+QStringList WalletAccount::getWalletAddresses()
+{
+    QStringList lWallets;
+    for ( auto w : mWallets) {
+        lWallets.append(w.address());
+    }
+    return lWallets;
 }
 
 bool WalletAccount::getBrightAddress(QString &oAddress)

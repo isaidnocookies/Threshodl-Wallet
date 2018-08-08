@@ -119,7 +119,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width * 0.70
         wrapMode: Text.WordWrap
-        text: "once  wolf  skirt  vehicle cereal  cruel  picture  armed giant  doll  liquid  scatter dutch  stay  put  bitches candy  love"
+        text: userAccount.recoverySeed
 
         lineHeight: 1.5
         font.bold: true

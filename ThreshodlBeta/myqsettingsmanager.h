@@ -17,6 +17,7 @@ public:
 
     bool userAccountExists();
     void saveUsername(QString iUsername);
+    void saveRecoverySeed(QString iSeed);
     void savePublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPrivateKey);
     void usernameAndKeys(QString &oUsername, QByteArray &oPublicKey, QByteArray &oPrivateKey);
 

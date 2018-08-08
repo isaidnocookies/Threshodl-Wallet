@@ -24,6 +24,15 @@ public:
     virtual QString shortName() const                           { return WalletDataCoreValueToString (walletDataCore(),QStringLiteral("genericShortName")); }
     virtual QString name() const                                { return WalletDataCoreValueToString (walletDataCore(),QStringLiteral("genericName")); }
     virtual QString longName() const                            { return WalletDataCoreValueToString (walletDataCore(),QStringLiteral("genericLongName")); }
+    virtual QString balance() const                             { return WalletDataCoreValueToString (walletDataCore(),QStringLiteral("genericBalance")); }
+    virtual QString unconfirmedBalance() const                  { return WalletDataCoreValueToString (walletDataCore(),QStringLiteral("genericUnconfirmedBalance")); }
+
+    virtual void setEncodedPrivateKey(const QByteArray iValue)  { WalletDataCoreValueFromByteArray(walletDataCore(),QStringLiteral("genericEncodedPrivateKey"),iValue); }
+    virtual void setShortName(const QString iValue)             { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericShortName"),iValue); }
+    virtual void setName(const QString iValue)                  { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericName"),iValue); }
+    virtual void setLongName(const QString iValue)              { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericLongName"),iValue); }
+    virtual void setBalance(const QString iValue)               { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericBalance"),iValue); }
+    virtual void setUnconfirmedBalance(const QString iValue)    { WalletDataCoreValueFromString(walletDataCore(),QStringLiteral("genericUnconfirmedBalance"),iValue); }
 
     static GenericWallet createWallet(QString iShortname, ChainType iChainType = ChainType::TestNet);
 
@@ -35,6 +44,7 @@ private:
     static GenericWallet createLitecoinWallet(ChainType iChainType = ChainType::TestNet);
     static GenericWallet createZCashWallet(ChainType iChainType = ChainType::TestNet);
     static GenericWallet createEthWallet(ChainType iChainType = ChainType::TestNet);
+    static GenericWallet createBitcoinWallet(ChainType iChainType = ChainType::TestNet);
 };
 
 #endif // GENERICWALLET_H

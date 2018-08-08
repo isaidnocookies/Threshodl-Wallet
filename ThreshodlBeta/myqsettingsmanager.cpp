@@ -27,6 +27,12 @@ void MyQSettingsManager::saveUsername(QString iUsername)
     mAccountData->sync();
 }
 
+void MyQSettingsManager::saveRecoverySeed(QString iSeed)
+{
+    mAccountData->setValue(DataKeys::recoverySeedDataKey(), iSeed);
+    mAccountData->sync();
+}
+
 void MyQSettingsManager::savePublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPrivateKey)
 {
     mAccountData->setValue(DataKeys::publicKeyDataKey(), iPublicKey);

@@ -17,26 +17,19 @@ public:
     void create(QString iUsername);
 
 signals:
-    void usernameCreated(bool oSuccess, QString oUsername, QByteArray oPublicKey, QByteArray oPrivateKey);
+    void usernameCreated(bool oSuccess, QString oUsername, QString oSeed, QByteArray oPublicKey, QByteArray oPrivateKey);
 
 private slots:
-    void connectedToServer();
-    void disconnectedFromServer();
-    void failedToSendMessage();
-    void sentMessage();
-    void receivedMessage();
-    void socketError(QAbstractSocket::SocketError iError);
-    void sslErrors(const QList<QSslError> iErrors);
+    void requestComplete(QNetworkReply *reply);
 
 private:
-    WCPConnection       *mConnection;
-    QSslConfiguration   mSslConfiguration;
+    QNetworkAccessManager *mNetworkManager;
 
-    QByteArray          mPrivateKey;
-    QByteArray          mPublicKey;
-    QString             mUsername;
+    QByteArray mPrivateKey;
+    QByteArray mPublicKey;
+    QString mUsername;
 
-    QString             mTransactionId;
+    QString mTransactionId;
 };
 
 #endif // CREATEUSERNAME_H

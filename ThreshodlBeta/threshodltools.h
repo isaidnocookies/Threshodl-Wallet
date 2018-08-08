@@ -14,6 +14,7 @@ public:
     Q_INVOKABLE QString stringAdd(QString iOne, QString iTwo);
     Q_INVOKABLE void copyToClipboard(QString iDataToCopy);
     Q_INVOKABLE QString getClipboardText();
+    Q_INVOKABLE QString formatMarketValueString(QString iInputValue);
 };
 
 #endif // THRESHODLTOOLS_H

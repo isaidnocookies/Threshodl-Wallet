@@ -7,7 +7,6 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
     qDebug() << "UserAccount created";
 
     mDataManager = new MyQSettingsManager;
-    loadAccountFromSettings();
 
     mWaiting = false;
     setCurrentErrorString("");
@@ -17,13 +16,24 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
 
     mMyDownloaderWorker->moveToThread(mMyDownloaderThread);
 
-    connect(mMyDownloaderWorker, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
+    connect(mMyDownloaderWorker, SIGNAL (error(QString)), this, SLOT (downloaderErrorString(QString)));
     connect(mMyDownloaderThread, SIGNAL (started()), mMyDownloaderWorker, SLOT (startDownloading()));
     connect(mMyDownloaderWorker, SIGNAL (finished()), mMyDownloaderThread, SLOT (quit()));
     connect(mMyDownloaderWorker, SIGNAL (finished()), mMyDownloaderWorker, SLOT (deleteLater()));
     connect(mMyDownloaderThread, SIGNAL (finished()), mMyDownloaderThread, SLOT (deleteLater()));
 
+    connect(mMyDownloaderWorker, &DownloadWorker::walletAddressesUpdated, this, &UserAccount::walletBalancesUpdated);
+    connect(mMyDownloaderWorker, &DownloadWorker::allMarketValuesUpdated, this, &UserAccount::marketValuesUpdated);
+    connect(this, &UserAccount::setDownloaderAddresses, mMyDownloaderWorker, &DownloadWorker::setAddresses);
+
     mMyDownloaderThread->start();
+
+    loadAccountFromSettings();
+}
+
+UserAccount::~UserAccount()
+{
+
 }
 
 bool UserAccount::exists()
@@ -33,14 +43,20 @@ bool UserAccount::exists()
 
 void UserAccount::createNewAccount(QString iUsername)
 {
-    emit usernameCreated(true, iUsername, QByteArray("TEst"), QByteArray("test"));
-    return;
+//    emit usernameCreated(true, iUsername, QByteArray("TEst"), QByteArray("test"));
+//    return;
+
+    setCurrentErrorString("");
+    setWaiting(true);
 
     mCreateUsername = new CreateUsername;
     connect (mCreateUsername, &CreateUsername::usernameCreated, this, &UserAccount::usernameCreated);
-    setWaiting(true);
     mCreateUsername->create(iUsername);
-    setCurrentErrorString("");
+}
+
+QString UserAccount::getRecoverySeed()
+{
+    return mRecoverySeed;
 }
 
 QString UserAccount::getTotalBalance(QString iCurrency)
@@ -94,6 +110,11 @@ void UserAccount::setUsername(QString iUsername)
     emit usernameChanged();
 }
 
+void UserAccount::setRecoverySeed(QString iSeed)
+{
+    mRecoverySeed = iSeed;
+}
+
 void UserAccount::setWaiting(bool iWaiting)
 {
     if (iWaiting == mWaiting) { return; }
@@ -117,6 +138,16 @@ QString UserAccount::getBrightAddress(QString iShortname)
     return "";
 }
 
+QString UserAccount::getMarketValue(QString iShortname, QString iCurrency)
+{
+    Q_UNUSED(iCurrency)
+
+    auto lAccount = mWallets[iShortname];
+    QString lMarketValue = lAccount.marketValue();
+
+    return lMarketValue;
+}
+
 void UserAccount::setCurrentErrorString(QString iCurrentErrorString)
 {
     if (iCurrentErrorString == mCurrentErrorString) { return; }
@@ -137,13 +168,15 @@ void UserAccount::setPublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPri
     mPrivateKey = iPrivateKey;
 }
 
-void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QByteArray iPublicKey, QByteArray iPrivateKey)
+void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey)
 {
     if (iSuccess) {
         setUsername(iUsername);
+        setRecoverySeed(iRecoverySeed);
         setPublicAndPrivateKeys(iPublicKey, iPrivateKey);
         mDataManager->saveUsername(iUsername);
         mDataManager->savePublicAndPrivateKeys(iPublicKey, iPrivateKey);
+        mDataManager->saveRecoverySeed(iRecoverySeed);
         setCurrentErrorString("");
 
         // create wallets for each coin...
@@ -153,6 +186,29 @@ void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QByteArray i
         qDebug() << "Error creating account...";
     }
     setWaiting(false);
+}
+
+void UserAccount::marketValuesUpdated(QStringList iNames, QStringList iValues)
+{
+    for (int i = 0; i < iNames.size(); i++) {
+        qDebug() << iNames.at(i) << " --- " << iValues.at(i);
+        mWallets[iNames.at(i)].setMarketValue(iValues.at(i));
+    }
+    emit marketValueChanged();
+}
+
+void UserAccount::walletBalancesUpdated(QString iShortname, QStringList iAddresses, QStringList iBalances, QStringList iPendingBalances)
+{
+    for (int i = 0; i < iAddresses.size(); i++) {
+        mWallets[iShortname].updateBalance(iAddresses.at(i), iBalances.at(i), iPendingBalances.at(i));
+    }
+
+    emit cryptoBalanceUpdated();
+}
+
+void UserAccount::downloaderErrorString(QString iError)
+{
+    qDebug() << "Error from downloader:  " << iError;
 }
 
 void UserAccount::loadAccountFromSettings()
@@ -170,8 +226,11 @@ void UserAccount::loadAccountFromSettings()
         QList<WalletAccount> lWalletAccounts;
         mDataManager->getWalletAccounts(lWalletAccounts);
 
+        qDebug() << "Loading wallets from settings..";
         for (auto lWA : lWalletAccounts) {
             mWallets[lWA.shortName()] = lWA;
+            qDebug() << "Setting downloader address";
+            emit setDownloaderAddresses(lWA.shortName(), mWallets[lWA.shortName()].getWalletAddresses());
         }
 
     } else {
@@ -190,6 +249,11 @@ void UserAccount::createCryptoWallets()
 
         if (!lLongname.contains("Dark", Qt::CaseInsensitive)) {
             lWA.createNewBrightWallet();
+            QString lWalletAddress;
+            if (lWA.getBrightAddress(lWalletAddress)) {
+                qDebug() << "Setting downloader addresses";
+                emit setDownloaderAddresses(lShortname, QStringList() << lWalletAddress);
+            }
         }
 
         mWallets.insert(lShortname, lWA);

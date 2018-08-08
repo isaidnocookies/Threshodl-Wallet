@@ -24,16 +24,26 @@ GenericWallet::GenericWallet(const WalletDataCore &iOther) : Wallet(iOther)
 
 GenericWallet GenericWallet::createWallet(QString iShortname, GenericWallet::ChainType iChainType)
 {
+    GenericWallet::ChainType lNetwork = iChainType;
+
+    if (iShortname.at(0) == "t") {
+        lNetwork = GenericWallet::ChainType::TestNet;
+    } else {
+        lNetwork = GenericWallet::ChainType::Main;
+    }
+
     if (iShortname == "BTC") {
-        return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(iChainType));
-    } else if (iShortname == "ETH") {
-        return createEthWallet(iChainType);
+        return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(lNetwork));
+    } else if (iShortname == "tBTC") {
+        return BitcoinWallet::createNewBitcoinWallet(static_cast<BitcoinWallet::ChainType>(lNetwork));
+    }else if (iShortname == "ETH") {
+        return createEthWallet(lNetwork);
     } else if (iShortname == "LTC") {
-        return createLitecoinWallet(iChainType);
+        return createLitecoinWallet(lNetwork);
     } else if (iShortname == "DASH") {
-        return createDashWallet(iChainType);
+        return createDashWallet(lNetwork);
     } else if (iShortname == "ZEC") {
-        return createZCashWallet(iChainType);
+        return createZCashWallet(lNetwork);
     }
 
     return GenericWallet{};

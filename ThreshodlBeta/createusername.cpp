@@ -3,102 +3,45 @@
 #include "certificate.h"
 #include "globalsandconstants.h"
 
+#include <QJsonObject>
+
 CreateUsername::CreateUsername(QObject *parent) : QObject(parent)
 {
-    mConnection = new WCPConnection{this};
-    connect( mConnection, &WCPConnection::connected, this, &CreateUsername::connectedToServer );
-    connect( mConnection, &WCPConnection::disconnected, this, &CreateUsername::disconnectedFromServer );
-    connect( mConnection, &WCPConnection::socketError, this, &CreateUsername::socketError );
-    connect( mConnection, &WCPConnection::sslErrors, this, &CreateUsername::sslErrors );
-    connect( mConnection, &WCPConnection::failedToSendTextMessage, this, &CreateUsername::failedToSendMessage );
-    connect( mConnection, &WCPConnection::sentTextMessage, this, &CreateUsername::sentMessage );
-    connect( mConnection, &WCPConnection::textMessageReceived, this, &CreateUsername::receivedMessage );
+    mNetworkManager = new QNetworkAccessManager(this);
 
-    QFile lFile{QStringLiteral(":/ca.pem")};
-    if( lFile.open(QIODevice::ReadOnly) ) {
-        mSslConfiguration = QSslConfiguration::defaultConfiguration();
-        mSslConfiguration.setCaCertificates(mSslConfiguration.caCertificates() << QSslCertificate{lFile.readAll(),QSsl::Pem});
-
-        lFile.close();
-        mConnection->setSslConfiguration(mSslConfiguration);
-    }else{
-        qFatal("Failed to open CA cert.");
-    }
-
-    // Generate a cert so we get a pair of keys to use, we don't need the cert
-    Certificate lThisCert;
-    lThisCert.setServerDefaults();
-    lThisCert.selfSign();
-
-    mPrivateKey = lThisCert.encryptionKey()->privateToPEM();
-    mPublicKey = lThisCert.encryptionKey()->publicToPEM();
+    connect(mNetworkManager, &QNetworkAccessManager::finished, this, &CreateUsername::requestComplete);
 }
 
 void CreateUsername::create(QString iUsername)
 {
     mUsername = iUsername;
 
-    QUrl lUrl = QUrl::fromUserInput(QStringLiteral(TEST_SERVER_IP_ADDRESS));
-    mConnection->open(lUrl);
+    QJsonObject jsonData;
+    jsonData.insert("username", iUsername);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QUrl lUrl = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/mnemonicSeed"));
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lUrl);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    mNetworkManager->post(lRequest, request_body);
 }
 
-void CreateUsername::connectedToServer()
+void CreateUsername::requestComplete(QNetworkReply *reply)
 {
-    qDebug() << "Connected to server.";
-    mConnection->sendTextMessage(WCPMessageCreateAccountRequest::create(mPublicKey,mUsername,mPrivateKey));
-}
+    QByteArray lReplyText = reply->readAll();
+    qDebug() << lReplyText;
 
-void CreateUsername::disconnectedFromServer()
-{
-    qDebug() << "Disconnected from server.";
-    emit usernameCreated(false, QString(), QByteArray(), QByteArray());
-}
+    auto lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
 
-void CreateUsername::failedToSendMessage()
-{
-    qDebug() << "Failed to send message.";
-    emit usernameCreated(false, QString(), QByteArray(), QByteArray());
-}
-
-void CreateUsername::sentMessage()
-{
-    qDebug() << "Sent message.";
-}
-
-void CreateUsername::receivedMessage()
-{
-    // got reply
-    QString lMessage = mConnection->nextTextMessage();
-    WCPMessageCreateAccountReply    lReply{lMessage};
-
-    switch(lReply.replyCode()) {
-        case WCPMessageCreateAccountReply::Success:
-            qDebug() << "Success";
-            // create account with new username
-            emit usernameCreated(true, lReply.replyUsername(), mPublicKey, mPrivateKey);
-            break;
-        case WCPMessageCreateAccountReply::UsernameTaken:
-            qDebug() << "Username Taken";
-            emit usernameCreated(false, QString(), QByteArray(), QByteArray());
-            break;
-        default:
-            qDebug() << "FUCK";
+    if (lMyMap["success"].toBool()) {
+        QString lSeed = lMyMap["seed"].toString();
+        emit usernameCreated(true, mUsername, lSeed, "public", "private");
+    } else {
+        emit usernameCreated(false, "", "", "", "");
     }
-}
-
-void CreateUsername::socketError(QAbstractSocket::SocketError iError)
-{
-    qDebug() << "SocketError:" << iError;
-    emit usernameCreated(false, QString(), QByteArray(), QByteArray());
-}
-
-void CreateUsername::sslErrors(const QList<QSslError> iErrors)
-{
-    qDebug() << "Ssl Errors:";
-
-    int lIndex = 0;
-    for( auto lError : iErrors ) {
-        qDebug() << lIndex++ << lError.errorString();
-    }
-    emit usernameCreated(false, QString(), QByteArray(), QByteArray());
 }

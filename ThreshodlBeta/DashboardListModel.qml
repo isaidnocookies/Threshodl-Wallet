@@ -2,49 +2,60 @@ import QtQuick 2.0
 
 ListModel {
     ListElement {
-        name: "Bitcoin"
-        shortName: "BTC"
+        name: "Testnet Bitcoin"
+        shortName: "tBTC"
 
-        imageName: "images/assets/bitcoinIcon.png"
-        brightIconName: "images/assets/brightBitcoinIcon.png"
-        darkIconName: "images/assets/darkBitcoinIcon.png"
-
-        hasDarkWallet: true
-        cellExpanded: false
-    }
-    ListElement {
-        name: "Litecoin"
-        shortName: "LTC"
-
-        imageName: "images/assets/litecoinIcon.png"
+        imageName: "images/assets/testnetBitcoinIcon.png"
         brightIconName: ""
         darkIconName: ""
 
         hasDarkWallet: false
         cellExpanded: false
     }
-    ListElement {
-        name: "Dash"
-        shortName: "DASH"
+//    ListElement {
+//        name: "Bitcoin"
+//        shortName: "BTC"
 
-        imageName: "images/assets/dashIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+//        imageName: "images/assets/bitcoinIcon.png"
+//        brightIconName: "images/assets/brightBitcoinIcon.png"
+//        darkIconName: "images/assets/darkBitcoinIcon.png"
 
-        hasDarkWallet: false
-        cellExpanded: false
-    }
-    ListElement {
-        name: "ZCash"
-        shortName: "ZEC"
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
+//    ListElement {
+//        name: "Litecoin"
+//        shortName: "LTC"
 
-        imageName: "images/assets/zcashIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+//        imageName: "images/assets/litecoinIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
 
-        hasDarkWallet: false
-        cellExpanded: false
-    }
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
+//    ListElement {
+//        name: "Dash"
+//        shortName: "DASH"
+
+//        imageName: "images/assets/dashIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
+
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
+//    ListElement {
+//        name: "ZCash"
+//        shortName: "ZEC"
+
+//        imageName: "images/assets/zcashIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
+
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
 //    ListElement {
 //        name: "Ethereum"
 //        shortName: "ETH"
