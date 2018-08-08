@@ -1,4 +1,4 @@
-QT += quick core network sql gui
+QT += quick core network gui
 CONFIG += c++11 qzxing_qml qzxing_multimedia
 
 # The following define makes your compiler emit warnings if you use

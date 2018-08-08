@@ -3,7 +3,7 @@
 
     !contains( QT, core ):          QT += core
     !contains( QT, network ):       QT += network
-    !contains( QT, websockets ):    QT += websockets
+#    !contains( QT, websockets ):    QT += websockets
 
     INCLUDEPATH += $$PWD
 

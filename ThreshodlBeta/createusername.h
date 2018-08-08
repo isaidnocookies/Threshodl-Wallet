@@ -4,9 +4,6 @@
 #include "core.h"
 
 #include <QObject>
-#include <QSslConfiguration>
-#include <QSslCertificate>
-#include <QSslKey>
 #include <QDebug>
 #include <QNetworkReply>
 
