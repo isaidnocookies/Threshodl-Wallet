@@ -4,7 +4,7 @@ import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
 
 Item {
-    id: createUsernamePage
+    id: recoveryRecoverySeed
 
     Rectangle {
         id: topBarSpacer
@@ -48,7 +48,7 @@ Item {
 
     Text {
         id: pageTitleDescription
-        text: "Please enter a username"
+        text: "Please enter your recovery seed"
         color: "black"
         font.bold: true
         font.pointSize: 15
@@ -67,7 +67,7 @@ Item {
 
     Text {
         id: pageDescription
-        text: "This username will act as your threshodl dark wallet address. This can not be changed once you create it."
+        text: "Enter the recovery seed you were given when you first created your account. This will allow your wallets to be restored and act as a key for your backup file"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: textSpacer.bottom
         width: parent.width * 0.9
@@ -85,14 +85,22 @@ Item {
         color: "white"
     }
 
-    TextField {
-        id: usernameField
-        placeholderText: "Username"
+    TextArea {
+        id: recoverySeedField
+        placeholderText: "Recovery Seed"
         width: parent.width / 1.5
         anchors.top: textFieldSpacer.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        height: 40
+        height: 150
+        z:10
         horizontalAlignment: TextInput.AlignHCenter
+
+        wrapMode: TextEdit.WordWrap
+        inputMethodHints: Qt.ImhPreferLowercase
+
+        font.bold: true
+        font.pointSize: 16
+        verticalAlignment: TextEdit.AlignVCenter
 
         background: Rectangle {
             radius: 20
@@ -103,13 +111,17 @@ Item {
         onFocusChanged: {
             warningLabel.text = ""
         }
+
+        Keys.onReturnPressed: {
+            Qt.inputMethod.hide()
+        }
     }
 
     Rectangle {
         id: textFieldSpacer2
         width: parent.width
         height: 20
-        anchors.top: usernameField.bottom
+        anchors.top: recoverySeedField.bottom
         color: "white"
     }
 
@@ -156,7 +168,7 @@ Item {
 
 
     Button {
-        id: createNewWalletButton
+        id: recoveryAccountButton
         text: "Continue"
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width / 1.5
@@ -164,33 +176,37 @@ Item {
         z: 50
 
         onClicked: {
-            var lUsername = usernameField.text
+            var lSeed = recoverySeedField.text
+            lSeed = lSeed.toLowerCase()
 
-            if (lUsername.length <= 0) {
+            if (lSeed.length <= 0) {
                 warningLabel.text = "Please input username"
             } else {
                 startBusyIndicatorAndDisable()
-                //check username - TODO???
-                console.log("Starting to create account");
+                console.log("Starting to recover account");
+                console.log(lSeed)
 
                 userAccountSignalConnection.enabled = true
-                userAccount.createNewAccount(lUsername)
+                userAccount.recoverAccount(lSeed)
             }
         }
 
         Connections {
             id: userAccountSignalConnection
-            enabled: false
             target: userAccount
+            enabled: false
             onUserCreationFinished: {
                 stopBusyIndicatorAndEnable()
-                console.log("User Account created : Message from createUsernamePage.qml")
+                console.log("Account Recovery Complete : Message from createUsernamePage.qml")
+
                 if (success) {
-                    console.log("User created successfully")
-                    ourStackView.push(Qt.resolvedUrl("newRecoveryPhrasePage.qml"))
+                    console.log("Recover Account Successful");
+                    userAccountSignalConnection.enabled = false
+                    ourStackView.push(Qt.resolvedUrl("dashboardPage.qml"))
                 } else {
-                    warningLabel.text = error;
-                    console.log("User Account failed to create : Message from createUsernamePage.qml");
+                    console.log("Recover Account Failed");
+                    userAccountSignalConnection.enabled = false
+                    warningLabel.text = error
                 }
             }
         }
@@ -199,7 +215,7 @@ Item {
             color: "white"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: createNewWalletButton.text
+            text: recoveryAccountButton.text
             font.bold: true
             font.pointSize: buttonFontSize
         }
@@ -225,19 +241,17 @@ Item {
         }
     }
 
-
-
     function startBusyIndicatorAndDisable() {
         backButton.enabled = false
-        usernameField.enabled = false
-        createNewWalletButton.enabled = false
+        recoverySeedField.enabled = false
+        recoveryAccountButton.enabled = false
         mWaitingLayer.visible = true
     }
 
     function stopBusyIndicatorAndEnable() {
         backButton.enabled = true
-        usernameField.enabled = true
-        createNewWalletButton.enabled = true
+        recoverySeedField.enabled = true
+        recoveryAccountButton.enabled = true
         mWaitingLayer.visible = false
     }
 }

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QSettings>
 
-#include "globalsandconstants.h"
+#include "core.h"
 #include "walletaccount.h"
 
 class WalletAccount;
@@ -18,13 +18,13 @@ public:
     bool userAccountExists();
     void saveUsername(QString iUsername);
     void saveRecoverySeed(QString iSeed);
-    void savePublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPrivateKey);
-    void usernameAndKeys(QString &oUsername, QByteArray &oPublicKey, QByteArray &oPrivateKey);
+    void savePublicAndPrivateKeys(QString iPublicKey, QString iPrivateKey);
+    void usernameAndKeys(QString &oUsername, QString &oPublicKey, QString &oPrivateKey);
 
     void saveWallet(QByteArray iWalletData, QString iShortname, bool isDark);
-    void saveWalletAccount(QString iShortName, QString iLongName, CryptoChain iChainType);
+    void saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType);
 
-    void getWalletAccounts(QList<WalletAccount> &oWalletAccounts);
+    void getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts);
 
 protected:
     QSettings *mAccountData;

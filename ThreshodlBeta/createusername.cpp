@@ -1,6 +1,5 @@
 #include "createusername.h"
 
-#include "globalsandconstants.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 

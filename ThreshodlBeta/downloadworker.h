@@ -1,16 +1,18 @@
 #ifndef DOWNLOADWORKER_H
 #define DOWNLOADWORKER_H
 
+#include "core.h"
+
+#include <QMutex>
 #include <QObject>
 #include <QNetworkAccessManager>
-
-#include "globalsandconstants.h"
+#include <QWaitCondition>
 
 class DownloadWorker : public QObject
 {
     Q_OBJECT
 public:
-    DownloadWorker();
+    DownloadWorker(QWaitCondition *iWaitCondition, QMutex *iWaitMutex);
     ~DownloadWorker();
 signals:
     void finished();
@@ -32,10 +34,14 @@ private:
     QMap<QString, QStringList>  mAddressesToCheck;
     QMutex                      mAddressMapMutex;
 
+    QWaitCondition              *mWaitCondition;
+    QMutex                      *mWaitMutex;
+
     void downloadMarketValues();
     void downloadBalances();
 
     void downloadBitcoinBalances(QStringList iAddresses);
+    void downloadGenericInsightBalances(QString iShortname, QStringList iAddresses);
 
 };
 

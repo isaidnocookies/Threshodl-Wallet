@@ -1,5 +1,4 @@
 #include "myqsettingsmanager.h"
-#include "globalsandconstants.h"
 
 #include <QCoreApplication>
 
@@ -33,7 +32,7 @@ void MyQSettingsManager::saveRecoverySeed(QString iSeed)
     mAccountData->sync();
 }
 
-void MyQSettingsManager::savePublicAndPrivateKeys(QByteArray iPublicKey, QByteArray iPrivateKey)
+void MyQSettingsManager::savePublicAndPrivateKeys(QString iPublicKey, QString iPrivateKey)
 {
     mAccountData->setValue(DataKeys::publicKeyDataKey(), iPublicKey);
     mAccountData->setValue(DataKeys::privateKeyDataKey(), iPrivateKey);
@@ -41,11 +40,11 @@ void MyQSettingsManager::savePublicAndPrivateKeys(QByteArray iPublicKey, QByteAr
     mAccountData->sync();
 }
 
-void MyQSettingsManager::usernameAndKeys(QString &oUsername, QByteArray &oPublicKey, QByteArray &oPrivateKey)
+void MyQSettingsManager::usernameAndKeys(QString &oUsername, QString &oPublicKey, QString &oPrivateKey)
 {
     oUsername = mAccountData->value(DataKeys::usernameDataKey()).toString();
-    oPublicKey = mAccountData->value(DataKeys::publicKeyDataKey()).toByteArray();
-    oPrivateKey = mAccountData->value(DataKeys::privateKeyDataKey()).toByteArray();
+    oPublicKey = mAccountData->value(DataKeys::publicKeyDataKey()).toString();
+    oPrivateKey = mAccountData->value(DataKeys::privateKeyDataKey()).toString();
 }
 
 void MyQSettingsManager::saveWallet(QByteArray iWalletData, QString iShortname, bool isDark)
@@ -62,7 +61,7 @@ void MyQSettingsManager::saveWallet(QByteArray iWalletData, QString iShortname, 
     mAccountData->sync();
 }
 
-void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName, CryptoChain iChainType)
+void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType)
 {
     mAccountData->beginGroup(iShortName);
 
@@ -74,16 +73,16 @@ void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName
     mAccountData->sync();
 }
 
-void MyQSettingsManager::getWalletAccounts(QList<WalletAccount> &oWalletAccounts)
+void MyQSettingsManager::getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts)
 {
-    for (int i = 0; i < AppWallets::walletShortnames().size(); i++) {
-        mAccountData->beginGroup(AppWallets::walletShortnames().at(i));
+    for (int i = 0; i < AppWallets::walletNames().keys().size(); i++) {
+        mAccountData->beginGroup(AppWallets::walletNames().keys().at(i));
 
         QString lShortName = mAccountData->value(DataKeys::shortNameDataKey()).toString();
         QString lLongName = mAccountData->value(DataKeys::longNameDataKey()).toString();
         QString lSeed = mAccountData->value(DataKeys::recoverySeedDataKey()).toString();
-        CryptoChain lChain = static_cast<CryptoChain>(mAccountData->value(DataKeys::chainDataKey()).toInt());
-        WalletAccount lNewWalletAccount(lShortName, lLongName, lSeed, lChain);
+        CryptoNetwork lChain = static_cast<CryptoNetwork>(mAccountData->value(DataKeys::chainDataKey()).toInt());
+        WalletAccount lNewWalletAccount(lShortName, lLongName, lChain);
         QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
 
         lNewWalletAccount.setExchangeCurrency(mAccountData->value(DataKeys::exchangeCurrencyDataKey()).toString());
@@ -91,7 +90,7 @@ void MyQSettingsManager::getWalletAccounts(QList<WalletAccount> &oWalletAccounts
 
         QStringMath lConfirmedBalance;
         for (auto w : lWallets) {
-            Wallet lW = Wallet(w.toByteArray());
+            CryptoWallet lW = CryptoWallet(w.toByteArray());
             lConfirmedBalance = lConfirmedBalance + lW.value();
             lNewWalletAccount.addWallet(lW);
         }

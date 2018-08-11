@@ -4,8 +4,8 @@
 #include <QObject>
 
 #include "core.h"
-#include "genericwallet.h"
-#include "globalsandconstants.h"
+//#include "genericwallet.h"
+#include "cryptowallet.h"
 #include "myqsettingsmanager.h"
 
 class MyQSettingsManager;
@@ -14,7 +14,7 @@ class WalletAccount
 {
 public:
     WalletAccount();
-    WalletAccount(QString iShortName, QString iLongName, QString iSeed, CryptoChain iChain);
+    WalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChain);
     WalletAccount(QByteArray iData);
 
     void setDataManager(MyQSettingsManager *iDataMananger);
@@ -36,39 +36,35 @@ public:
 
     void updateBalance(QString iAddress, QString iBalance, QString iUnconfirmedBalance);
 
-    void addWallet(Wallet iWallet);
+    void addWallet(CryptoWallet iWallet);
 
     bool removeWallet(QString iAddress);
     bool getWallet(QByteArray &oWallet, QString iAddress);
-    bool getWallet(Wallet &oWallet, QString iAddress);
+    bool getWallet(CryptoWallet &oWallet, QString iAddress);
     QStringList getWalletAddresses();
     bool getBrightAddress(QString &oAddress);
+    bool hasBrightWallet();
 
-    void createNewBrightWallet();
+    void createNewBrightWallet(QString iSeed);
+
+    QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
     const QByteArray toData();
-
-//signals:
-//    void confirmedBalanceChanged();
-//    void unconfirmedBalanceChanged();
-//    void marketValueChanged();
 
 private:
     QString                 mShortName;
     QString                 mLongName;
-    QString                 mName;
     bool                    mIsDark;
-    QString                 mSeed;
 
     QString                 mConfirmedBalance;
     QString                 mUnconfirmedBalance;
 
-    CryptoChain             mChain;
+    CryptoNetwork           mChain;
 
     QString                 mMarketValue;
     QString                 mExchangeCurrency;
 
-    QList<GenericWallet>    mWallets;
+    QList<CryptoWallet>     mWallets;
     MyQSettingsManager      *mAccountData;
 };
 

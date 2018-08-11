@@ -3,12 +3,37 @@ import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
+import QtQuick.Dialogs 1.1
 
 Item {
     id: brightWalletViewPage
 
     property string walletShortName
     property string walletIconPath
+
+    function getConfirmationText (iShortname, walletType) {
+        if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
+            return "(Confirmed)"
+        } else {
+            var lValue
+            if (walletType === "Dark") {
+                lValue = userAccount.getBalance(iShortname, true, false)
+            } else {
+                lValue = userAccount.getBalance(iShortname, false, false)
+            }
+            return "(" + lValue + " " + iShortname + " Balance Confirming)"
+        }
+    }
+
+    function startBusyIndicatorAndDisable() {
+        backButton.enabled = false
+        mWaitingLayer.visible = true
+    }
+
+    function stopBusyIndicatorAndEnable() {
+        backButton.enabled = true
+        mWaitingLayer.visible = false
+    }
 
     QrScannerView {
         id: myQrScanner
@@ -17,8 +42,27 @@ Item {
             console.log("Bright wallet to address changed")
             addressTextField.text = addressFromScanner
         }
+    }
 
+    Item {
+        id: mWaitingLayer
 
+        visible: false
+        anchors.fill: parent
+        z:100
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.centerIn: parent
+
+            color: Qt.rgba(0,0,0,0.5)
+        }
+
+        BusyIndicator {
+            z:101
+            running: mWaitingLayer.visible
+            anchors.centerIn: parent
+        }
     }
 
     Rectangle {
@@ -105,8 +149,12 @@ Item {
 
         Connections {
             target: userAccount
-            onCryptoBalanceUpdated: {
-                totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+
+            onWalletBalanceUpdateComplete: {
+                if (shortname == walletShortName) {
+                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+
+                }
             }
         }
     }
@@ -120,7 +168,24 @@ Item {
 
         anchors.top: totalCurrencyForWallet.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "0.0 " + walletShortName
+        text: userAccount.getBalance(walletShortName, false, true) + " " + walletShortName
+
+        Connections {
+            target: userAccount
+
+            onWalletBalanceUpdateComplete: {
+                if (shortname == walletShortName) {
+                    totalCryptoForWallet.text = userAccount.getBalance(walletShortName, false, true) + " " + walletShortName
+
+                    walletConfirmationStatusLabel.text = getConfirmationText(walletShortName, "Bright")
+                    if (userAccount.isWalletConfirmed(walletShortName, "Bright")) {
+                        walletConfirmationStatusLabel.color = "#116F00"
+                    } else {
+                        walletConfirmationStatusLabel.color = "red"
+                    }
+                }
+            }
+        }
     }
 
     Text {
@@ -130,7 +195,15 @@ Item {
         font.pointSize: 13
         y: totalCryptoForWallet.y + totalCryptoForWallet.height + 5
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "(Confirmed)"
+        text: getConfirmationText(walletShortName, "Bright")
+
+        color: {
+            if (userAccount.isWalletConfirmed(walletShortName, "Bright")) {
+                walletConfirmationStatusLabel.color = "#116F00"
+            } else {
+                walletConfirmationStatusLabel.color = "red"
+            }
+        }
     }
 
     Text {
@@ -300,6 +373,78 @@ Item {
                 }
             }
 
+            Text {
+                id: warningLabel
+                y: sendButton.y - height - 20
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "red"
+                text: ""
+
+                onTextChanged: {
+                    console.log("Warning label text changed")
+                    warningLabelTimer.start()
+                }
+            }
+
+            Timer {
+                id: warningLabelTimer
+                repeat: false
+                running: false
+                interval: 5000
+
+                onTriggered: {
+                    warningLabel.text = ""
+                    console.log("Warning text reset")
+                }
+            }
+
+            MessageDialog {
+                id: alertDialog
+                title: ""
+                text: ""
+
+                onAccepted: {
+                    alertDialog.visible = false
+                }
+            }
+
+            MessageDialog {
+                id: messageDialog
+                title: "Confirm Transaction"
+                text: "You are sending " + sendAmountTextField.text + " " + walletShortName + " to " + addressTextField.text + ". Confirm Transaction?"
+
+                standardButtons: StandardButton.Cancel | StandardButton.Yes
+
+                onYes: {
+                    console.log("Transaction Confirmed.")
+                    messageDialog.visible = false
+
+                    startBusyIndicatorAndDisable();
+
+                    var response = userAccount.sendBrightTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
+                    stopBusyIndicatorAndEnable();
+
+                    if (response === "-1") {
+                        console.log("Failed to send transaction")
+                    } else if (response === "") {
+                        console.log("Failed to send...")
+                        alertDialog.title = "Transaction Failed"
+                        alertDialog.text = "The transaction has failed to send. Please try again"
+                        alertDialog.open()
+                    } else {
+                        console.log("Success!")
+                        alertDialog.title = "Transaction Successful"
+                        alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed"
+                        alertDialog.open()
+                    }
+                }
+
+                onRejected: {
+                    console.log("Cancel")
+                    warningLabel.text = "Transaction was canceled!"
+                }
+            }
+
             Button {
                 id: sendButton
                 text: "Send"
@@ -309,7 +454,11 @@ Item {
                 y: parent.height - bottomAreaCorrectionHeight - height
 
                 onClicked: {
-                    //do some stuffs
+                    if (addressTextField.text === "" || sendAmountTextField.text === "") {
+                        warningLabel.text = "Please complete the fields above"
+                    } else {
+                        messageDialog.open()
+                    }
                 }
 
                 contentItem: Text {
@@ -340,38 +489,93 @@ Item {
                 }
             }
         }
+
         Item {
             id: receiveTab
 
+            MessageDialog {
+                id: walletCreationAlert
+                title: ""
+                text: ""
+
+                onAccepted: {
+                    alertDialog.visible = false
+                }
+            }
+
             Image{
                 id: qrCodeForRecieve
-                source: "image://QZXing/encode/" + userAccount.getBrightAddress(walletShortName);
+                source: ""
                 cache: false;
                 width: parent.width * 0.5
                 height: width
 
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 20
+
+                Component.onCompleted: {
+                    if (userAccount.getBrightAddress(walletShortName) === "") {
+                        qrCodeForRecieve.source = "images/assets/addWalletIcon.png"
+                    } else {
+                        qrCodeForRecieve.source = "image://QZXing/encode/" + userAccount.getBrightAddress(walletShortName);
+                    }
+                }
+
+                MouseArea {
+                    //click to add wallet...
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("Try to create wallet....")
+                        startBusyIndicatorAndDisable()
+                        var brightAddress = userAccount.createBrightWallet(walletShortName)
+                        if (brightAddress === "") {
+                            walletCreationAlert.title = "Wallet Creation Failed!"
+                            walletCreationAlert.text = walletShortName + " wallet creation failed! Please try again or contact support."
+                            walletCreationAlert.open()
+                        } else {
+                            qrCodeForRecieve.source = "image://QZXing/encode/" + userAccount.getBrightAddress(walletShortName)
+                            qrAddressLabel.text = brightAddress
+                            copyQrAddressButton.visible = true
+                            walletCreationAlert.title = "Wallet Created!"
+                            walletCreationAlert.text = walletShortName + " wallet was created successfully! Your wallet is ready to accept transactions."
+                            walletCreationAlert.open()
+                        }
+
+                        stopBusyIndicatorAndEnable()
+                    }
+                }
             }
 
             TextInput {
                 id: qrAddressLabel
-                text: userAccount.getBrightAddress(walletShortName)
+                text: getBrightAddress()
                 wrapMode: Text.WrapAnywhere
                 font.pointSize: 13
                 font.weight: Font.Thin
+                color: "black"
 
                 y: qrCodeForRecieve.y + qrCodeForRecieve.height + 10
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 readOnly: true
                 selectByMouse: true
+
+                function getBrightAddress() {
+                    var brightAddress = userAccount.getBrightAddress(walletShortName);
+                    if (brightAddress === "") {
+                        return "Click to create new wallet"
+                    } else {
+                        return brightAddress
+                    }
+                }
             }
 
             Button {
                 id: copyQrAddressButton
                 height: 20
                 width: 20
+
+                visible: (userAccount.getBrightAddress(walletShortName) !== "")
 
                 y: qrAddressLabel.y + qrAddressLabel.height + 10
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -401,31 +605,6 @@ Item {
                 onClicked: {
                     threshodlTools.copyToClipboard(qrAddressLabel.text)
                     warningLabel.text = "Address Copied!"
-                }
-            }
-
-            Text {
-                id: warningLabel
-                y: copyQrAddressButton.y + copyQrAddressButton.height + 15
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "red"
-                text: ""
-
-                onTextChanged: {
-                    console.log("Warning label text changed")
-                    warningLabelTimer.start()
-                }
-            }
-
-            Timer {
-                id: warningLabelTimer
-                repeat: false
-                running: false
-                interval: 3000
-
-                onTriggered: {
-                    warningLabel.text = ""
-                    console.log("Warning text reset")
                 }
             }
         }

@@ -34,12 +34,11 @@ Item {
 
     Text {
         id: usernameLabel
-        text: "Hello, " + userAccount.username
+        text: "Hello! " + userAccount.username
         y: titleLabel.y + titleLabel.height + 5
         x: (parent.width / 2) - (width / 2)
         z:10
     }
-
 
     Button {
         id: inboxButton
@@ -113,7 +112,8 @@ Item {
 
         Connections {
             target: userAccount
-            onCryptoBalanceUpdated: {
+
+            onWalletBalanceUpdateComplete: {
                 totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
             }
         }

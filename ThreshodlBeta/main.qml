@@ -25,7 +25,6 @@ ApplicationWindow {
     property int buttonFontSize: 13
 
     function loadFirstPage() {
-//        return Qt.resolvedUrl("dashboardPage.qml")
         if (userAccount.exists()) {
             return Qt.resolvedUrl("dashboardPage.qml")
         } else {

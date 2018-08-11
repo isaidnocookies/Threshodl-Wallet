@@ -34,7 +34,7 @@ Component {
                 } else {
                     lValue = userAccount.getBalance(iShortname, false, false)
                 }
-                return "(" + lValue + " " + iShortname + ")"
+                return "(" + lValue + " " + iShortname + " Pending)"
             }
         }
 
@@ -95,9 +95,19 @@ Component {
 
             Connections {
                 target: userAccount
-                onCryptoBalanceUpdated: {
-                    console.log("Balances updated")
-                    totalCryptoText.text = getTotalConfirmedCryptoValue(shortName) + " " + shortName
+
+                onWalletBalanceUpdateComplete: {
+                    if (shortname == shortName ) {
+                        console.log("Balances updated")
+                        totalCryptoText.text = getTotalConfirmedCryptoValue(shortName) + " " + shortName
+
+                        confirmedCrytoStatus.text = getConfirmationText(shortName, "Bright");
+                        if (userAccount.isWalletConfirmed(shortName, "Bright")) {
+                            confirmedCrytoStatus.color = "#116F00"
+                        } else {
+                            confirmedCrytoStatus.color = "red"
+                        }
+                    }
                 }
             }
         }
@@ -116,12 +126,12 @@ Component {
         Text {
             id: confirmedCrytoStatus
 
-            text: getConfirmationText(shortName, "Both");
+            text: "Loading..." //getConfirmationText(shortName, "Both");
             color: {
-                if (confirmedCrytoStatus.text === "(Confirmed)") {
-                    return "#116F00"
+                if (userAccount.isWalletConfirmed(shortName, "Bright")) {
+                    confirmedCrytoStatus.color = "#116F00"
                 } else {
-                    return "red"
+                    confirmedCrytoStatus.color = "red"
                 }
             }
             x: totalCryptoText.x

@@ -73,7 +73,7 @@ Item {
     Text {
         id: pageDescription
         text:
-            "<p>Below is a recovery phrase that will be used to restore your wallets. <b>PLEASE</b> write this down in a safe place. Without these words, you will not be able to recover your wallet. These can not be changed once your wallets have been created.</p>"
+            "<p>Below is a recovery phrase that will be used to restore your wallets. <b>PLEASE</b> write this down in a safe place. Without these words, you will not be able to recover your wallets or account. These can not be changed once your wallets have been created.</p>"
 
         lineHeight: 1.5
 
@@ -159,15 +159,37 @@ Item {
         anchors.centerIn: parent
     }
 
+    CheckBox {
+        id: confirmRecoverySeed
+        text: qsTr("I have copied down the recovery words!")
+        checked: false
+
+        width: parent.width * 0.75
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: continueButton.y - height - 20
+
+        onCheckedChanged: {
+            if (confirmRecoverySeed.checked) {
+                continueButton.enabled = true
+                continueButton.opacity = 1
+            } else {
+                continueButton.enabled = false
+                continueButton.opacity = 0.5
+            }
+        }
+    }
+
     Button {
         id: continueButton
         text: "Continue"
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width / 1.5
         height: 40
+        opacity: 0.5
+
+        enabled: false
 
         onClicked: {
-            //do some stuffs
             ourStackView.push(Qt.resolvedUrl("dashboardPage.qml"))
         }
 

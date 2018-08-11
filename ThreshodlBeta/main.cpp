@@ -5,7 +5,6 @@
 
 #include "platforminformation.h"
 #include "useraccount.h"
-#include "marketvalueupdater.h"
 #include "threshodltools.h"
 
 int main(int argc, char *argv[])
@@ -16,7 +15,6 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<PlatformInformation>("com.threeb.threshodl.PlatformInformation", 1, 0, "PlatformInformation");
     qmlRegisterType<UserAccount>("com.threeb.threshodl.UserAccount", 1, 0, "UserAccount");
-    qmlRegisterType<MarketValueUpdater>("com.threeb.threshodl.MarketValueUpdater", 1, 0, "MarketValueUpdater");
     qmlRegisterType<ThreshodlTools>("com.threeb.threshodl.ThreshodlTools", 1, 0, "ThreshodlTools");
 
     QQmlApplicationEngine engine;

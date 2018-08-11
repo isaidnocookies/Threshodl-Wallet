@@ -106,5 +106,7 @@ Item {
                 }
             }
         }
+
+        onClicked: ourStackView.push(Qt.resolvedUrl("recoverySeedRecovery.qml"))
     }
 }

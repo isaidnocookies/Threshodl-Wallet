@@ -16,18 +16,25 @@ ios {
     QMAKE_INFO_PLIST = ios/Info.plist
 }
 
-include (../Core2/Core.pri)
+include (../Core/Core.pri)
 include (QzXing/QZXing.pri)
+
+HEADERS += \
+        useraccount.h \
+        platforminformation.h \
+        createusername.h \
+        walletaccount.h \
+        threshodltools.h \
+        myqsettingsmanager.h \
+        downloadworker.h
 
 SOURCES += \
         main.cpp \
         useraccount.cpp \
         platforminformation.cpp \
-        marketvalueupdater.cpp \
         createusername.cpp \
         walletaccount.cpp \
         threshodltools.cpp \
-        genericwallet.cpp \
         myqsettingsmanager.cpp \
         downloadworker.cpp
 
@@ -43,15 +50,3 @@ QML_DESIGNER_IMPORT_PATH =
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-HEADERS += \
-    useraccount.h \
-    platforminformation.h \
-    marketvalueupdater.h \
-    globalsandconstants.h \
-    createusername.h \
-    walletaccount.h \
-    threshodltools.h \
-    genericwallet.h \
-    myqsettingsmanager.h \
-    downloadworker.h

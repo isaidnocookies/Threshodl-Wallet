@@ -94,8 +94,11 @@ Item {
 
         Connections {
             target: userAccount
-            onCryptoBalanceUpdated: {
-                totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+
+            onWalletBalanceUpdateComplete: {
+                if (shortname == walletShortName) {
+                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+                }
             }
         }
     }

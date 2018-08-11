@@ -12,6 +12,7 @@
         <file>DarkWalletView.qml</file>
         <file>QrScannerView.qml</file>
         <file>settingsPage.qml</file>
+        <file>recoverySeedRecovery.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>assets/threshodlLogo_landing.png</file>
@@ -33,5 +34,6 @@
         <file>assets/qrScannerGuides.png</file>
         <file>assets/clipboardPasteIcon.png</file>
         <file>assets/testnetBitcoinIcon.png</file>
+        <file>assets/addWalletIcon.png</file>
     </qresource>
 </RCC>

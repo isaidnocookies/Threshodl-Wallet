@@ -1,16 +1,17 @@
 #include "downloadworker.h"
-#include "core.h"
-#include "globalsandconstants.h"
 
 #include <QEventLoop>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QThread>
+#include <QDebug>
 #include <QMutex>
 #include <QJsonDocument>
 
-DownloadWorker::DownloadWorker()
+DownloadWorker::DownloadWorker(QWaitCondition *iWaitCondition, QMutex *iWaitMutex)
 {
+    mWaitCondition = iWaitCondition;
+    mWaitMutex = iWaitMutex;
 }
 
 DownloadWorker::~DownloadWorker()
@@ -21,11 +22,15 @@ DownloadWorker::~DownloadWorker()
 void DownloadWorker::startDownloading()
 {
     mDownloading = true;
+    qDebug() << "Downloader Started...";
 
     while (mDownloading) {
+//        mWaitMutex->lock();
+//        mWaitCondition->wait(mWaitMutex);
         downloadMarketValues();
         downloadBalances();
-        QThread::sleep(60);
+        QThread::sleep(30);
+//        mWaitMutex->unlock();
     }
 
     emit finished();
@@ -38,7 +43,12 @@ void DownloadWorker::stopDownloading()
 
 void DownloadWorker::setAddresses(QString iShortname, QStringList iAddresses)
 {
-    mAddressesToCheck[iShortname] = iAddresses;
+    qDebug() << "setAddresses() : " << iShortname << "Addresses : " << iAddresses;
+    if (iShortname != "") {
+        mAddressesToCheck[iShortname] = iAddresses;
+    } else {
+        qDebug() << "Attempted to add empty wallet to downloader avoided... Nice";
+    }
 }
 
 void DownloadWorker::downloadMarketValues()
@@ -51,8 +61,10 @@ void DownloadWorker::downloadMarketValues()
     //https://ts.threebx.com/a/exchangerate/?btc:usd&ltc:usd
 
     QString lRequestParameter = "?";
-    for (auto sn : AppWallets::walletShortnames()) {
+    for (auto sn : AppWallets::walletNames().keys()) {
         if (sn.at(0) == "d") {
+            continue;
+        } else if (sn.at(0) == "t") {
             continue;
         }
         lRequestParameter = lRequestParameter.append( QString("USD:%1&").arg(QString(sn)));
@@ -86,57 +98,72 @@ void DownloadWorker::downloadMarketValues()
 
 void DownloadWorker::downloadBalances()
 {
+    QMap<QString, QStringList> lAddressMap = mAddressesToCheck;
+    qDebug() << "Downloading Balances";
+
+    for (auto addressKey : lAddressMap.keys()) {
+        qDebug() << "downloading for " << addressKey;
+
+        if (addressKey == "") {
+            continue;
+        }
+
+        if (addressKey.at(0) == "d") {
+            //Skip dark wallets
+            qDebug() << "Skipping: " << addressKey;
+            continue;
+        }
+
+        if (addressKey != "DOGE" || addressKey != "tDOGE" || addressKey != "ETH" || addressKey != "tETH") {
+            downloadGenericInsightBalances(addressKey, mAddressesToCheck[addressKey]);
+        }
+    }
+}
+
+void DownloadWorker::downloadGenericInsightBalances(QString iShortname, QStringList iAddresses)
+{
+    qDebug() << "Downloading Generic Insight Balance";
+
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager(this);
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
 
     connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
-    QMap<QString, QStringList> lAddressMap = mAddressesToCheck;
 
-    for (auto addressKey : lAddressMap.keys()) {
-        QStringList lAddresses;
-        QStringList lBalances;
-        QStringList lPendingBalances;
-        qDebug() << "downloading for " << addressKey;
+    QStringList lAddresses;
+    QStringList lBalances;
+    QStringList lPendingBalances;
 
-        if (addressKey.at(0) == "d") {
-            qDebug() << "Skipping: " << addressKey;
-            continue;
-        }
+    for (auto addr : iAddresses) {
+        auto lRequestURL = QUrl(QString("%1/addr/%2").arg(EndpointUrls::insightUrls()[iShortname]).arg(QString(addr)));
+        qDebug() << lRequestURL;
+        lReply = mNetworkManager->get(QNetworkRequest(lRequestURL));
+        lMyEventLoop.exec();
 
-        for (auto addr : lAddressMap[addressKey]) {
-            auto lRequestURL = QUrl(QString("%1/addr/%2").arg(TEST_INSIGHT_BITCORE_IP_ADDRESS).arg(QString(addr)));
-            qDebug() << lRequestURL;
-            lReply = mNetworkManager->get(QNetworkRequest(lRequestURL));
-            lMyEventLoop.exec();
+        if (lReply->error() == QNetworkReply::NoError) {
+            QByteArray      lReplyText = lReply->readAll();
+            auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
 
-            qDebug() << "Got reponse back from";
+            QStringMath     lBalance = lMyMap["balance"].toString();
+            QString         lPendingString = lMyMap["unconfirmedBalance"].toString();
+            QStringMath     lPendingBalance = QStringMath("0.0");
 
-            if (lReply->error() == QNetworkReply::NoError) {
-                QByteArray      lReplyText = lReply->readAll();
-                auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
-
-                QStringMath     lBalance = lMyMap["balance"].toString();
-                QString         lPendingString = lMyMap["unconfirmedBalance"].toString();
-                QStringMath     lPendingBalance = QStringMath("0.0");
-
-                if (!lPendingString.isEmpty()) {
-                    if (lPendingString.at(0) == "-") {
-                        lPendingString.remove(0,1);
-                        lPendingBalance = lBalance - lMyMap["unconfirmedBalance"].toString();
-                    } else {
-                        lPendingBalance = lBalance + lMyMap["unconfirmedBalance"].toString();
-                    }
+            if (!lPendingString.isEmpty()) {
+                if (lPendingString.at(0) == "-") {
+                    lPendingString.remove(0,1);
+                    lPendingBalance = lBalance - lMyMap["unconfirmedBalance"].toString();
+                } else {
+                    lPendingBalance = lBalance + lMyMap["unconfirmedBalance"].toString();
                 }
-                qDebug() << addressKey << " -- " << addr << " -- " << "Balance: " << lBalance.toString() << "  Pending: " << lPendingBalance.toString();
-
-                lAddresses << addr;
-                lBalances << lBalance.toString();
-                lPendingBalances << lPendingBalance.toString();
-            } else {
-                qDebug() << "Error.... Can not update bright wallet balance...";
             }
+            qDebug() << iShortname << " -- " << addr << " -- " << "Balance: " << lBalance.toString() << "  Pending: " << lPendingBalance.toString();
+
+            lAddresses << addr;
+            lBalances << lBalance.toString();
+            lPendingBalances << lPendingBalance.toString();
+        } else {
+            qDebug() << "Error.... Can not update bright wallet balance...";
         }
-        emit walletAddressesUpdated(addressKey, lAddresses, lBalances, lPendingBalances);
     }
+    emit walletAddressesUpdated(iShortname, lAddresses, lBalances, lPendingBalances);
 }
