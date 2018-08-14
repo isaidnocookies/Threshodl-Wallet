@@ -8,6 +8,8 @@ import QtGraphicalEffects 1.0
 Item {
     id: newRecoveryPhrasePage
 
+    property bool isPasscodeConfirmed: false
+
     Rectangle {
         id: topBarSpacer
         color: "white"
@@ -179,6 +181,40 @@ Item {
         }
     }
 
+    LockScreen {
+        id: passcodeScreen
+        setupPasscode: true
+        allowBack: false
+        visible: false
+        screenTitle: "Please enter a passcode"
+
+        onPasscodeComplete: {
+            if (isPasscodeConfirmed) {
+                if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
+                    userAccount.confirmPasscodeChange()
+                    passcodeScreen.passcode = ""
+                    ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
+                    console.log("Passcode complete!")
+                } else {
+                    console.log("Passcode process reset")
+                    isPasscodeConfirmed = false
+                    allowBack = false
+                    screenTitle = "Please enter a passcode"
+                    passcodeScreen.passcode = ""
+                    ourStackView.replace(passcodeScreen)
+                }
+            } else {
+                console.log("Passcode now confirmed")
+                allowBack = false
+                userAccount.changePasscode(passcodeScreen.passcode)
+                passcodeScreen.passcode = ""
+                screenTitle = "Please confirm your passcode"
+                isPasscodeConfirmed = true
+                ourStackView.replace(passcodeScreen)
+            }
+        }
+    }
+
     Button {
         id: continueButton
         text: "Continue"
@@ -190,7 +226,10 @@ Item {
         enabled: false
 
         onClicked: {
-            ourStackView.push(Qt.resolvedUrl("dashboardPage.qml"))
+            isPasscodeConfirmed = false
+            passcodeScreen.visible = true
+            ourStackView.push(passcodeScreen)
+            console.log("Passcode clicked(1)")
         }
 
         contentItem: Text {

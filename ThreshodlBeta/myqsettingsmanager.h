@@ -24,6 +24,9 @@ public:
     void saveWallet(QByteArray iWalletData, QString iShortname, bool isDark);
     void saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType);
 
+    void savePasscode(QString iPasscode);
+    QString getPasscode();
+
     void getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts);
 
 protected:

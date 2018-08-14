@@ -14,6 +14,15 @@ Item {
         }
     }
 
+    LockScreen {
+        id: passcodeLockScreen
+
+        onPasscodeComplete: {
+            console.log("UNLOCKED!")
+            ourStackView.replace(Qt.resolvedUrl("settingsPage.qml"))
+        }
+    }
+
     Rectangle {
         id: topBarSpacer
         color: "white"
@@ -93,6 +102,7 @@ Item {
         }
 
         onClicked: {
+//            ourStackView.push(passcodeLockScreen)
             ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
         }
     }

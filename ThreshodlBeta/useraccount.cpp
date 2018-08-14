@@ -5,7 +5,6 @@
 UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
     qDebug() << "UserAccount created";
-
     mDataManager = new MyQSettingsManager;
 
     mDownloaderWaitCondition = new QWaitCondition;
@@ -63,6 +62,31 @@ void UserAccount::recoverAccount(QString iSeed, QString iUsername)
 QString UserAccount::getRecoverySeed()
 {
     return mRecoverySeed;
+}
+
+bool UserAccount::checkPasscode(QString iPass)
+{
+    if (iPass == mPasscode) {
+        return true;
+    }
+    return false;
+}
+
+void UserAccount::changePasscode(QString iNewPass)
+{
+    mTempPasscode = iNewPass;
+}
+
+QString UserAccount::getTempPasscode()
+{
+    return mTempPasscode;
+}
+
+void UserAccount::confirmPasscodeChange()
+{
+    mPasscode = mTempPasscode;
+    mTempPasscode = "";
+    mDataManager->savePasscode(mPasscode);
 }
 
 QString UserAccount::getTotalBalance(QString iCurrency)
@@ -188,6 +212,11 @@ void UserAccount::setPublicAndPrivateKeys(QString iPublicKey, QString iPrivateKe
     mPrivateKey = iPrivateKey;
 }
 
+void UserAccount::setPasscode(QString iPasscode)
+{
+    mPasscode = iPasscode;
+}
+
 void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey)
 {
     if (iSuccess) {
@@ -237,11 +266,14 @@ void UserAccount::loadAccountFromSettings()
         QString lUsername;
         QString lPub;
         QString lPriv;
+        QString lPasscode;
 
         mDataManager->usernameAndKeys(lUsername, lPub, lPriv);
+        lPasscode = mDataManager->getPasscode();
 
         setUsername(lUsername);
         setPublicAndPrivateKeys(lPub, lPriv);
+        setPasscode(lPasscode);
 
         QList<WalletAccount> lWalletAccounts;
         mDataManager->getBrightWalletAccounts(lWalletAccounts);

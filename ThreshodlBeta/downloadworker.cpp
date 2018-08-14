@@ -29,7 +29,7 @@ void DownloadWorker::startDownloading()
 //        mWaitCondition->wait(mWaitMutex);
         downloadMarketValues();
         downloadBalances();
-        QThread::sleep(30);
+        QThread::sleep(60);
 //        mWaitMutex->unlock();
     }
 

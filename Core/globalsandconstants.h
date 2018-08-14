@@ -94,6 +94,8 @@ namespace DataKeys {
     inline QString exchangeCurrencyDataKey()            { return QString("exchangeCurrencyDataKey"); }
     inline QString confirmedBalanceCurrencyDataKey()    { return QString("confirmedBalanceCurrencyDataKey"); }
     inline QString unconfirmedBalanceCurrencyDataKey()  { return QString("unconfirmedBalanceCurrencyDataKey"); }
+
+    inline QString passcodeDataKey()                    { return QString("passcodeDataKey"); }
 }
 
 namespace AppInfo {

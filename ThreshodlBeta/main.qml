@@ -24,17 +24,33 @@ ApplicationWindow {
 
     property int buttonFontSize: 13
 
-    function loadFirstPage() {
-        if (userAccount.exists()) {
-            return Qt.resolvedUrl("dashboardPage.qml")
-        } else {
-            return Qt.resolvedUrl("startPage.qml")
+    LockScreen {
+        id: loginLockScreen
+        allowBack: false
+        visible: false
+        setupPasscode: false
+
+        onPasscodeComplete: {
+            ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
         }
     }
 
     StackView {
         id: ourStackView
-        initialItem: loadFirstPage()
+        initialItem: {
+
+//            ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
+//            return
+
+            if (userAccount.exists()) {
+                if (userAccount.checkPasscode("")) {
+                    ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
+                }
+                loginLockScreen
+            } else {
+                Qt.resolvedUrl("startPage.qml")
+            }
+        }
         anchors.fill: parent
     }
 }

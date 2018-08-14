@@ -27,6 +27,11 @@ public:
     Q_INVOKABLE void    recoverAccount(QString iSeed, QString iUsername = "");
     Q_INVOKABLE QString getRecoverySeed();
 
+    Q_INVOKABLE bool    checkPasscode(QString iPass);
+    Q_INVOKABLE void    changePasscode(QString iNewPass);
+    Q_INVOKABLE QString getTempPasscode();
+    Q_INVOKABLE void    confirmPasscodeChange();
+
     Q_INVOKABLE QString getTotalBalance(QString iCurrency = "USD");
     Q_INVOKABLE QString getBalance(QString iShortName, bool iIsDark = false, bool iConfirmed = true);
     Q_INVOKABLE QString getBalanceValue(QString iShortName, bool iIsDark = false, bool iConfirmed = true, QString iCurrency = "USD");
@@ -45,6 +50,7 @@ public:
 
     void publicAndPrivateKeys               (QString &oPublicKey, QString &oPrivateKey);
     void setPublicAndPrivateKeys            (QString iPublicKey, QString iPrivateKey);
+    void setPasscode                        (QString iPasscode);
 
 signals:
     void usernameChanged();
@@ -70,23 +76,26 @@ private:
     void loadAccountFromSettings();
     void createCryptoWallets();
 
-    MyQSettingsManager              *mDataManager;
-    CreateUsername                  *mCreateUsername;
+    MyQSettingsManager *mDataManager;
+    CreateUsername *mCreateUsername;
 
-    bool                            mWaiting;
-    QString                         mCurrentErrorString;
-    QString                         mUsername;
-    QString                         mRecoverySeed;
-    QString                         mPrivateKey;
-    QString                         mPublicKey;
+    bool mWaiting;
+    QString mCurrentErrorString;
+    QString mUsername;
+    QString mRecoverySeed;
+    QString mPrivateKey;
+    QString mPublicKey;
 
-    QMap<QString, WalletAccount>    mBrightWallets;
+    QMap<QString, WalletAccount> mBrightWallets;
 
-    QWaitCondition                  *mDownloaderWaitCondition;
-    QMutex                          *mDownloaderMutex;
+    QWaitCondition *mDownloaderWaitCondition;
+    QMutex *mDownloaderMutex;
 
-    QThread                         *mMyDownloaderThread;
-    DownloadWorker                  *mMyDownloaderWorker;
+    QThread *mMyDownloaderThread;
+    DownloadWorker *mMyDownloaderWorker;
+
+    QString mPasscode;
+    QString mTempPasscode;
 };
 
 #endif // USERACCOUNT_H

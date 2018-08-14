@@ -13,6 +13,8 @@
         <file>QrScannerView.qml</file>
         <file>settingsPage.qml</file>
         <file>recoverySeedRecovery.qml</file>
+        <file>LockScreen.qml</file>
+        <file>ViewPrivateKeysPage.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>assets/threshodlLogo_landing.png</file>

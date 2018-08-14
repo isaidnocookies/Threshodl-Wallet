@@ -73,6 +73,21 @@ void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName
     mAccountData->sync();
 }
 
+void MyQSettingsManager::savePasscode(QString iPasscode)
+{
+    mAccountData->setValue(DataKeys::passcodeDataKey(), iPasscode);
+    mAccountData->sync();
+}
+
+QString MyQSettingsManager::getPasscode()
+{
+    if (mAccountData->contains(DataKeys::passcodeDataKey())) {
+        return mAccountData->value(DataKeys::passcodeDataKey()).toString();
+    } else {
+        return "";
+    }
+}
+
 void MyQSettingsManager::getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts)
 {
     for (int i = 0; i < AppWallets::walletNames().keys().size(); i++) {
