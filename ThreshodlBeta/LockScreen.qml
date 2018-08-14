@@ -56,7 +56,11 @@ Item {
             width: parent.width
         }
 
-        onClicked: ourStackView.pop()
+        onClicked: {
+            passcode = ""
+            digitIndex = 0
+            ourStackView.pop()
+        }
     }
 
     Text {
@@ -143,7 +147,9 @@ Item {
                     id: buttonShape
                     width: parent.width
                     height: width
-                    color: "#4c586f"
+                    color: "white"
+                    border.color: "#4c586f"
+                    border.width: 2
 
                     radius: height/2
                     opacity: (index === 9 || index === 11) ? 0 : 1
@@ -151,7 +157,7 @@ Item {
                     Text {
                         id: buttonText
                         text: getDigitValue(index)
-                        color: "white"
+                        color: "#4c586f"
                         font.bold: true
                         font.pointSize: 18
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -164,10 +170,16 @@ Item {
                     anchors.fill: buttonShape
                     enabled: (index === 9 || index === 11) ? false : true
 
+                    onPressed: {
+                        buttonShape.color = "#415161"
+                    }
+
+                    onReleased: {
+                        buttonShape.color = "white"
+                    }
+
                     onClicked: {
-//                        console.log(index + " pressed")
                         passcode = passcode + getDigitValue(index)
-//                        console.log(passcode)
                         digitIndex++
 
                         if (digitIndex === 4 && setupPasscode) {

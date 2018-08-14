@@ -17,7 +17,6 @@ public:
 
     bool userAccountExists();
     void saveUsername(QString iUsername);
-    void saveRecoverySeed(QString iSeed);
     void savePublicAndPrivateKeys(QString iPublicKey, QString iPrivateKey);
     void usernameAndKeys(QString &oUsername, QString &oPublicKey, QString &oPrivateKey);
 
@@ -26,6 +25,9 @@ public:
 
     void savePasscode(QString iPasscode);
     QString getPasscode();
+
+    void saveRecoverySeed(QString iSeed);
+    QString getRecoverySeed();
 
     void getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts);
 

@@ -32,6 +32,14 @@ void MyQSettingsManager::saveRecoverySeed(QString iSeed)
     mAccountData->sync();
 }
 
+QString MyQSettingsManager::getRecoverySeed()
+{
+    if (mAccountData->contains(DataKeys::recoverySeedDataKey())) {
+        return mAccountData->value(DataKeys::recoverySeedDataKey()).toString();
+    }
+    return "";
+}
+
 void MyQSettingsManager::savePublicAndPrivateKeys(QString iPublicKey, QString iPrivateKey)
 {
     mAccountData->setValue(DataKeys::publicKeyDataKey(), iPublicKey);

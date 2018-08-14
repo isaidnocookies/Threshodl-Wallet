@@ -24,6 +24,11 @@ ApplicationWindow {
 
     property int buttonFontSize: 13
 
+    DashboardPage {
+        id: dashboard
+        visible: false
+    }
+
     LockScreen {
         id: loginLockScreen
         allowBack: false
@@ -31,20 +36,16 @@ ApplicationWindow {
         setupPasscode: false
 
         onPasscodeComplete: {
-            ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
+            ourStackView.replace(dashboard)
         }
     }
 
     StackView {
         id: ourStackView
         initialItem: {
-
-//            ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
-//            return
-
             if (userAccount.exists()) {
                 if (userAccount.checkPasscode("")) {
-                    ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
+                    dashboard
                 }
                 loginLockScreen
             } else {

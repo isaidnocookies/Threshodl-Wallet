@@ -2,9 +2,18 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.3
 
 Item {
     id: privateKeysPage
+
+    property var walletList : userAccount.getAllWallets()
+
+    Component.onCompleted: {
+        for (var i = 0; i < walletList.length; i = i + 3) {
+            walletModel.append({ coin: walletList[i], address: walletList[i+1], privateKey: walletList[i+2] })
+        }
+    }
 
     Rectangle {
         id: topBarSpacer
@@ -12,6 +21,7 @@ Item {
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
+        z: 5
     }
 
     Text {
@@ -20,12 +30,32 @@ Item {
         font.bold: true
         y: backButton.y + backButton.height / 3
         x: (parent.width / 2) - (width / 2)
+        z: 5
+    }
+
+    Rectangle {
+        id: titleSpacer
+        color: "white"
+        width: parent.width
+        height: 40
+        anchors.top: title.bottom
+        z: 5
+    }
+
+    Rectangle {
+        id: headerBackground
+        color: "white"
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: titleSpacer.bottom
+        z: 2
     }
 
     Button {
         id: backButton
         height: 30
         width: 30
+        z: 5
 
         background: Rectangle {
             color: "white"
@@ -47,14 +77,98 @@ Item {
     }
 
 
+    ListModel {
+        id: walletModel
+//        ListElement {
+//            coin: "BTC"
+//            address:"Address"
+//            privateKey: "Private Key"
+//        }
 
+//        ListElement {
+//            coin: "Dash"
+//            address:"Address"
+//            privateKey: "Private Key"
+//        }
+    }
 
+    Component {
+        id: walletModelDelegate
 
+        Item {
+            width: parent.width
+            height: (rowLine.y + rowLine.height) - coinName.y + 20
 
+            Text {
+                id: coinName
+                anchors.top: parent.top
+                width: parent.width
+                text: coin
+                color: "black"
+                wrapMode: Text.WrapAnywhere
+//                horizontalAlignment: Text.AlignHCenter
 
+                font.pointSize: 12
+            }
+            Text {
+                id: addressLabel
+                text: address
+                y: coinName.y + coinName.height + 10
+                width: parent.width
+                wrapMode: Text.WrapAnywhere
+                color: "black"
+//                horizontalAlignment: Text.AlignHCenter
 
+                font.bold: true
+                font.pointSize: 14
+            }
+            Text {
+                id: privateKeyLabel
+                text: privateKey
+                y: addressLabel.y + addressLabel.height + 10
+                width: parent.width
+                color: "black"
+                wrapMode: Text.WrapAnywhere
+//                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+            }
+            Rectangle {
+                id: rowLine
+                height: 1
+                width: parent.width
+                y: privateKeyLabel.y + privateKeyLabel.height + 20
+                color: "lightgray"
+            }
 
+            MessageDialog {
+                id: copyAlert
+                title: "Copied"
+                detailedText: "The wallet details have been copied to your clipboard"
+            }
 
+            MouseArea {
+                anchors.fill: parent
+
+                onClicked: {
+                    console.log("Clicked row")
+                    copyAlert.open()
+                    threshodlTools.copyToClipboard(address + "  -----  " + privateKey)
+                }
+            }
+        }
+    }
+
+    ListView {
+        id: walletListView
+        model: walletModel
+        anchors.top: titleSpacer.bottom
+        anchors.bottom: bottomBarCorrectionSpacer.top
+        width: parent.width * 0.9
+        anchors.horizontalCenter: parent.horizontalCenter
+        delegate: walletModelDelegate
+
+        z: 0
+    }
 
     Rectangle {
         id: bottomBarCorrectionSpacer

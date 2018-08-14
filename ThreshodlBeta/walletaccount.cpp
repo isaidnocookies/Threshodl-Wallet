@@ -204,6 +204,11 @@ bool WalletAccount::hasBrightWallet()
     return false;
 }
 
+QList<CryptoWallet> WalletAccount::getWallets()
+{
+    return mWallets;
+}
+
 void WalletAccount::createNewBrightWallet(QString iSeed)
 {
     CryptoWallet lNewCryptoWallet = CryptoWallet(mShortName, mLongName, iSeed, mChain);

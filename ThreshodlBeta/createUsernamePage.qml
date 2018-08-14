@@ -225,8 +225,6 @@ Item {
         }
     }
 
-
-
     function startBusyIndicatorAndDisable() {
         backButton.enabled = false
         usernameField.enabled = false

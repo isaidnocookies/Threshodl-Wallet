@@ -4,7 +4,7 @@
         <file>startPage.qml</file>
         <file>createUsernamePage.qml</file>
         <file>newRecoveryPhrasePage.qml</file>
-        <file>dashboardPage.qml</file>
+        <file>DashboardPage.qml</file>
         <file>DashboardListModel.qml</file>
         <file>CryptoWalletDelegate.qml</file>
         <file>ExpandedCellComponent.qml</file>
@@ -37,5 +37,9 @@
         <file>assets/clipboardPasteIcon.png</file>
         <file>assets/testnetBitcoinIcon.png</file>
         <file>assets/addWalletIcon.png</file>
+        <file>assets/emailIcon.png</file>
+        <file>assets/testnetLitecoinIcon.png</file>
+        <file>assets/bitcoinCashIcon.png</file>
     </qresource>
+    <qresource prefix="/components"/>
 </RCC>

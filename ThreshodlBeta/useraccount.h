@@ -42,6 +42,8 @@ public:
     Q_INVOKABLE QString sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount);
     Q_INVOKABLE QString createBrightWallet(QString iShortname);
 
+    Q_INVOKABLE QVariantList getAllWallets();
+
     QString username()                      { return mUsername; }
     void setUsername                        (QString iUsername);
 

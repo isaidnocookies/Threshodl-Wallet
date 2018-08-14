@@ -193,7 +193,7 @@ Item {
                 if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
                     userAccount.confirmPasscodeChange()
                     passcodeScreen.passcode = ""
-                    ourStackView.replace(Qt.resolvedUrl("dashboardPage.qml"))
+                    ourStackView.replace(Qt.resolvedUrl("DashboardPage.qml"))
                     console.log("Passcode complete!")
                 } else {
                     console.log("Passcode process reset")

@@ -24,6 +24,17 @@ ListModel {
         cellExpanded: false
     }
     ListElement {
+        name: "Testnet Litecoin"
+        shortName: "tLTC"
+
+        imageName: "images/assets/testnetLitecoinIcon.png"
+        brightIconName: ""
+        darkIconName: ""
+
+        hasDarkWallet: false
+        cellExpanded: false
+    }
+    ListElement {
         name: "Litecoin"
         shortName: "LTC"
 
@@ -56,6 +67,17 @@ ListModel {
         hasDarkWallet: false
         cellExpanded: false
     }
+//    ListElement {
+//        name: "Bitcoin Cash"
+//        shortName: "BCH"
+
+//        imageName: "images/assets/bitcoinCashIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
+
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
 //    ListElement {
 //        name: "Ethereum"
 //        shortName: "ETH"

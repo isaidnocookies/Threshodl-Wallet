@@ -14,6 +14,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 ios {
     QMAKE_INFO_PLIST = ios/Info.plist
+
+    ios_icon.files = $$files($$PWD/ios/AppIcon.appiconset/Icon-App*.png)
+
+    QMAKE_BUNDLE_DATA += ios_icon
+    QMAKE_CFLAGS += -gdwarf-2
+    QMAKE_CXXFLAGS += -gdwarf-2
 }
 
 include (../Core/Core.pri)

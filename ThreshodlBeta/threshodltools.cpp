@@ -38,6 +38,11 @@ QString ThreshodlTools::formatMarketValueString(QString iInputValue)
             return iInputValue.remove(lIndexOfDot + 3, iInputValue.size() - 1 - lIndexOfDot + 1);
         }
     } else {
+
+        if (iInputValue == "") {
+            return "0.00";
+        }
+
         return iInputValue.append(".00");
     }
 }

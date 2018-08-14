@@ -45,6 +45,8 @@ public:
     bool getBrightAddress(QString &oAddress);
     bool hasBrightWallet();
 
+    QList<CryptoWallet> getWallets();
+
     void createNewBrightWallet(QString iSeed);
 
     QString sendBrightTransaction(QString iToAddress, QString iToAmount);

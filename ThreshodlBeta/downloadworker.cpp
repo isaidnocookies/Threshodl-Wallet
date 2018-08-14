@@ -22,15 +22,13 @@ DownloadWorker::~DownloadWorker()
 void DownloadWorker::startDownloading()
 {
     mDownloading = true;
+    QThread::sleep(5);
     qDebug() << "Downloader Started...";
 
     while (mDownloading) {
-//        mWaitMutex->lock();
-//        mWaitCondition->wait(mWaitMutex);
         downloadMarketValues();
         downloadBalances();
         QThread::sleep(60);
-//        mWaitMutex->unlock();
     }
 
     emit finished();

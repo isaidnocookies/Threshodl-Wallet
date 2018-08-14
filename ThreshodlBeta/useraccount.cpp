@@ -25,11 +25,9 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
     connect(mMyDownloaderWorker, &DownloadWorker::allMarketValuesUpdated, this, &UserAccount::marketValuesUpdated);
     connect(this, &UserAccount::setDownloaderAddresses, mMyDownloaderWorker, &DownloadWorker::setAddresses);
 
-    mMyDownloaderThread->start();
-
     loadAccountFromSettings();
 
-//    mDownloaderWaitCondition->wakeAll();
+    mMyDownloaderThread->start();
 }
 
 UserAccount::~UserAccount()
@@ -140,6 +138,7 @@ void UserAccount::setUsername(QString iUsername)
 void UserAccount::setRecoverySeed(QString iSeed)
 {
     mRecoverySeed = iSeed;
+    mDataManager->saveRecoverySeed(iSeed);
 }
 
 QString UserAccount::getBrightAddress(QString iShortname)
@@ -200,6 +199,25 @@ QString UserAccount::createBrightWallet(QString iShortname)
     return "";
 }
 
+QVariantList UserAccount::getAllWallets()
+{
+    QVariantList lList;
+
+    for (auto walletKey : mBrightWallets.keys()) {
+
+        WalletAccount lWA = mBrightWallets[walletKey];
+        auto lWallets = lWA.getWallets();
+        for (auto wallet : lWallets) {
+            QVariantList lWalletList;
+            lWalletList.append(walletKey);
+            lWalletList.append(wallet.address());
+            lWalletList.append(wallet.privateKey());
+            lList.append(lWalletList);
+        }
+    }
+    return lList;
+}
+
 void UserAccount::publicAndPrivateKeys(QString &oPublicKey, QString &oPrivateKey)
 {
     oPublicKey = mPublicKey;
@@ -250,9 +268,7 @@ void UserAccount::walletBalancesUpdated(QString iShortname, QStringList iAddress
         mBrightWallets[iShortname].updateBalance(iAddresses.at(i), iBalances.at(i), iPendingBalances.at(i));
     }
 
-    //emit crypto specific signal
     emit walletBalanceUpdateComplete(iShortname);
-//    emit cryptoBalanceUpdated();
 }
 
 void UserAccount::downloaderErrorString(QString iError)
@@ -267,13 +283,16 @@ void UserAccount::loadAccountFromSettings()
         QString lPub;
         QString lPriv;
         QString lPasscode;
+        QString lRecoveryPhrase;
 
         mDataManager->usernameAndKeys(lUsername, lPub, lPriv);
         lPasscode = mDataManager->getPasscode();
+        lRecoveryPhrase = mDataManager->getRecoverySeed();
 
         setUsername(lUsername);
         setPublicAndPrivateKeys(lPub, lPriv);
         setPasscode(lPasscode);
+        setRecoverySeed(lRecoveryPhrase);
 
         QList<WalletAccount> lWalletAccounts;
         mDataManager->getBrightWalletAccounts(lWalletAccounts);
