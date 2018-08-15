@@ -52,6 +52,17 @@ Item {
         onClicked: ourStackView.pop()
     }
 
+    Image {
+        source: "images/assets/settingsButtonIcon.png"
+        fillMode: Image.PreserveAspectFit
+        width: parent.width / 8
+        height: width
+        z: 5
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        y:title.y + title.height + 25
+    }
+
     Rectangle {
         id: topTableSpacer
         anchors.top: title.bottom
@@ -274,13 +285,13 @@ Item {
                         anchors.fill: parent
                     }
 
-                    Image {
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: parent.width / 4
-                        source : "images/assets/emailIcon.png"
-                        height: parent.height * 0.5
-                        width: height
-                    }
+//                    Image {
+//                        anchors.verticalCenter: parent.verticalCenter
+//                        x: parent.width / 4
+//                        source : "images/assets/emailIcon.png"
+//                        height: parent.height * 0.5
+//                        width: height
+//                    }
 
                     onClicked: {
                         Qt.openUrlExternally("mailto:hello@threebx.com?subject=Hello!")

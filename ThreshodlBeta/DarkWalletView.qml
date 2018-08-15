@@ -190,14 +190,14 @@ Item {
         }
 
         TabButton {
-            id: recieveTabButton
+            id: receiveTabButton
             text: "Recieve"
 
             contentItem: Text {
                 color: "black"
                 verticalAlignment: Text.AlignTop
                 horizontalAlignment: Text.AlignHCenter
-                text: recieveTabButton.text
+                text: receiveTabButton.text
                 font.bold: true
                 font.pointSize: 12
             }

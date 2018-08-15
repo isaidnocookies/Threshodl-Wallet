@@ -39,6 +39,8 @@ public:
     Q_INVOKABLE QString getBrightAddress(QString iShortname);
     Q_INVOKABLE QString getMarketValue(QString iShortname, QString iCurrency = "USD");
 
+    Q_INVOKABLE QString getTotalWalletBalanceValue(QString iShortname, bool iConfirmed = true, QString iCurrency = "USD");
+
     Q_INVOKABLE QString sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount);
     Q_INVOKABLE QString createBrightWallet(QString iShortname);
 

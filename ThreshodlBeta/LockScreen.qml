@@ -26,8 +26,8 @@ Item {
 
     Text {
         id: title
-        text: ""
-        font.bold: true
+        text: "threshodl"
+        font.bold: false
         y: backButton.y + backButton.height / 3
         x: (parent.width / 2) - (width / 2)
     }
@@ -71,7 +71,7 @@ Item {
         font.pointSize: 18
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: title.y + 40
+        y: title.y + 60
     }
 
     Text {
@@ -95,29 +95,33 @@ Item {
 
         Rectangle {
             id: digit0; height: 20; width: 20; radius: width * 0.5
-            color: { if (isDigitCompleted(0)) { "black" } else { "lightgray" } }
+            border.color: { if (isDigitCompleted(0)) { "black" } else { "gray" } }
+            color: { if (isDigitCompleted(0)) { "black" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit1; height: 20; width: 20; radius: width * 0.5
-            color: { if (isDigitCompleted(1)) { "black" } else { "lightgray" } }
+            border.color: { if (isDigitCompleted(1)) { "black" } else { "gray" } }
+            color: { if (isDigitCompleted(1)) { "black" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit2; height: 20; width: 20; radius: width * 0.5
-            color: { if (isDigitCompleted(2)) { "black" } else { "lightgray" } }
+            border.color: { if (isDigitCompleted(2)) { "black" } else { "gray" } }
+            color: { if (isDigitCompleted(2)) { "black" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit3; height: 20; width: 20; radius: width * 0.5
-            color: { if (isDigitCompleted(3)) { "black" } else { "lightgray" } }
+            border.color: { if (isDigitCompleted(3)) { "black" } else { "gray" } }
+            color: { if (isDigitCompleted(3)) { "black" } else { "transparent" } }
         }
     }
 
     Rectangle {
         id: bottomSpacer
         width: parent.width
-        height: 40
+        height: 60
         anchors.bottom: parent.bottom
         color: "transparent"
     }
@@ -148,8 +152,8 @@ Item {
                     width: parent.width
                     height: width
                     color: "white"
-                    border.color: "#4c586f"
-                    border.width: 2
+                    border.color: getButtonColor(index)
+                    border.width: 1
 
                     radius: height/2
                     opacity: (index === 9 || index === 11) ? 0 : 1
@@ -157,8 +161,8 @@ Item {
                     Text {
                         id: buttonText
                         text: getDigitValue(index)
-                        color: "#4c586f"
-                        font.bold: true
+                        color: getButtonColor(index)
+                        font.bold: false
                         font.pointSize: 18
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
@@ -171,7 +175,7 @@ Item {
                     enabled: (index === 9 || index === 11) ? false : true
 
                     onPressed: {
-                        buttonShape.color = "#415161"
+                        buttonShape.color = "#527bd5"
                     }
 
                     onReleased: {
@@ -201,6 +205,33 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    function getButtonColor(index) {
+        switch(index) {
+        case 1:
+            return "#01cff5";
+        case 2:
+            return "#0ac9f6";
+        case 3:
+            return "#21bdf8";
+        case 4:
+            return "#2eb5f9";
+        case 5:
+            return "#3dadfb";
+        case 6:
+            return "#46a8fc";
+        case 7:
+            return "#4ea4fd";
+        case 8:
+            return "#54a0fd";
+        case 9:
+            return "#599efe";
+        case 10:
+            return "#5e9bfe";
+        default:
+            return "#6796ff";
         }
     }
 

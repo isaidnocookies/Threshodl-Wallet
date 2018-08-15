@@ -28,7 +28,7 @@ void DownloadWorker::startDownloading()
     while (mDownloading) {
         downloadMarketValues();
         downloadBalances();
-        QThread::sleep(60);
+        QThread::sleep(POLLING_INTERVAL);
     }
 
     emit finished();
@@ -41,7 +41,6 @@ void DownloadWorker::stopDownloading()
 
 void DownloadWorker::setAddresses(QString iShortname, QStringList iAddresses)
 {
-    qDebug() << "setAddresses() : " << iShortname << "Addresses : " << iAddresses;
     if (iShortname != "") {
         mAddressesToCheck[iShortname] = iAddresses;
     } else {
@@ -56,19 +55,8 @@ void DownloadWorker::downloadMarketValues()
     QNetworkReply           *lReply;
     connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
-    //https://ts.threebx.com/a/exchangerate/?btc:usd&ltc:usd
-
-    QString lRequestParameter = "?";
-    for (auto sn : AppWallets::walletNames().keys()) {
-        if (sn.at(0) == "d") {
-            continue;
-        } else if (sn.at(0) == "t") {
-            continue;
-        }
-        lRequestParameter = lRequestParameter.append( QString("USD:%1&").arg(QString(sn)));
-    }
-    lRequestParameter.remove(lRequestParameter.size() - 1, 1);
-    auto lRequestURL = QUrl(QString("%1/%2").arg(TASK_SERVER_URL).arg(lRequestParameter));
+    //https://_pyts.threebx.com/ex/rates
+    auto lRequestURL = QUrl(QString("%1/%2").arg(TASK_SERVER_URL).arg("ex/rates"));
     qDebug() << lRequestURL;
 
     lReply = mNetworkManager->get(QNetworkRequest(lRequestURL));
@@ -80,13 +68,9 @@ void DownloadWorker::downloadMarketValues()
         QMap<QString, QString> lUpdatedValues;
         QStringList lNames, lValues;
 
-        for (auto key : lMyMap.keys()) {
-            auto lKeyEntry = lMyMap[key].toMap();
-            auto lResponseKey = lKeyEntry["last"].toMap();
-            lUpdatedValues[QString(key).remove("USD")] = lResponseKey["rate"].toString();
-
-            lNames.append(key.remove("USD"));
-            lValues.append(lResponseKey["rate"].toString());
+        for (auto coin : AppWallets::walletNames().keys()) {
+            lNames.append(coin);
+            lValues.append(lMyMap[(coin.at(0) == "t" ? coin.remove(0, 1) : coin)].toMap()["USD"].toMap()["rate"].toString());
         }
         emit allMarketValuesUpdated(lNames, lValues);
     } else {
@@ -100,11 +84,8 @@ void DownloadWorker::downloadBalances()
     qDebug() << "Downloading Balances";
 
     for (auto addressKey : lAddressMap.keys()) {
-        qDebug() << "downloading for " << addressKey;
-
-        if (addressKey == "") {
+        if (addressKey == "")
             continue;
-        }
 
         if (addressKey.at(0) == "d") {
             //Skip dark wallets
@@ -120,8 +101,6 @@ void DownloadWorker::downloadBalances()
 
 void DownloadWorker::downloadGenericInsightBalances(QString iShortname, QStringList iAddresses)
 {
-    qDebug() << "Downloading Generic Insight Balance";
-
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager(this);
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
@@ -134,7 +113,6 @@ void DownloadWorker::downloadGenericInsightBalances(QString iShortname, QStringL
 
     for (auto addr : iAddresses) {
         auto lRequestURL = QUrl(QString("%1/addr/%2").arg(EndpointUrls::insightUrls()[iShortname]).arg(QString(addr)));
-        qDebug() << lRequestURL;
         lReply = mNetworkManager->get(QNetworkRequest(lRequestURL));
         lMyEventLoop.exec();
 

@@ -86,7 +86,7 @@ Item {
         z:10
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -111,20 +111,31 @@ Item {
         id: totalCurrencyLabel
         z:10
 
-        font.pointSize: 60
+        fontSizeMode: Text.Fit
+
+        font.pointSize: 55
         wrapMode: Text.NoWrap
 
-        font.weight: Font.ExtraLight
+        font.weight: Font.Thin
 
-        text: getCurrencySymbol("USD") + userAccount.getTotalBalance("USD")
-        y: usernameLabel.y + usernameLabel.height + 80
+        text: getCurrencySymbol("USD") + threshodlTools.formatMarketValueString(userAccount.getTotalBalance())
+        y: usernameLabel.y + usernameLabel.height + 60
         anchors.horizontalCenter: parent.horizontalCenter
 
         Connections {
             target: userAccount
 
             onWalletBalanceUpdateComplete: {
-                totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
+                totalCurrencyLabel.text = getCurrencySymbol("USD") + threshodlTools.formatMarketValueString(userAccount.getTotalBalance())
+                totalCurrencyLabel.checkFont()
+            }
+        }
+
+        function checkFont() {
+            if (currencyTypeLabel.x + currencyTypeLabel.width + 10 > parent.width) {
+                totalCurrencyLabel.font.pointSize = 30
+            } else {
+                totalCurrencyLabel.font.pointSize = 55
             }
         }
     }
@@ -143,7 +154,7 @@ Item {
     Rectangle {
         id: totalToListSpacer
         anchors.top: totalCurrencyLabel.bottom
-        height: 60
+        height: 30
         width: parent.width
         z:10
         color: Qt.rgba(1,1,1,0)
@@ -157,14 +168,34 @@ Item {
         anchors.top: parent.top
         anchors.bottom: totalToListSpacer.bottom
 
+//        gradient: Gradient {
+//            GradientStop {
+//                position: 0.9
+//                color: Qt.rgba(1, 1, 1, 1)
+//            }
+//            GradientStop {
+//                position: 1
+//                color: Qt.rgba(1, 1, 1, 0)
+//            }
+//        }
+    }
+
+    Rectangle {
+        id: topShadowEffect
+        anchors.top: listMask.bottom
+        height: 8
+        width: parent.width
+        z:9
+        opacity: 0.3
+
         gradient: Gradient {
             GradientStop {
-                position: 0.9
-                color: Qt.rgba(1, 1, 1, 1)
+                position: 0
+                color: Qt.rgba(0, 0, 0, 0.5)
             }
             GradientStop {
                 position: 1
-                color: Qt.rgba(1, 1, 1, 0)
+                color: Qt.rgba(0, 0, 0, 0)
             }
         }
     }
@@ -180,9 +211,30 @@ Item {
         anchors.bottom: bottomBarCorrectionSpacer.top
     }
 
+//    Rectangle {
+//        id: bottomShadowEffect
+//        anchors.bottom: bottomBarCorrectionSpacer.top
+//        height: 10
+//        width: parent.width
+//        z:9
+//        opacity: 0.4
+
+//        gradient: Gradient {
+//            GradientStop {
+//                position: 1
+//                color: Qt.rgba(0, 0, 0, 0.5)
+//            }
+//            GradientStop {
+//                position: 0
+//                color: Qt.rgba(0, 0, 0, 0)
+//            }
+//        }
+//    }
+
     Rectangle {
         id: bottomBarCorrectionSpacer
-        color: "white"
+//        color: "white"
+        color: "transparent"
         anchors.bottom: parent.bottom
         height: bottomAreaCorrectionHeight
         width: parent.width

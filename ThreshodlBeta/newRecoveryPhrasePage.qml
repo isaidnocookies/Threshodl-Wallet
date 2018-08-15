@@ -186,7 +186,7 @@ Item {
         setupPasscode: true
         allowBack: false
         visible: false
-        screenTitle: "Please enter a passcode"
+        screenTitle: "Please create a passcode"
 
         onPasscodeComplete: {
             if (isPasscodeConfirmed) {

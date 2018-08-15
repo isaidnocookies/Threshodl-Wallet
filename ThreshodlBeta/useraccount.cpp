@@ -7,6 +7,8 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
     qDebug() << "UserAccount created";
     mDataManager = new MyQSettingsManager;
 
+    mPasscode = "1101";
+
     mDownloaderWaitCondition = new QWaitCondition;
     mDownloaderMutex = new QMutex;
 
@@ -89,9 +91,14 @@ void UserAccount::confirmPasscodeChange()
 
 QString UserAccount::getTotalBalance(QString iCurrency)
 {
-    // use marketValues for this..
+    QStringMath lTotalAmount;
     if (iCurrency == "USD") {
-        return "0.00";
+        for (auto coinKey : AppWallets::walletNames().keys()) {
+            QStringMath lCoinTotal;
+            lCoinTotal = getBalanceValue(coinKey);
+            lTotalAmount = lTotalAmount + lCoinTotal;
+        }
+        return lTotalAmount.toString();
     } else {
         return "0.00";
     }
@@ -107,7 +114,14 @@ QString UserAccount::getBalanceValue(QString iShortName, bool iIsDark, bool iCon
 {
     Q_UNUSED (iIsDark) Q_UNUSED(iCurrency) Q_UNUSED(iConfirmed)
 
-    return mBrightWallets[iShortName].marketValue();
+    QString lCoinTotal;
+
+    double lMarketValue = getMarketValue(iShortName).toDouble();
+    double lBalance = getBalance(iShortName, iIsDark, iConfirmed).toDouble();
+
+    lCoinTotal = QString::number(lMarketValue * lBalance);
+
+    return lCoinTotal;
 }
 
 bool UserAccount::isWalletConfirmed(QString iCurrency, QString iWalletType)
@@ -163,6 +177,13 @@ QString UserAccount::getMarketValue(QString iShortname, QString iCurrency)
     QString lMarketValue = lAccount.marketValue();
 
     return lMarketValue;
+}
+
+QString UserAccount::getTotalWalletBalanceValue(QString iShortname, bool iConfirmed, QString iCurrency)
+{
+    QStringMath lWalletTotalValue;
+    lWalletTotalValue = QStringMath(getBalanceValue(iShortname, false, iConfirmed, iCurrency)) + getBalanceValue(iShortname, true, iConfirmed, iCurrency);
+    return lWalletTotalValue.toString();
 }
 
 QString UserAccount::sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount)

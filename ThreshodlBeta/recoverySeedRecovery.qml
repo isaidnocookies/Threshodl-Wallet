@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.0
 
 Item {
     id: recoveryRecoverySeed
+    property bool isPasscodeConfirmed: false
 
     Rectangle {
         id: topBarSpacer
@@ -166,6 +167,39 @@ Item {
         }
     }
 
+    LockScreen {
+        id: passcodeScreen
+        setupPasscode: true
+        allowBack: false
+        visible: false
+        screenTitle: "Please create a passcode"
+
+        onPasscodeComplete: {
+            if (isPasscodeConfirmed) {
+                if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
+                    userAccount.confirmPasscodeChange()
+                    passcodeScreen.passcode = ""
+                    ourStackView.replace(Qt.resolvedUrl("DashboardPage.qml"))
+                    console.log("Passcode complete!")
+                } else {
+                    console.log("Passcode process reset")
+                    isPasscodeConfirmed = false
+                    allowBack = false
+                    screenTitle = "Please enter a passcode"
+                    passcodeScreen.passcode = ""
+                    ourStackView.replace(passcodeScreen)
+                }
+            } else {
+                console.log("Passcode now confirmed")
+                allowBack = false
+                userAccount.changePasscode(passcodeScreen.passcode)
+                passcodeScreen.passcode = ""
+                screenTitle = "Please confirm your passcode"
+                isPasscodeConfirmed = true
+                ourStackView.replace(passcodeScreen)
+            }
+        }
+    }
 
     Button {
         id: recoveryAccountButton
@@ -202,7 +236,13 @@ Item {
                 if (success) {
                     console.log("Recover Account Successful");
                     userAccountSignalConnection.enabled = false
-                    ourStackView.push(Qt.resolvedUrl("dashboardPage.qml"))
+//                    ourStackView.push(Qt.resolvedUrl("DashboardPage.qml"))
+
+                    isPasscodeConfirmed = false
+                    passcodeScreen.visible = true
+                    ourStackView.push(passcodeScreen)
+                    console.log("Passcode clicked(1)")
+
                 } else {
                     console.log("Recover Account Failed");
                     userAccountSignalConnection.enabled = false

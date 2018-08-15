@@ -30,19 +30,33 @@ QString ThreshodlTools::getClipboardText()
 
 QString ThreshodlTools::formatMarketValueString(QString iInputValue)
 {
+    QString oValue = iInputValue;
+    int lIndexOfDot;
+
     if (iInputValue.contains(".")) {
-        int lIndexOfDot = iInputValue.indexOf(".");
+        lIndexOfDot = iInputValue.indexOf(".");
         if (lIndexOfDot > iInputValue.size() - 2) {
-            return iInputValue;
+            oValue = iInputValue;
         } else {
-            return iInputValue.remove(lIndexOfDot + 3, iInputValue.size() - 1 - lIndexOfDot + 1);
+            oValue = iInputValue.remove(lIndexOfDot + 3, iInputValue.size() - 1 - lIndexOfDot + 1);
         }
     } else {
-
         if (iInputValue == "") {
-            return "0.00";
+            oValue = "0.00";
         }
-
-        return iInputValue.append(".00");
+        oValue = iInputValue.append(".00");
     }
+
+    lIndexOfDot = oValue.indexOf(".");
+    while (lIndexOfDot > 3) {
+        oValue = oValue.insert(lIndexOfDot - 3, ",");
+        lIndexOfDot -= 3;
+    }
+
+    lIndexOfDot = oValue.indexOf(".");
+    while (oValue.size() - lIndexOfDot <= 2) {
+        oValue = oValue.append("0");
+    }
+
+    return oValue;
 }

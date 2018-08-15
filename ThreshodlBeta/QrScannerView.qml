@@ -100,7 +100,6 @@ Item {
         anchors.bottom: parent.bottom
 
         focus : visible
-
         autoOrientation: true
     }
 

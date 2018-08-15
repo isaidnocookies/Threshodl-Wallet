@@ -106,7 +106,7 @@ Item {
                 text: coin
                 color: "black"
                 wrapMode: Text.WrapAnywhere
-//                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
 
                 font.pointSize: 12
             }
@@ -117,7 +117,7 @@ Item {
                 width: parent.width
                 wrapMode: Text.WrapAnywhere
                 color: "black"
-//                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
 
                 font.bold: true
                 font.pointSize: 14
@@ -129,7 +129,7 @@ Item {
                 width: parent.width
                 color: "black"
                 wrapMode: Text.WrapAnywhere
-//                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
                 font.pointSize: 10
             }
             Rectangle {

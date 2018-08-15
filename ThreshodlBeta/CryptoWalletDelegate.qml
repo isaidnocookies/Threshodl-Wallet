@@ -41,7 +41,7 @@ Component {
         Rectangle {
             y: 0
             x: parent.width*0.05
-            height: 0.5
+            height: (index === 0 ? 0 : 0.5)
             color: "lightgray"
             width: parent.width * 0.9
             anchors.horizontalCenter: parent.horizontalCenter
@@ -115,12 +115,21 @@ Component {
         Text {
             id: currencyValueOfTotalCryptoLabel
 
-            text: "$0.00 USD"
+            text: "$" + threshodlTools.formatMarketValueString(getMarketValue(shortName))
             font.pointSize: 12
             font.bold: true
 
             x: totalCryptoText.x
             y: totalCryptoText.y + totalCryptoText.height + 5
+
+            Connections {
+                target: userAccount
+                onWalletBalanceUpdateComplete: {
+                    if (shortname == shortName ) {
+                        currencyValueOfTotalCryptoLabel.text = "$" + threshodlTools.formatMarketValueString(userAccount.getBalanceValue(shortName))
+                    }
+                }
+            }
         }
 
         Text {

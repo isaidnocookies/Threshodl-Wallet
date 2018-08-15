@@ -25,6 +25,14 @@ Item {
         }
     }
 
+    function getMarketValue(iShortname) {
+        return userAccount.getMarketValue(iShortname)
+    }
+
+    function getBalanceValue(iShortname) {
+        return userAccount.getBalanceValue(iShortname)
+    }
+
     function startBusyIndicatorAndDisable() {
         backButton.enabled = false
         mWaitingLayer.visible = true
@@ -143,7 +151,7 @@ Item {
 
         font.weight: Font.ExtraLight
 
-        text: getCurrencySymbol("USD") + userAccount.getTotalBalance("USD")
+        text: getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
         y: topBarIcon.y + topBarIcon.height + 20
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -152,8 +160,7 @@ Item {
 
             onWalletBalanceUpdateComplete: {
                 if (shortname == walletShortName) {
-                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getTotalBalance()
-
+                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
                 }
             }
         }
@@ -214,7 +221,20 @@ Item {
 
         y: walletConfirmationStatusLabel.y + walletConfirmationStatusLabel.height + 5
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "(Market Value: $10,000)"
+        text: {
+            if (threshodlTools.formatMarketValueString(getMarketValue(shortName)) === "0.00") {
+                ""
+            } else {
+                "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
+            }
+        }
+
+        Connections {
+            target: userAccount
+            onMarketValueChanged: {
+                marketValueText.text = "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
+            }
+        }
     }
 
     Rectangle {
@@ -272,7 +292,7 @@ Item {
 
         TabButton {
             id: recieveTabButton
-            text: "Recieve"
+            text: "Receive"
 
             contentItem: Text {
                 color: "black"
@@ -604,7 +624,32 @@ Item {
 
                 onClicked: {
                     threshodlTools.copyToClipboard(qrAddressLabel.text)
-                    warningLabel.text = "Address Copied!"
+                    warningLabelReceive.text = "Address Copied!"
+                }
+            }
+
+            Text {
+                id: warningLabelReceive
+                y: parent.height - 60
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "red"
+                text: ""
+
+                onTextChanged: {
+                    console.log("Warning label text changed")
+                    warningLabelTimerReceive.start()
+                }
+            }
+
+            Timer {
+                id: warningLabelTimerReceive
+                repeat: false
+                running: false
+                interval: 5000
+
+                onTriggered: {
+                    warningLabelReceive.text = ""
+                    console.log("Warning text reset")
                 }
             }
         }

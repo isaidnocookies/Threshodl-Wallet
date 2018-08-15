@@ -29,7 +29,6 @@ public slots:
     void setAddresses(QString iShortname, QStringList iAddresses);
 
 private:
-    int mInterval;
     bool                        mDownloading;
     QMap<QString, QStringList>  mAddressesToCheck;
     QMutex                      mAddressMapMutex;
