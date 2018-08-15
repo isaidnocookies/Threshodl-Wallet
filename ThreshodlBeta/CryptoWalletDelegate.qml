@@ -115,7 +115,7 @@ Component {
         Text {
             id: currencyValueOfTotalCryptoLabel
 
-            text: "$" + threshodlTools.formatMarketValueString(getMarketValue(shortName))
+            text: "$" + threshodlTools.formatMarketValueString(userAccount.getBalanceValue(shortName))
             font.pointSize: 12
             font.bold: true
 
