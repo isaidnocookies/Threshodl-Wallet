@@ -10,7 +10,7 @@
 
 //#define MY_WALLET_SERVER_ADDRESS "http://10.10.0.14:3333"
 #define MY_WALLET_SERVER_ADDRESS "http://13.57.145.171:3333"
-#define TASK_SERVER_URL "https://_pyts.threebx.com"
+#define TASK_SERVER_URL "https://pyts.threebx.com"
 #define POLLING_INTERVAL 60
 
 namespace AppWallets {
@@ -95,6 +95,9 @@ namespace DataKeys {
     inline QString exchangeCurrencyDataKey()            { return QString("exchangeCurrencyDataKey"); }
     inline QString confirmedBalanceCurrencyDataKey()    { return QString("confirmedBalanceCurrencyDataKey"); }
     inline QString unconfirmedBalanceCurrencyDataKey()  { return QString("unconfirmedBalanceCurrencyDataKey"); }
+
+    inline QString walletConfirmedBalanceDataKey()      { return QString("walletConfirmedBalanceDataKey"); }
+    inline QString walletUnconfirmedBalanceDataKey()    { return QString("walletUnconfirmedBalanceDataKey"); }
 
     inline QString passcodeDataKey()                    { return QString("passcodeDataKey"); }
 }
