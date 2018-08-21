@@ -24,12 +24,21 @@ Item {
         height: topAreaCorrectionHeight
     }
 
-    Text {
+//    Text {
+//        id: title
+//        text: "threshodl"
+//        font.bold: false
+//        y: backButton.y + backButton.height / 3
+//        x: (parent.width / 2) - (width / 2)
+//    }
+
+    Image {
         id: title
-        text: "threshodl"
-        font.bold: false
+        source: "images/assets/threshodlLockIcon.png"
+        height: backButton.height * 2
+        width: height
         y: backButton.y + backButton.height / 3
-        x: (parent.width / 2) - (width / 2)
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 
     Button {
@@ -67,11 +76,11 @@ Item {
         id: pageTitleDescription
         text: "Please enter your passcode"
         color: "black"
-        font.bold: true
-        font.pointSize: 18
+        font.bold: false
+        font.pointSize: 16
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: title.y + 60
+        y: title.y + title.height + 40
     }
 
     Text {

@@ -12,11 +12,11 @@ Component {
 
         function getTotalConfirmedCryptoValue (iShortname) {
             if (hasDarkWallet === true) {
-                var lBrightBalance = userAccount.getBalance(iShortname, false, true)
-                var lDarkBalance = userAccount.getBalance(iShortname, true, true)
+                var lBrightBalance = userAccount.getBalance(iShortname, true)
+                var lDarkBalance = userAccount.getBalance(iShortname, true)
                 return threshodlTools.stringAdd(lBrightBalance, lDarkBalance)
             } else {
-                return userAccount.getBalance(iShortname, true, true)
+                return userAccount.getBalance(iShortname, true)
             }
         }
 
@@ -30,9 +30,9 @@ Component {
             } else {
                 var lValue
                 if (walletType === "Dark") {
-                    lValue = userAccount.getBalance(iShortname, true, false)
+                    lValue = userAccount.getBalance(iShortname, false)
                 } else {
-                    lValue = userAccount.getBalance(iShortname, false, false)
+                    lValue = userAccount.getBalance(iShortname, false)
                 }
                 return "(" + lValue + " " + iShortname + " Pending)"
             }

@@ -5,7 +5,6 @@
 #include <QSettings>
 
 #include "core.h"
-#include "walletaccount.h"
 
 class WalletAccount;
 

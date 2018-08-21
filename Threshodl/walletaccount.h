@@ -4,7 +4,6 @@
 #include <QObject>
 
 #include "core.h"
-//#include "genericwallet.h"
 #include "cryptowallet.h"
 #include "myqsettingsmanager.h"
 
@@ -50,6 +49,8 @@ public:
 
     void createNewBrightWallet(QString iSeed);
 
+    bool createRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee);
+    bool sendRawTransaction(QString iRawTransaction, QString &oTxid);
     QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
     const QByteArray toData();

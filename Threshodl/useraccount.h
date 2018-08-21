@@ -33,14 +33,16 @@ public:
     Q_INVOKABLE void    confirmPasscodeChange();
 
     Q_INVOKABLE QString getTotalBalance(QString iCurrency = "USD");
-    Q_INVOKABLE QString getBalance(QString iShortName, bool iIsDark = false, bool iConfirmed = true);
-    Q_INVOKABLE QString getBalanceValue(QString iShortName, bool iIsDark = false, bool iConfirmed = true, QString iCurrency = "USD");
-    Q_INVOKABLE bool    isWalletConfirmed(QString iCurrency = "BTC", QString iWalletType = "Both");
+    Q_INVOKABLE QString getBalance(QString iShortName, bool iConfirmed = true);
+    Q_INVOKABLE QString getBalanceValue(QString iShortName, bool iConfirmed = true, QString iCurrency = "USD");
+    Q_INVOKABLE bool    isWalletConfirmed(QString iShortname = "BTC", QString iWalletType = "Both");
     Q_INVOKABLE QString getBrightAddress(QString iShortname);
     Q_INVOKABLE QString getMarketValue(QString iShortname, QString iCurrency = "USD");
 
     Q_INVOKABLE QString getTotalWalletBalanceValue(QString iShortname, bool iConfirmed = true, QString iCurrency = "USD");
 
+    Q_INVOKABLE void createRawTransaction(QString iShortname, QString toAddress, QString toAmount);
+    Q_INVOKABLE void sendRawTransaction(QString iShortname, QString iRawTransaction);
     Q_INVOKABLE QString sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount);
     Q_INVOKABLE QString createBrightWallet(QString iShortname);
 
@@ -69,6 +71,9 @@ signals:
     void setDownloaderAddresses(QString iShortName, QStringList iAddresses);
 
     void userCreationFinished(bool success, QString error);
+
+    void rawTransactionCreated(bool success, QString lHex, QString lFee);
+    void rawTransactionSent(bool success, QString lTxid);
 
 public slots:
     void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey);

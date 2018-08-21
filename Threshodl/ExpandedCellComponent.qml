@@ -13,12 +13,12 @@ Rectangle {
 
     // cryptoType -> BTC, LTC, ETH
     // mode -> Bright or Dark
-    function getBalances (cryptoType, isDark, isConfirmed) {
-        return userAccount.getBalance(cryptoType, isDark, isConfirmed)
+    function getBalances (cryptoType, isConfirmed) {
+        return userAccount.getBalance(cryptoType, isConfirmed)
     }
 
-    function getCurrencyValue(cryptoType, isDark, toCurrency) {
-        return userAccount.getBalanceValue(cryptoType, isDark)
+    function getCurrencyValue(cryptoType, toCurrency) {
+        return userAccount.getBalanceValue(cryptoType)
     }
 
     function isDark() {
@@ -64,11 +64,7 @@ Rectangle {
         Text {
             id: totalCryptoTextExpanded
             text: {
-                if (isDark()) {
-                    return getBalances(shortName, true, true) + " " + shortName
-                } else {
-                    return getBalances(shortName, false, true) + " " + shortName
-                }
+                return getBalances(shortName, true) + " " + shortName
             }
             font.pointSize: 16
             font.weight: Font.Thin
@@ -80,7 +76,7 @@ Rectangle {
         Text {
             id: currencyValueOfTotalCryptoLabelExpanded
 
-            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, isDark, "USD") + " " + "USD"
+            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, "USD") + " " + "USD"
             font.pointSize: 12
             font.bold: true
 

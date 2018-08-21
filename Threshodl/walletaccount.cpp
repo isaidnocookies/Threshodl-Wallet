@@ -221,6 +221,153 @@ void WalletAccount::createNewBrightWallet(QString iSeed)
     mAccountData->saveWallet(lNewCryptoWallet.toData(), mShortName, false);
 }
 
+bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
+{
+    QString lCoinName = mShortName;
+    auto lCurrentWallet = mWallets[0];
+    QString lFromAddress = lCurrentWallet.address();
+    QString lFromPrivateKey = lCurrentWallet.privateKey();
+    int lNetwork = 1;
+
+    QString lReturnTxHex;
+    QString lReturnFee;
+    bool lSuccess;
+
+    if (lCoinName.at(0) == "t") {
+        lNetwork = 2;
+        lCoinName.remove(0, 1);
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray toAddresses;
+    QJsonArray toAmounts;
+
+    toAddresses.append(iToAddress);
+    toAmounts.append(iToAmount);
+
+    jsonData.insert("coin", lCoinName);
+    jsonData.insert("fromAddress", lFromAddress);
+    jsonData.insert("network", lNetwork);
+    jsonData.insert("fromPrivateKey", lFromPrivateKey);
+    jsonData.insert("toAddresses", toAddresses);
+    jsonData.insert("toAmounts", toAmounts);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QString lRequestData = request_body;
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/createTransaction/"));
+    qDebug() << lRequestURL;
+    qDebug().noquote() << request_body;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            lReturnTxHex = lMyMap["message"].toMap()["txHex"].toString();
+            lReturnFee = lMyMap["message"].toMap()["fee"].toString();
+            lSuccess = true;
+        } else {
+            qDebug() << "Error(1).... Failed to send transaction";
+            lReturnTxHex = "";
+            lReturnFee = "";
+            lSuccess = false;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to send transaction" << lReply->errorString();
+        lReturnTxHex = "";
+        lReturnFee = "";
+        lSuccess = false;
+    }
+
+    oTxHex = lReturnTxHex;
+    oFee = lReturnFee;
+
+    return lSuccess;
+}
+
+bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
+{
+    QString lCoinName = mShortName;
+    auto lCurrentWallet = mWallets[0];
+    int lNetwork = 1;
+
+    QString lReturnTxid;
+    bool lSuccess;
+
+    if (lCoinName.at(0) == "t") {
+        lNetwork = 2;
+        lCoinName.remove(0, 1);
+    }
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+
+    jsonData.insert("coin", lCoinName);
+    jsonData.insert("network", lNetwork);
+    jsonData.insert("tx", iRawTransaction);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QString lRequestData = request_body;
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/sendRawTransaction/"));
+    qDebug() << lRequestURL;
+    qDebug().noquote() << request_body;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            lReturnTxid = lMyMap["txid"].toString();
+            lSuccess = true;
+        } else {
+            qDebug() << "Error(1).... Failed to send transaction";
+            lReturnTxid = "";
+            lSuccess = false;
+        }
+    } else {
+        qDebug() << "Error(2).... Failed to send transaction" << lReply->errorString();
+        lReturnTxid = "";
+        lSuccess = false;
+    }
+
+    oTxid = lReturnTxid;
+
+    return lSuccess;
+}
+
 QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmount)
 {
     QString lCoinName = mShortName;

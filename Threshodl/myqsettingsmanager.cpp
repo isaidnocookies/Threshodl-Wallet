@@ -1,4 +1,5 @@
 #include "myqsettingsmanager.h"
+#include "walletaccount.h"
 
 #include <QCoreApplication>
 

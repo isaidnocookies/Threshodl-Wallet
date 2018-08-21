@@ -3,7 +3,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 
 Item {
     id: brightWalletViewPage
@@ -11,15 +11,17 @@ Item {
     property string walletShortName
     property string walletIconPath
 
+    property string transactionHex
+
     function getConfirmationText (iShortname, walletType) {
         if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
             return "(Confirmed)"
         } else {
             var lValue
             if (walletType === "Dark") {
-                lValue = userAccount.getBalance(iShortname, true, false)
+                lValue = userAccount.getBalance(iShortname, false)
             } else {
-                lValue = userAccount.getBalance(iShortname, false, false)
+                lValue = userAccount.getBalance(iShortname, false)
             }
             return "(" + lValue + " " + iShortname + " Balance Confirming)"
         }
@@ -41,6 +43,41 @@ Item {
     function stopBusyIndicatorAndEnable() {
         backButton.enabled = true
         mWaitingLayer.visible = false
+    }
+
+    Connections {
+        target: userAccount
+        onRawTransactionSent: {
+            stopBusyIndicatorAndEnable();
+
+            if (success) {
+                console.log("Success!")
+                alertDialog.title = "Transaction Successful";
+                alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
+                alertDialog.open();
+            } else {
+                console.log("Failed to send...")
+                alertDialog.title = "Transaction Failed"
+                alertDialog.text = "The transaction has failed to send. Please try again"
+                alertDialog.open()
+            }
+        }
+
+        onRawTransactionCreated: {
+            stopBusyIndicatorAndEnable();
+
+            if (success) {
+                messageDialog.txhex = lHex;
+                messageDialog.fee = lFee;
+
+                messageDialog.open()
+            } else {
+                alertDialog.title = "Error"
+                alertDialog.text = "There was an error creating the raw transaction"
+
+                alertDialog.open()
+            }
+        }
     }
 
     QrScannerView {
@@ -116,32 +153,6 @@ Item {
         onClicked: ourStackView.pop()
     }
 
-//    Button {
-//        id: refresh
-//        height: 30
-//        width: 30
-
-//        background: Rectangle {
-//            color: "white"
-//            width: parent.height
-//            height: parent.width
-//            anchors.centerIn: parent
-//        }
-
-//        anchors.top: topBarSpacer.bottom
-//        x: parent.width - 25 - 30
-
-//        Image {
-//            source: "images/assets/refreshButtonIcon.png"
-//            fillMode: Image.PreserveAspectFit
-//            width: parent.width
-//        }
-
-//        onClicked: {
-//            // refresh or something...
-//        }
-//    }
-
     Text {
         id: totalCurrencyForWallet
         z:10
@@ -175,14 +186,14 @@ Item {
 
         anchors.top: totalCurrencyForWallet.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        text: userAccount.getBalance(walletShortName, false, true) + " " + walletShortName
+        text: userAccount.getBalance(walletShortName, true) + " " + walletShortName
 
         Connections {
             target: userAccount
 
             onWalletBalanceUpdateComplete: {
                 if (shortname == walletShortName) {
-                    totalCryptoForWallet.text = userAccount.getBalance(walletShortName, false, true) + " " + walletShortName
+                    totalCryptoForWallet.text = userAccount.getBalance(walletShortName, true) + " " + walletShortName
 
                     walletConfirmationStatusLabel.text = getConfirmationText(walletShortName, "Bright")
                     if (userAccount.isWalletConfirmed(walletShortName, "Bright")) {
@@ -430,33 +441,55 @@ Item {
 
             MessageDialog {
                 id: messageDialog
+
+                property string txhex;
+                property string fee;
+
+                function getConfirmationMessage() {
+                    return "\n\n Amount: " + sendAmountTextField.text + " " + walletShortName + " \n\nTo: \n" + addressTextField.text + "\n\nFee:\n" + fee + " " + walletShortName + "\n\nConfirm Transaction?"
+                }
+
                 title: "Confirm Transaction"
-                text: "You are sending " + sendAmountTextField.text + " " + walletShortName + " to " + addressTextField.text + ". Confirm Transaction?"
+                text: ""
 
                 standardButtons: StandardButton.Cancel | StandardButton.Yes
+
+                onTxhexChanged: {
+                    messageDialog.text = getConfirmationMessage()
+                }
+
+                onFeeChanged: {
+                    messageDialog.text = getConfirmationMessage()
+                }
 
                 onYes: {
                     console.log("Transaction Confirmed.")
                     messageDialog.visible = false
 
                     startBusyIndicatorAndDisable();
+                    userAccount.sendRawTransaction(walletShortName, txhex);
+                }
 
-                    var response = userAccount.sendBrightTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
-                    stopBusyIndicatorAndEnable();
+                onRejected: {
+                    console.log("Cancel")
+                    warningLabel.text = "Transaction was canceled!"
+                }
+            }
 
-                    if (response === "-1") {
-                        console.log("Failed to send transaction")
-                    } else if (response === "") {
-                        console.log("Failed to send...")
-                        alertDialog.title = "Transaction Failed"
-                        alertDialog.text = "The transaction has failed to send. Please try again"
-                        alertDialog.open()
-                    } else {
-                        console.log("Success!")
-                        alertDialog.title = "Transaction Successful"
-                        alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed"
-                        alertDialog.open()
-                    }
+            MessageDialog {
+                id: lowFeeDialog
+
+                title: "Transaction Fee"
+                text: "Sending this amount of " + walletShortName + " will result in some being used for the network fee."
+
+                standardButtons: StandardButton.Cancel | StandardButton.Yes
+
+                onYes: {
+                    console.log("Transaction with low fees confirmed.")
+                    messageDialog.visible = false
+
+                    startBusyIndicatorAndDisable();
+                    userAccount.getRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
                 }
 
                 onRejected: {
@@ -476,8 +509,13 @@ Item {
                 onClicked: {
                     if (addressTextField.text === "" || sendAmountTextField.text === "") {
                         warningLabel.text = "Please complete the fields above"
+                    } else if (parseFloat(userAccount.getBalance(walletShortName, false)) < parseFloat(sendAmountTextField.text)) {
+                        warningLabel.text = "Not enough coin in wallet!"
+                    } else if (parseFloat(userAccount.getBalance(walletShortName, false)) === parseFloat(sendAmountTextField.text)) {
+                        lowFeeDialog.open()
                     } else {
-                        messageDialog.open()
+                        startBusyIndicatorAndDisable();
+                        userAccount.getRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
                     }
                 }
 

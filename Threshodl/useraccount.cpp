@@ -104,27 +104,26 @@ QString UserAccount::getTotalBalance(QString iCurrency)
     }
 }
 
-QString UserAccount::getBalance(QString iShortName, bool iIsDark, bool iConfirmed)
+QString UserAccount::getBalance(QString iShortName, bool iConfirmed)
 {
-    Q_UNUSED (iIsDark)
     return mBrightWallets[iShortName].getBalance(iConfirmed);
 }
 
-QString UserAccount::getBalanceValue(QString iShortName, bool iIsDark, bool iConfirmed, QString iCurrency)
+QString UserAccount::getBalanceValue(QString iShortName, bool iConfirmed, QString iCurrency)
 {
-    Q_UNUSED (iIsDark) Q_UNUSED(iCurrency) Q_UNUSED(iConfirmed)
+    Q_UNUSED(iCurrency) Q_UNUSED(iConfirmed)
 
     QString lCoinTotal;
 
     double lMarketValue = getMarketValue(iShortName).toDouble();
-    double lBalance = getBalance(iShortName, iIsDark, iConfirmed).toDouble();
+    double lBalance = getBalance(iShortName, iConfirmed).toDouble();
 
     lCoinTotal = QString::number(lMarketValue * lBalance);
 
     return lCoinTotal;
 }
 
-bool UserAccount::isWalletConfirmed(QString iCurrency, QString iWalletType)
+bool UserAccount::isWalletConfirmed(QString iShortname, QString iWalletType)
 {
     bool lIsDark;
     if (iWalletType == "Dark") {
@@ -133,7 +132,7 @@ bool UserAccount::isWalletConfirmed(QString iCurrency, QString iWalletType)
         lIsDark = false;
     }
 
-    QString lName = QString(lIsDark ? "d" : "").append(iCurrency);
+    QString lName = QString(lIsDark ? "d" : "").append(iShortname);
     if (QStringMath(mBrightWallets[lName].getBalance()) == QStringMath(mBrightWallets[lName].getBalance(false))) {
         return true;
     }
@@ -182,8 +181,22 @@ QString UserAccount::getMarketValue(QString iShortname, QString iCurrency)
 QString UserAccount::getTotalWalletBalanceValue(QString iShortname, bool iConfirmed, QString iCurrency)
 {
     QStringMath lWalletTotalValue;
-    lWalletTotalValue = QStringMath(getBalanceValue(iShortname, false, iConfirmed, iCurrency)) + getBalanceValue(iShortname, true, iConfirmed, iCurrency);
+    lWalletTotalValue = QStringMath(getBalanceValue(iShortname, iConfirmed, iCurrency)) + getBalanceValue(iShortname, iConfirmed, iCurrency);
     return lWalletTotalValue.toString();
+}
+
+void UserAccount::createRawTransaction(QString iShortname, QString toAddress, QString toAmount)
+{
+    QString lTxHex, lFee;
+    bool lSuccess = mBrightWallets[iShortname].createRawTransaction(toAddress, toAmount, lTxHex, lFee);
+    emit rawTransactionCreated(lSuccess, lTxHex, lFee);
+}
+
+void UserAccount::sendRawTransaction(QString iShortname, QString iRawTransaction)
+{
+    QString lTxid;
+    bool lSuccess = mBrightWallets[iShortname].sendRawTransaction(iRawTransaction, lTxid);
+    emit rawTransactionSent(lSuccess, lTxid);
 }
 
 QString UserAccount::sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount)
@@ -289,7 +302,7 @@ void UserAccount::walletBalancesUpdated(QString iShortname, QStringList iAddress
         mBrightWallets[iShortname].updateBalance(iAddresses.at(i), iBalances.at(i), iPendingBalances.at(i));
     }
 
-    mDataManager->saveWalletBalance(iShortname, getBalance(iShortname), getBalance(iShortname, false, false));
+    mDataManager->saveWalletBalance(iShortname, getBalance(iShortname), getBalance(iShortname, false));
 
     emit walletBalanceUpdateComplete(iShortname);
 }
