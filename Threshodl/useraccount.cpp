@@ -7,8 +7,6 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
     qDebug() << "UserAccount created";
     mDataManager = new MyQSettingsManager;
 
-    mPasscode = "1101";
-
     mDownloaderWaitCondition = new QWaitCondition;
     mDownloaderMutex = new QMutex;
 
@@ -49,14 +47,12 @@ void UserAccount::createNewAccount(QString iUsername)
     mCreateUsername->create(iUsername);
 }
 
-void UserAccount::recoverAccount(QString iSeed, QString iUsername)
+void UserAccount::recoverAccount(QString iSeed)
 {
     setRecoverySeed(iSeed);
-
-    //TODO! check seed, create stuffs, then go forward...
-    //TODO: recover username from db
-
-    usernameCreated(true, iUsername, iSeed, "", "");
+    mCreateUsername = new CreateUsername;
+    connect (mCreateUsername, &CreateUsername::usernameCreated, this, &UserAccount::usernameCreated);
+    mCreateUsername->recoverAccount(iSeed);
 }
 
 QString UserAccount::getRecoverySeed()
@@ -269,7 +265,7 @@ void UserAccount::setPasscode(QString iPasscode)
     mPasscode = iPasscode;
 }
 
-void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey)
+void UserAccount::usernameCreated(bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey)
 {
     if (iSuccess) {
         setUsername(iUsername);

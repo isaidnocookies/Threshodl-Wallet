@@ -52,6 +52,7 @@ Item {
 
             if (success) {
                 console.log("Success!")
+                sendTimeoutTimer.stop();
                 alertDialog.title = "Transaction Successful";
                 alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
                 alertDialog.open();
@@ -498,6 +499,19 @@ Item {
                 }
             }
 
+            Timer {
+                id: sendTimeoutTimer
+                repeat: false
+                running: false
+                interval: 20000
+
+                onTriggered: {
+                    console.log("Send timeout occured")
+                    stopBusyIndicatorAndEnable();
+                    warningLabel.text = "Transaction failed!"
+                }
+            }
+
             Button {
                 id: sendButton
                 text: "Send"
@@ -515,7 +529,8 @@ Item {
                         lowFeeDialog.open()
                     } else {
                         startBusyIndicatorAndDisable();
-                        userAccount.getRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
+                        sendTimeoutTimer.start()
+                        userAccount.createRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
                     }
                 }
 

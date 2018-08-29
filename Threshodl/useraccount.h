@@ -24,7 +24,7 @@ public:
     ~UserAccount();
     Q_INVOKABLE bool    exists();
     Q_INVOKABLE void    createNewAccount(QString iUsername);
-    Q_INVOKABLE void    recoverAccount(QString iSeed, QString iUsername = "");
+    Q_INVOKABLE void    recoverAccount(QString iSeed);
     Q_INVOKABLE QString getRecoverySeed();
 
     Q_INVOKABLE bool    checkPasscode(QString iPass);
@@ -62,21 +62,16 @@ signals:
     void usernameChanged();
     void recoverySeedChanged();
     void marketValueChanged();
-
     void walletBalanceUpdateComplete(QString shortname);
-
     void darkCryptoConfirmedBalanceChanged();
     void darkCryptoUnconfirmedBalanceChanged();
-
     void setDownloaderAddresses(QString iShortName, QStringList iAddresses);
-
     void userCreationFinished(bool success, QString error);
-
     void rawTransactionCreated(bool success, QString lHex, QString lFee);
     void rawTransactionSent(bool success, QString lTxid);
 
 public slots:
-    void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QByteArray iPublicKey, QByteArray iPrivateKey);
+    void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey);
     void marketValuesUpdated(QStringList iNames, QStringList iValues);
     void walletBalancesUpdated(QString iShortname, QStringList iAddresses, QStringList iBalances, QStringList iPendingBalances);
     void downloaderErrorString(QString iError);

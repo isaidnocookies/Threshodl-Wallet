@@ -8,8 +8,8 @@
 // turn off and on the use of the blockchain for transactions between dark and bright
 #define USE_BLOCKCHAIN true
 
-//#define MY_WALLET_SERVER_ADDRESS "http://10.10.0.14:3333"
-#define MY_WALLET_SERVER_ADDRESS "http://13.57.145.171:3333"
+#define MY_WALLET_SERVER_ADDRESS "http://10.10.0.14:3333"
+//#define MY_WALLET_SERVER_ADDRESS "http://13.57.145.171:3333"
 #define TASK_SERVER_URL "https://pyts.threebx.com"
 #define POLLING_INTERVAL 60
 
@@ -39,7 +39,7 @@ namespace AppWallets {
 namespace EndpointUrls {
     inline QMap<QString, QString> insightUrls()         { return QMap<QString, QString> {
                                                                 {"BTC",     "https://insight.bitpay.com/api"},
-                                                                {"tBTC",    "https://test-insight.bitpay.com/api"},
+                                                                {"tBTC",    "https://testnet.blockexplorer.com/api"},
                                                                 {"DASH",    "https://insight.dash.org/insight-api"},
                                                                 {"tDASH",   "https://test.insight.dash.siampm.com/api"},
                                                                 {"LTC",     "https://insight.litecore.io/api"},

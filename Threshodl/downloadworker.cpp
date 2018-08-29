@@ -120,6 +120,8 @@ void DownloadWorker::downloadGenericInsightBalances(QString iShortname, QStringL
             QByteArray      lReplyText = lReply->readAll();
             auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
 
+            qDebug() << lRequestURL;
+
             QStringMath     lBalance = lMyMap["balance"].toString();
             QString         lPendingString = lMyMap["unconfirmedBalance"].toString();
             QStringMath     lPendingBalance = QStringMath("0.0");

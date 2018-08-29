@@ -5,7 +5,7 @@
 
 #include <QObject>
 #include <QDebug>
-#include <QNetworkReply>
+#include <QNetworkAccessManager>
 
 class CreateUsername : public QObject
 {
@@ -13,9 +13,10 @@ class CreateUsername : public QObject
 public:
     explicit CreateUsername(QObject *parent = nullptr);
     void create(QString iUsername);
+    void recoverAccount(QString iSeed);
 
 signals:
-    void usernameCreated(bool oSuccess, QString oUsername, QString oSeed, QByteArray oPublicKey, QByteArray oPrivateKey);
+    void usernameCreated(bool oSuccess, QString oUsername, QString oSeed, QString oPublicKey, QString oPrivateKey);
 
 private slots:
     void requestComplete(QNetworkReply *reply);
