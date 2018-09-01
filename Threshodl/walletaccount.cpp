@@ -227,16 +227,16 @@ bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, 
     auto lCurrentWallet = mWallets[0];
     QString lFromAddress = lCurrentWallet.address();
     QString lFromPrivateKey = lCurrentWallet.privateKey();
-    int lNetwork = 1;
+//    int lNetwork = 1;
 
     QString lReturnTxHex;
     QString lReturnFee;
     bool lSuccess;
 
-    if (lCoinName.at(0) == "t") {
-        lNetwork = 2;
-        lCoinName.remove(0, 1);
-    }
+//    if (lCoinName.at(0) == "t") {
+//        lNetwork = 2;
+//        lCoinName.remove(0, 1);
+//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -252,7 +252,7 @@ bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, 
 
     jsonData.insert("coin", lCoinName);
     jsonData.insert("fromAddress", lFromAddress);
-    jsonData.insert("network", lNetwork);
+//    jsonData.insert("network", lNetwork);
     jsonData.insert("fromPrivateKey", lFromPrivateKey);
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
@@ -306,15 +306,15 @@ bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
 {
     QString lCoinName = mShortName;
     auto lCurrentWallet = mWallets[0];
-    int lNetwork = 1;
+//    int lNetwork = 1;
 
     QString lReturnTxid;
     bool lSuccess;
 
-    if (lCoinName.at(0) == "t") {
-        lNetwork = 2;
-        lCoinName.remove(0, 1);
-    }
+//    if (lCoinName.at(0) == "t") {
+//        lNetwork = 2;
+//        lCoinName.remove(0, 1);
+//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -324,7 +324,7 @@ bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
     QJsonObject jsonData;
 
     jsonData.insert("coin", lCoinName);
-    jsonData.insert("network", lNetwork);
+//    jsonData.insert("network", lNetwork);
     jsonData.insert("tx", iRawTransaction);
 
     QJsonDocument jsonDataDocument;
@@ -374,14 +374,14 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
     auto lCurrentWallet = mWallets[0];
     QString lFromAddress = lCurrentWallet.address();
     QString lFromPrivateKey = lCurrentWallet.privateKey();
-    int lNetwork = 1;
+//    int lNetwork = 1;
 
     QString lReturnTxid;
 
-    if (lCoinName.at(0) == "t") {
-        lNetwork = 2;
-        lCoinName.remove(0, 1);
-    }
+//    if (lCoinName.at(0) == "t") {
+//        lNetwork = 2;
+//        lCoinName.remove(0, 1);
+//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -397,7 +397,7 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
 
     jsonData.insert("coin", lCoinName);
     jsonData.insert("fromAddress", lFromAddress);
-    jsonData.insert("network", lNetwork);
+//    jsonData.insert("network", lNetwork);
     jsonData.insert("fromPrivateKey", lFromPrivateKey);
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
