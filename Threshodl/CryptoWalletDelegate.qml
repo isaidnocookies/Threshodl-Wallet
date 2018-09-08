@@ -13,7 +13,7 @@ Component {
         function getTotalConfirmedCryptoValue (iShortname) {
             if (hasDarkWallet === true) {
                 var lBrightBalance = userAccount.getBalance(iShortname, true)
-                var lDarkBalance = userAccount.getBalance(iShortname, true)
+                var lDarkBalance = userAccount.getBalance("d" + iShortname, true)
                 return threshodlTools.stringAdd(lBrightBalance, lDarkBalance)
             } else {
                 return userAccount.getBalance(iShortname, true)
@@ -192,7 +192,7 @@ Component {
             x: 0
 
             width: parent.width
-            height: 200
+            height: 220
 
             ExpandedCellComponent
             {
@@ -201,6 +201,7 @@ Component {
                 y: iconImage.y + iconImage.height + 30
                 iconPath: brightIconName
                 name: shortName
+                expandedShortName: shortName
             }
 
             ExpandedCellComponent
@@ -210,6 +211,7 @@ Component {
                 y: brightWalletCell.y + brightWalletCell.height + 10
                 iconPath: darkIconName
                 name: "Dark " + shortName
+                expandedShortName: "d" + shortName
             }
         }
 

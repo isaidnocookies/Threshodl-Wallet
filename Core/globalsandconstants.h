@@ -100,6 +100,8 @@ namespace DataKeys {
     inline QString walletUnconfirmedBalanceDataKey()    { return QString("walletUnconfirmedBalanceDataKey"); }
 
     inline QString passcodeDataKey()                    { return QString("passcodeDataKey"); }
+
+    inline QString emailDataKey()                       { return QString("emailDataKey"); }
 }
 
 namespace AppInfo {

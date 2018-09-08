@@ -6,10 +6,10 @@ ListModel {
         shortName: "tBTC"
 
         imageName: "images/assets/testnetBitcoinIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+        brightIconName: "images/assets/brightBitcoinIcon.png"
+        darkIconName: "images/assets/darkBitcoinIcon.png"
 
-        hasDarkWallet: false
+        hasDarkWallet: true
         cellExpanded: false
     }
     ListElement {
@@ -17,8 +17,8 @@ ListModel {
         shortName: "BTC"
 
         imageName: "images/assets/bitcoinIcon.png"
-        brightIconName: "" //"images/assets/brightBitcoinIcon.png"
-        darkIconName: "" //images/assets/darkBitcoinIcon.png"
+        brightIconName: "" // "images/assets/brightBitcoinIcon.png"
+        darkIconName: "" // "images/assets/darkBitcoinIcon.png"
 
         hasDarkWallet: false
         cellExpanded: false

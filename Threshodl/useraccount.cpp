@@ -102,7 +102,11 @@ QString UserAccount::getTotalBalance(QString iCurrency)
 
 QString UserAccount::getBalance(QString iShortName, bool iConfirmed)
 {
-    return mBrightWallets[iShortName].getBalance(iConfirmed);
+    if (iShortName.at(0) != "d") {
+        return mBrightWallets[iShortName].getBalance(iConfirmed);
+    } else {
+        return "0.00";
+    }
 }
 
 QString UserAccount::getBalanceValue(QString iShortName, bool iConfirmed, QString iCurrency)
@@ -172,6 +176,21 @@ QString UserAccount::getMarketValue(QString iShortname, QString iCurrency)
     QString lMarketValue = lAccount.marketValue();
 
     return lMarketValue;
+}
+
+QString UserAccount::getEmailAddress()
+{
+    return emailAddress();
+}
+
+void UserAccount::setEmailAddress(QString iEmail)
+{
+    if (mEmailAddress == iEmail) {
+        return;
+    }
+
+    mEmailAddress = iEmail;
+    mDataManager->saveEmailAddress(iEmail);
 }
 
 QString UserAccount::getTotalWalletBalanceValue(QString iShortname, bool iConfirmed, QString iCurrency)
@@ -312,6 +331,7 @@ void UserAccount::loadAccountFromSettings()
 {
     if (mDataManager->userAccountExists()) {
         QString lUsername;
+        QString lEmail;
         QString lPub;
         QString lPriv;
         QString lPasscode;
@@ -320,11 +340,13 @@ void UserAccount::loadAccountFromSettings()
         mDataManager->usernameAndKeys(lUsername, lPub, lPriv);
         lPasscode = mDataManager->getPasscode();
         lRecoveryPhrase = mDataManager->getRecoverySeed();
+        lEmail = mDataManager->getEmail();
 
         setUsername(lUsername);
         setPublicAndPrivateKeys(lPub, lPriv);
         setPasscode(lPasscode);
         setRecoverySeed(lRecoveryPhrase);
+        setEmailAddress(lEmail);
 
         QList<WalletAccount> lWalletAccounts;
         mDataManager->getBrightWalletAccounts(lWalletAccounts);

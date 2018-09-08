@@ -10,6 +10,9 @@ Item {
     id: qrScanner
 
     property string addressFromScanner
+    property string emailFromScanner
+
+    property bool isForDark: false;
 
     function restartTimer () {
         myPhotoTimer.restart()
@@ -118,7 +121,14 @@ Item {
         onDecodingStarted: console.log("Decoding of image started...")
         onTagFound: {
             console.log("Barcode data: " + tag)
-            addressFromScanner = tag
+
+            if ( isForDark ) {
+                var jsonReturn = JSON.parse(tag)
+                addressFromScanner = jsonReturn.address
+                emailFromScanner = jsonReturn.email
+            } else {
+                addressFromScanner = tag
+            }
         }
 
         onDecodingFinished: {

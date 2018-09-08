@@ -39,6 +39,9 @@ public:
     Q_INVOKABLE QString getBrightAddress(QString iShortname);
     Q_INVOKABLE QString getMarketValue(QString iShortname, QString iCurrency = "USD");
 
+    Q_INVOKABLE QString getEmailAddress();
+    Q_INVOKABLE void setEmailAddress(QString iEmail);
+
     Q_INVOKABLE QString getTotalWalletBalanceValue(QString iShortname, bool iConfirmed = true, QString iCurrency = "USD");
 
     Q_INVOKABLE void createRawTransaction(QString iShortname, QString toAddress, QString toAmount);
@@ -50,10 +53,9 @@ public:
 
     QString username()                      { return mUsername; }
     void setUsername                        (QString iUsername);
-
+    QString emailAddress()                  { return mEmailAddress; }
     QString recoverySeed()                  { return mRecoverySeed; }
     void setRecoverySeed                    (QString iSeed);
-
     void publicAndPrivateKeys               (QString &oPublicKey, QString &oPrivateKey);
     void setPublicAndPrivateKeys            (QString iPublicKey, QString iPrivateKey);
     void setPasscode                        (QString iPasscode);
@@ -86,11 +88,13 @@ private:
     bool mWaiting;
     QString mCurrentErrorString;
     QString mUsername;
+    QString mEmailAddress;
     QString mRecoverySeed;
     QString mPrivateKey;
     QString mPublicKey;
 
     QMap<QString, WalletAccount> mBrightWallets;
+    QMap<QString, WalletAccount> mDarkWallets;
 
     QWaitCondition *mDownloaderWaitCondition;
     QMutex *mDownloaderMutex;

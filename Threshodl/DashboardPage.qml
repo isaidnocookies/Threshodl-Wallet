@@ -235,29 +235,8 @@ Item {
         anchors.bottom: bottomBarCorrectionSpacer.top
     }
 
-//    Rectangle {
-//        id: bottomShadowEffect
-//        anchors.bottom: bottomBarCorrectionSpacer.top
-//        height: 10
-//        width: parent.width
-//        z:9
-//        opacity: 0.4
-
-//        gradient: Gradient {
-//            GradientStop {
-//                position: 1
-//                color: Qt.rgba(0, 0, 0, 0.5)
-//            }
-//            GradientStop {
-//                position: 0
-//                color: Qt.rgba(0, 0, 0, 0)
-//            }
-//        }
-//    }
-
     Rectangle {
         id: bottomBarCorrectionSpacer
-//        color: "white"
         color: "transparent"
         anchors.bottom: parent.bottom
         height: bottomAreaCorrectionHeight

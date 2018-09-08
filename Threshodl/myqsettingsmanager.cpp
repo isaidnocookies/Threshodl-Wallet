@@ -97,6 +97,21 @@ QString MyQSettingsManager::getPasscode()
     }
 }
 
+void MyQSettingsManager::saveEmailAddress(QString iEmail)
+{
+    mAccountData->setValue(DataKeys::emailDataKey(), iEmail);
+    mAccountData->sync();
+}
+
+QString MyQSettingsManager::getEmail()
+{
+    if (mAccountData->contains(DataKeys::emailDataKey())) {
+        return mAccountData->value(DataKeys::emailDataKey()).toString();
+    } else {
+        return "";
+    }
+}
+
 void MyQSettingsManager::getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts)
 {
     for (int i = 0; i < AppWallets::walletNames().keys().size(); i++) {
@@ -123,6 +138,11 @@ void MyQSettingsManager::getBrightWalletAccounts(QList<WalletAccount> &oWalletAc
 
         mAccountData->endGroup();
     }
+}
+
+void MyQSettingsManager::getDarkWalletAccounts(QList<WalletAccount> &oDarkWalletAccounts)
+{
+    //TODO
 }
 
 void MyQSettingsManager::getWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed)

@@ -8,11 +8,10 @@ Rectangle {
 
     property alias iconPath: littleIconImage.source
     property alias name: nameText.text
+    property string expandedShortName
 
     width: parent.width
 
-    // cryptoType -> BTC, LTC, ETH
-    // mode -> Bright or Dark
     function getBalances (cryptoType, isConfirmed) {
         return userAccount.getBalance(cryptoType, isConfirmed)
     }
@@ -48,7 +47,6 @@ Rectangle {
 
             x: 60
             y: 35
-//            y: parent.height/2 - iconImage.height/2
         }
 
         Text {
@@ -64,7 +62,7 @@ Rectangle {
         Text {
             id: totalCryptoTextExpanded
             text: {
-                return getBalances(shortName, true) + " " + shortName
+                return getBalances(expandedShortName, true) + " " + expandedShortName
             }
             font.pointSize: 16
             font.weight: Font.Thin
@@ -119,7 +117,7 @@ Rectangle {
             id: expandedBrightWallet
 
             BrightWalletView {
-                walletShortName: shortName
+                walletShortName: expandedShortName
                 walletIconPath: iconPath
             }
         }
@@ -128,7 +126,7 @@ Rectangle {
             id: expandedDarkWallet
 
             DarkWalletView {
-                walletShortName: shortName
+                walletShortName: expandedShortName
                 walletIconPath: iconPath
             }
         }

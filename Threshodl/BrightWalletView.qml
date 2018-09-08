@@ -100,7 +100,6 @@ Item {
         Rectangle {
             anchors.fill: parent
             anchors.centerIn: parent
-
             color: Qt.rgba(0,0,0,0.5)
         }
 
