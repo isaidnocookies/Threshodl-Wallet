@@ -68,7 +68,7 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/backButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -79,17 +79,6 @@ Item {
 
     ListModel {
         id: walletModel
-//        ListElement {
-//            coin: "BTC"
-//            address:"Address"
-//            privateKey: "Private Key"
-//        }
-
-//        ListElement {
-//            coin: "Dash"
-//            address:"Address"
-//            privateKey: "Private Key"
-//        }
     }
 
     Component {

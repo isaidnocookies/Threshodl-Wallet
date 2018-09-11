@@ -7,7 +7,7 @@ Item {
     id: createPageView
 
     Image {
-        source: "images/assets/threshodlLogo_landing.png"
+        source: "qrc:/images/assets/threshodlLogo_landing.png"
         fillMode: Image.PreserveAspectFit
 
         width: parent.width
@@ -64,7 +64,7 @@ Item {
             }
         }
 
-        onClicked: ourStackView.push(Qt.resolvedUrl("createUsernamePage.qml"))
+        onClicked: ourStackView.push(Qt.resolvedUrl("qrc:/onboarding/createUsernamePage.qml"))
     }
 
     Button {
@@ -107,6 +107,6 @@ Item {
             }
         }
 
-        onClicked: ourStackView.push(Qt.resolvedUrl("recoverySeedRecovery.qml"))
+        onClicked: ourStackView.push(Qt.resolvedUrl("qrc:/onboarding/recoverySeedRecovery.qml"))
     }
 }

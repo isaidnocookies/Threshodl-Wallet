@@ -38,7 +38,7 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/backButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -187,7 +187,7 @@ Item {
                 console.log("User Account created : Message from createUsernamePage.qml")
                 if (success) {
                     console.log("User created successfully")
-                    ourStackView.push(Qt.resolvedUrl("newRecoveryPhrasePage.qml"))
+                    ourStackView.push(Qt.resolvedUrl("qrc:/onboarding/newRecoveryPhrasePage.qml"))
                 } else {
                     warningLabel.text = error;
                     console.log("User Account failed to create : Message from createUsernamePage.qml");

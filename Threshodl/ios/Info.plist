@@ -57,5 +57,20 @@
                 </array>
             </dict>
         </dict>
+	  <key>CFBundleDocumentTypes</key>
+	  <array>
+	      <dict>
+		    <key>CFBundleTypeExtensions</key>
+		    <array>
+		        <string>\"*\"</string>
+		    </array>
+		    <key>CFBundleTypeName</key>
+		    <string>Unknown</string>
+		    <key>LSItemContentTypes</key>
+		    <array>
+		        <string>public.data</string>
+		    </array>
+		</dict>
+	  </array>
 </dict>
 </plist>

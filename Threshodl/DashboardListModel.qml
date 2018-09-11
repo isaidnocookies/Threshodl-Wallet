@@ -28,8 +28,9 @@ ListModel {
         shortName: "tLTC"
 
         imageName: "images/assets/testnetLitecoinIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+
+        brightIconName: "images/assets/brightBitcoinIcon.png"
+        darkIconName: "images/assets/darkBitcoinIcon.png"
 
         hasDarkWallet: false
         cellExpanded: false

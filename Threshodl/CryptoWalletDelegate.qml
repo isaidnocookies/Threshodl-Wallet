@@ -235,10 +235,8 @@ Component {
                         expandCellButtonImage.source = "images/assets/downNavArrowIcon.png"
                     }
                 } else {
-                    //go to wallet
                     console.log("Clicked non-dark wallet")
                     ourStackView.push(brightWallet)
-//                    ourStackView.push(BrightWalletView{walletShortName: shortName})
                 }
             }
         }
@@ -251,6 +249,5 @@ Component {
                 walletIconPath: imageName
             }
         }
-
     }
 }

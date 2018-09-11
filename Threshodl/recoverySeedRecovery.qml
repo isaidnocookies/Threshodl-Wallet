@@ -3,6 +3,8 @@ import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
 
+import "qrc:/";
+
 Item {
     id: recoveryRecoverySeed
     property bool isPasscodeConfirmed: false
@@ -39,7 +41,7 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/backButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -179,7 +181,7 @@ Item {
                 if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
                     userAccount.confirmPasscodeChange()
                     passcodeScreen.passcode = ""
-                    ourStackView.replace(Qt.resolvedUrl("DashboardPage.qml"))
+                    ourStackView.replace(Qt.resolvedUrl("qrc:/DashboardPage.qml"))
                     console.log("Passcode complete!")
                 } else {
                     console.log("Passcode process reset")
@@ -236,7 +238,7 @@ Item {
                 if (success) {
                     console.log("Recover Account Successful");
                     userAccountSignalConnection.enabled = false
-//                    ourStackView.push(Qt.resolvedUrl("DashboardPage.qml"))
+//                    ourStackView.push(Qt.resolvedUrl("qrc:/DashboardPage.qml"))
 
                     isPasscodeConfirmed = false
                     passcodeScreen.visible = true

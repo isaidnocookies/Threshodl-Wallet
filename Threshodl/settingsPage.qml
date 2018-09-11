@@ -5,6 +5,8 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.3
 import QtQuick.Layouts 1.3
 
+import "qrc:/"
+
 Item {
     id: settingsPage
 
@@ -44,7 +46,7 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/backButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -53,7 +55,7 @@ Item {
     }
 
     Image {
-        source: "images/assets/settingsButtonIcon.png"
+        source: "qrc:/images/assets/settingsButtonIcon.png"
         fillMode: Image.PreserveAspectFit
         width: parent.width / 8
         height: width
@@ -188,7 +190,7 @@ Item {
 
                     onClicked: {
                         console.log("View Private Keys Button...")
-                        ourStackView.push(Qt.resolvedUrl("ViewPrivateKeysPage.qml"))
+                        ourStackView.push(Qt.resolvedUrl("qrc:/settings/ViewPrivateKeysPage.qml"))
                     }
                 }
             }

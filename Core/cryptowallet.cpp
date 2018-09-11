@@ -232,6 +232,8 @@ QByteArray CryptoWallet::toData() const
 
 bool CryptoWallet::createWallet(QString shortname, QString longname, QString iSeed, CryptoNetwork iNetwork)
 {
+    Q_UNUSED(longname)
+
     CryptoNetwork lNetwork = iNetwork;
     if (shortname.at(0) == "t") {
         lNetwork = CryptoNetwork::TestNet;
@@ -279,6 +281,7 @@ bool CryptoWallet::createZCashWallet(QString iSeed, CryptoNetwork iNetwork)
 
 bool CryptoWallet::createEthereumWallet(QString iSeed, CryptoNetwork iNetwork)
 {
+    Q_UNUSED(iSeed) Q_UNUSED(iNetwork)
     return false;
 }
 
@@ -290,9 +293,6 @@ bool CryptoWallet::createDashWallet(QString iSeed, CryptoNetwork iNetwork)
 bool CryptoWallet::genericCreateWalletFunction(QString iSeed, CryptoNetwork iNetwork)
 {
     QString lCoin = shortname();
-    if (lCoin.at(0) == "t") {
-        lCoin.remove(0, 1);
-    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;

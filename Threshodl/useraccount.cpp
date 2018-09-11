@@ -1,6 +1,11 @@
 #include "useraccount.h"
 
 #include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
@@ -265,6 +270,75 @@ QVariantList UserAccount::getAllWallets()
         }
     }
     return lList;
+}
+
+void UserAccount::createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail)
+{
+    Q_UNUSED(toAmount);
+    WalletAccount lDarkWallets = mDarkWallets[iShortname];
+
+}
+
+void UserAccount::sendDarkTransaction(QByteArray iDarkPackage, QString iShortname, QString toAddress, QString toEmail)
+{
+    Q_UNUSED(iDarkPackage);
+    Q_UNUSED(iShortname);
+    Q_UNUSED(toAddress);
+    Q_UNUSED(toEmail);
+
+    // TODO: ...
+}
+
+QVariantList UserAccount::getDarkWallets(QString iShortname)
+{
+    QVariantList lList;
+    WalletAccount lDarkWallets = mDarkWallets[iShortname];
+
+    // TODO: ...
+
+    return lList;
+}
+
+void UserAccount::handleFileUrlReceived(const QUrl &url)
+{
+    QString incomingUrl = url.toString();
+    if(incomingUrl.isEmpty()) {
+        qWarning() << "setFileUrlReceived: we got an empty URL";
+        return;
+    }
+    QString myUrl;
+    if(incomingUrl.startsWith("file://")) {
+        myUrl= incomingUrl.right(incomingUrl.length()-7);
+        qDebug() << "QFile needs this URL: " << myUrl;
+    } else {
+        myUrl= incomingUrl;
+    }
+
+    QFileInfo fileInfo = QFileInfo(myUrl);
+    if(fileInfo.exists()) {
+        qDebug() << "Received! YA BITCHES!!";
+
+        QFile lPackage(myUrl);
+        QByteArray lPackageArray;
+
+        if (!lPackage.open(QIODevice::ReadOnly)) {
+            qDebug() << "Failed to open package";
+        } else {
+            lPackageArray = lPackage.readAll();
+            QJsonDocument lDoc = QJsonDocument::fromJson(lPackageArray);
+            QJsonObject lObject = lDoc.object();
+
+            if (lObject["Action"].toString() == "ImportWallets") {
+                QJsonArray lArray = lObject["wallets"].toArray();
+
+            }
+
+            qDebug() << lPackageArray;
+        }
+
+    } else {
+        qDebug() << "setFileUrlReceived: FILE does NOT exist ";
+    }
 }
 
 void UserAccount::publicAndPrivateKeys(QString &oPublicKey, QString &oPrivateKey)

@@ -2,8 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>startPage.qml</file>
-        <file>createUsernamePage.qml</file>
-        <file>newRecoveryPhrasePage.qml</file>
         <file>DashboardPage.qml</file>
         <file>DashboardListModel.qml</file>
         <file>CryptoWalletDelegate.qml</file>
@@ -12,10 +10,7 @@
         <file>DarkWalletView.qml</file>
         <file>QrScannerView.qml</file>
         <file>settingsPage.qml</file>
-        <file>recoverySeedRecovery.qml</file>
         <file>LockScreen.qml</file>
-        <file>ViewPrivateKeysPage.qml</file>
-        <file>SendConfirmationDialog.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>assets/threshodlLogo_landing.png</file>
@@ -43,5 +38,23 @@
         <file>assets/bitcoinCashIcon.png</file>
         <file>assets/threshodlLockIcon.png</file>
     </qresource>
-    <qresource prefix="/components"/>
+    <qresource prefix="/brightWalletView">
+        <file>SendConfirmationDialog.qml</file>
+        <file>BrightSendView.qml</file>
+        <file>BrightReceiveView.qml</file>
+    </qresource>
+    <qresource prefix="/darkWalletView">
+        <file>DarkSendView.qml</file>
+        <file>DarkReceiveView.qml</file>
+        <file>DarkDepositPage.qml</file>
+        <file>DarkWithdrawPage.qml</file>
+    </qresource>
+    <qresource prefix="/settings">
+        <file>ViewPrivateKeysPage.qml</file>
+    </qresource>
+    <qresource prefix="/onboarding">
+        <file>newRecoveryPhrasePage.qml</file>
+        <file>createUsernamePage.qml</file>
+        <file>recoverySeedRecovery.qml</file>
+    </qresource>
 </RCC>
