@@ -207,10 +207,10 @@ Item {
     Button {
         id: depositButton
         text: "Deposit"
-        width: parent.width * 0.75
-        height: 40
-        y: parent.height - 50 - height
         anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width * 0.8
+        height: 40
+        y: parent.height - bottomAreaCorrectionHeight - height
 
         onDownChanged: {
             if (depositButton.down === true) {
@@ -244,11 +244,11 @@ Item {
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: "#111"
+                    color: "#00223f"
                 }
                 GradientStop {
                     position: 1
-                    color: "#333"
+                    color: "#064880"
                 }
             }
         }

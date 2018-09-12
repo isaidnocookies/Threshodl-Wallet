@@ -71,6 +71,11 @@ QString WalletAccount::longName()
     return mLongName;
 }
 
+QString WalletAccount::owner()
+{
+    return mOwner;
+}
+
 void WalletAccount::setExchangeCurrency(QString iCurrency)
 {
     if (mExchangeCurrency == iCurrency) {
@@ -99,6 +104,11 @@ void WalletAccount::setConfirmedBalance(QString iBalance)
 void WalletAccount::setUnconfirmedBalance(QString iBalance)
 {
     mUnconfirmedBalance = iBalance;
+}
+
+void WalletAccount::setOwner(QString iOwner)
+{
+    mOwner = iOwner;
 }
 
 void WalletAccount::updateMarketValue()
@@ -217,6 +227,7 @@ QList<CryptoWallet> WalletAccount::getWallets()
 void WalletAccount::createNewBrightWallet(QString iSeed)
 {
     CryptoWallet lNewCryptoWallet = CryptoWallet(mShortName, mLongName, iSeed, mChain);
+    lNewCryptoWallet.setOwner(mOwner);
     mWallets.append(lNewCryptoWallet);
     mAccountData->saveWallet(lNewCryptoWallet.toData(), mShortName, false);
 }
@@ -227,16 +238,10 @@ bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, 
     auto lCurrentWallet = mWallets[0];
     QString lFromAddress = lCurrentWallet.address();
     QString lFromPrivateKey = lCurrentWallet.privateKey();
-//    int lNetwork = 1;
 
     QString lReturnTxHex;
     QString lReturnFee;
     bool lSuccess;
-
-//    if (lCoinName.at(0) == "t") {
-//        lNetwork = 2;
-//        lCoinName.remove(0, 1);
-//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -252,7 +257,6 @@ bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, 
 
     jsonData.insert("coin", lCoinName);
     jsonData.insert("fromAddress", lFromAddress);
-//    jsonData.insert("network", lNetwork);
     jsonData.insert("fromPrivateKey", lFromPrivateKey);
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
@@ -306,15 +310,9 @@ bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
 {
     QString lCoinName = mShortName;
     auto lCurrentWallet = mWallets[0];
-//    int lNetwork = 1;
 
     QString lReturnTxid;
     bool lSuccess;
-
-//    if (lCoinName.at(0) == "t") {
-//        lNetwork = 2;
-//        lCoinName.remove(0, 1);
-//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -324,7 +322,6 @@ bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
     QJsonObject jsonData;
 
     jsonData.insert("coin", lCoinName);
-//    jsonData.insert("network", lNetwork);
     jsonData.insert("tx", iRawTransaction);
 
     QJsonDocument jsonDataDocument;
@@ -374,14 +371,8 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
     auto lCurrentWallet = mWallets[0];
     QString lFromAddress = lCurrentWallet.address();
     QString lFromPrivateKey = lCurrentWallet.privateKey();
-//    int lNetwork = 1;
 
     QString lReturnTxid;
-
-//    if (lCoinName.at(0) == "t") {
-//        lNetwork = 2;
-//        lCoinName.remove(0, 1);
-//    }
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -397,7 +388,6 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
 
     jsonData.insert("coin", lCoinName);
     jsonData.insert("fromAddress", lFromAddress);
-//    jsonData.insert("network", lNetwork);
     jsonData.insert("fromPrivateKey", lFromPrivateKey);
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
@@ -436,6 +426,152 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
     }
 
     return lReturnTxid;
+}
+
+bool WalletAccount::estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError)
+{
+    QString lCoinName = mShortName;
+    auto lCurrentWallet = mWallets[0];
+
+    bool lSuccess;
+    QString lFee = "";
+    int lBreaks = 0;
+    QString lAmountWithoutFee = "";
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+
+    jsonData.insert("coin", lCoinName);
+    jsonData.insert("amount", iAmount);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QString lRequestData = request_body;
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/dark/estimateBreaksAndFees/"));
+    qDebug() << lRequestURL;
+    qDebug().noquote() << request_body;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            lBreaks = lMyMap["estimate"].toInt();
+            lFee = lMyMap["feeEstimate"].toString();
+            lSuccess = true;
+        } else {
+            QString error = "Error(1).... Failed to send transaction";
+            oError = error;
+            qDebug() << error;
+            lSuccess = false;
+        }
+    } else {
+        QString error = "Error(2).... Failed to send transaction" + lReply->errorString();
+        qDebug() << error;
+        oError = error;
+        lSuccess = false;
+    }
+
+    lAmountWithoutFee = (QStringMath(iAmount) - lFee).toString();
+    oAmountWithoutFee = lAmountWithoutFee;
+    oBreaks = lBreaks;
+    oFee = lFee;
+
+    return lSuccess;
+}
+
+bool WalletAccount::createMicroWallets(QString iAmount, QString &oError)
+{
+    QString lCoinName = mShortName;
+    bool lSuccess;
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+
+    jsonData.insert("coin", lCoinName);
+    jsonData.insert("value", iAmount);
+    jsonData.insert("owner", mOwner);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+    QString lRequestData = request_body;
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/dark/createWallets/"));
+    qDebug() << lRequestURL;
+    qDebug().noquote() << request_body;
+
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = mNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        qDebug() << lReplyText;
+
+        if (lMyMap["success"].toBool()) {
+            CryptoNetwork lNetwork = (mShortName.contains("t") ? CryptoNetwork::TestNet : CryptoNetwork::Main);
+            if (lMyMap["coin"] != mShortName) {
+                qDebug() << "Wrong stuffs";
+                return false;
+            }
+
+            auto lCoinWallet = lMyMap["wallets"].toMap();
+
+            for (auto key : lCoinWallet.keys()) {
+                QString lAddress = lCoinWallet[key].toMap()["address"].toString();
+                QString lPrivateKey = lCoinWallet[key].toMap()["privateKey"].toString();
+                QString lValue = lCoinWallet[key].toMap()["value"].toString();
+
+                CryptoWallet lNewMicroWallet(mShortName, mLongName, "addr", "privateKey", lNetwork);
+                lNewMicroWallet.setOwner(mOwner);
+                lNewMicroWallet.setValue(lValue);
+                lNewMicroWallet.setFilled(false);
+                lNewMicroWallet.setIsMicroWallet(true);
+
+                mWallets.append(lNewMicroWallet);
+                mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
+            }
+
+            lSuccess = true;
+        } else {
+            QString error = "Error(1).... Failed to send transaction";
+            oError = error;
+            qDebug() << error;
+            lSuccess = false;
+        }
+    } else {
+        QString error = "Error(2).... Failed to send transaction" + lReply->errorString();
+        qDebug() << error;
+        oError = error;
+        lSuccess = false;
+    }
+
+    return lSuccess;
 }
 
 const QByteArray WalletAccount::toData()

@@ -19,7 +19,7 @@ namespace AppWallets {
                                                                 {"BTC",     "Bitcoin"},
                                                                 {"tBTC",    "Testnet Bitcoin"},
 //                                                                {"dBTC",    "Dark Bitcoin"},
-//                                                                {"tdBTC",   "Testnet Dark Bitcoin"},
+                                                                {"dtBTC",   "Testnet Dark Bitcoin"},
                                                                 {"DASH",    "Dash"},
 //                                                                {"tDASH",   "Testnet Dash"},
                                                                 {"LTC",     "Litecoin"},

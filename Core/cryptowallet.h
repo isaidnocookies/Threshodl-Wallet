@@ -25,6 +25,7 @@ public:
     QString unconfirmedBalance() const;
     CryptoNetwork network() const;
     bool isValid() const;
+    bool isFilled() const;
 
     bool isMicroWallet() const;
     QString owner() const;
@@ -38,10 +39,10 @@ public:
     void setUnconfirmedBalance(QString iUnconfirmedBalance);
     void setNetwork(CryptoNetwork iNetwork);
     void setIsValid(bool iIsValid);
-
     void setIsMicroWallet(bool iIsMicro);
     void setOwner(QString iOwner);
     void setValue(QString iValue);
+    void setFilled(bool iFilled);
 
     QByteArray toData() const;
 

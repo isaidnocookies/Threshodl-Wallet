@@ -299,11 +299,11 @@ Item {
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: "#111"
+                    color: "#00223f"
                 }
                 GradientStop {
                     position: 1
-                    color: "#333"
+                    color: "#064880"
                 }
             }
         }
@@ -349,12 +349,12 @@ Item {
             radius: 20
             gradient: Gradient {
                 GradientStop {
-                    position: 0
-                    color: "#333"
+                    position: 1
+                    color: "#12003f"
                 }
                 GradientStop {
-                    position: 1
-                    color: "#666"
+                    position: 0
+                    color: "#500088"
                 }
             }
         }

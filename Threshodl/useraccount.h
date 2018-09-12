@@ -50,6 +50,8 @@ public:
     Q_INVOKABLE QString         createBrightWallet(QString iShortname);
     Q_INVOKABLE QVariantList    getAllWallets();
 
+    Q_INVOKABLE void            startDarkDeposit(QString iShortname, QString iAmount);
+    Q_INVOKABLE void            depositDarkCoin(QString iShortname, QString iAmount);
     Q_INVOKABLE void            createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail);
     Q_INVOKABLE void            sendDarkTransaction(QByteArray iDarkPackage, QString iShortname, QString toAddress, QString toEmail);
     Q_INVOKABLE QVariantList    getDarkWallets(QString iShortname);
@@ -78,6 +80,7 @@ signals:
     void rawTransactionSent(bool success, QString lTxid);
 
     void darkTransactionCreated(QByteArray oData, QString iFee, QString iAmount, QString toUser, QString toEmail);
+    void darkDepositConfirmation(bool oSuccess, QString oFee, QString oActualAmountWithoutFee, QString oShortname);
 
 public slots:
     void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey);

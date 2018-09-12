@@ -204,10 +204,10 @@ Item {
     Button {
         id: withdrawButton
         text: "Withdraw"
-        width: parent.width * 0.75
-        height: 40
-        y: parent.height - 50 - height
         anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width * 0.8
+        height: 40
+        y: parent.height - bottomAreaCorrectionHeight - height
 
         onDownChanged: {
             if (depositButton.down === true) {
@@ -240,12 +240,12 @@ Item {
             radius: 20
             gradient: Gradient {
                 GradientStop {
-                    position: 0
-                    color: "#111"
+                    position: 1
+                    color: "#12003f"
                 }
                 GradientStop {
-                    position: 1
-                    color: "#333"
+                    position: 0
+                    color: "#500088"
                 }
             }
         }

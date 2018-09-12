@@ -238,6 +238,7 @@ QString UserAccount::createBrightWallet(QString iShortname)
     }
 
     WalletAccount lWA(iShortname, lLongname, lNetwork);
+    lWA.setOwner(mPublicKey);
     lWA.setDataManager(mDataManager);
 
     if (!lLongname.contains("Dark", Qt::CaseSensitive) && iShortname.at(0) != "d") {
@@ -272,10 +273,38 @@ QVariantList UserAccount::getAllWallets()
     return lList;
 }
 
+void UserAccount::startDarkDeposit(QString iShortname, QString iAmount)
+{
+    if (!mDarkWallets.contains(iShortname)) {
+        CryptoNetwork network;
+        QString lLongname = AppWallets::walletNames()[iShortname];
+
+        if (iShortname.contains("t")) {
+            network = CryptoNetwork::TestNet;
+        } else {
+            network = CryptoNetwork::Main;
+        }
+
+        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets[iShortname].setOwner(mPublicKey);
+    }
+
+    QString oAmountWithoutFee;
+    int oBreaks;
+    QString oFee;
+    QString oError;
+
+    mDarkWallets[iShortname].estimateMicroWallets(iAmount,oAmountWithoutFee,oBreaks,oFee,oError);
+    emit darkDepositConfirmation(true, oFee, oAmountWithoutFee, iShortname);
+}
+
+void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
+{
+    // bool createMicroWallets(QString iAmount, QString &oFee, QString &oError);
+}
+
 void UserAccount::createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail)
 {
-    Q_UNUSED(toAmount);
-    WalletAccount lDarkWallets = mDarkWallets[iShortname];
 
 }
 

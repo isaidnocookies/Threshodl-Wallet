@@ -8,6 +8,8 @@ import QtQuick.Dialogs 1.2
 Item {
     id: sendTab
 
+    property bool fieldsComplete: false
+
     TextField {
         id: sendAmountTextField
         placeholderText: "Amount to Send"
@@ -21,9 +23,6 @@ Item {
             radius: 20
             border.color: "lightgray"
             border.width: 0.5
-        }
-
-        onFocusChanged: {
         }
     }
 
@@ -41,9 +40,6 @@ Item {
             border.color: "lightgray"
             border.width: 0.5
         }
-
-        onFocusChanged: {
-        }
     }
 
     TextField {
@@ -59,9 +55,6 @@ Item {
             radius: 20
             border.color: "lightgray"
             border.width: 0.5
-        }
-
-        onFocusChanged: {
         }
     }
 
@@ -95,7 +88,7 @@ Item {
 
     Text {
         id: warningLabel
-        y: parent.height - 60
+        y: sendButton.y - 20 - height
         anchors.horizontalCenter: parent.horizontalCenter
         color: "red"
         text: ""
@@ -149,12 +142,17 @@ Item {
         y: parent.height - bottomAreaCorrectionHeight - height
 
         onClicked: {
-            startBusyIndicatorAndDisable();
-            prepareDarkTransaction(walletShortName);
+
+            if (sendAmountTextField.text === "" || addressTextField.text === "" || emailAddressTextField.text === "") {
+                warningLabel.text = "Please complete fields"
+            } else {
+                startBusyIndicatorAndDisable();
+                prepareDarkTransaction(walletShortName);
+            }
         }
 
         contentItem: Text {
-            color: "white"
+            color: "black"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             text: sendButton.text
@@ -168,15 +166,19 @@ Item {
             anchors.centerIn: parent
             rotation: 270
             radius: 20
-            gradient: Gradient {
-                GradientStop {
-                    position: 0
-                    color: "#000"
-                }
-                GradientStop {
-                    position: 1
-                    color: "#555"
-                }
+            border.color: "black"
+            border.width: 1
+
+            color: "white"
+        }
+
+        onDownChanged: {
+            if (down) {
+                contentItem.font.pointSize += 5
+                background.border.width += 1
+            } else {
+                contentItem.font.pointSize -= 5
+                background.border.width -= 1
             }
         }
     }

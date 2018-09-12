@@ -58,16 +58,25 @@ void MyQSettingsManager::usernameAndKeys(QString &oUsername, QString &oPublicKey
 
 void MyQSettingsManager::saveWallet(QByteArray iWalletData, QString iShortname, bool isDark)
 {
-    Q_UNUSED(isDark)
+    if (!isDark) {
+        mAccountData->beginGroup(iShortname);
 
-    mAccountData->beginGroup(iShortname);
+        QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
+        lWallets.append(iWalletData);
+        mAccountData->setValue(DataKeys::walletsDataKey(), lWallets);
 
-    QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
-    lWallets.append(iWalletData);
-    mAccountData->setValue(DataKeys::walletsDataKey(), lWallets);
+        mAccountData->endGroup();
+        mAccountData->sync();
+    } else {
+        mAccountData->beginGroup("d" + iShortname);
 
-    mAccountData->endGroup();
-    mAccountData->sync();
+        QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
+        lWallets.append(iWalletData);
+        mAccountData->setValue(DataKeys::walletsDataKey(), lWallets);
+
+        mAccountData->endGroup();
+        mAccountData->sync();
+    }
 }
 
 void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType)

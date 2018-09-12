@@ -34,6 +34,7 @@ CryptoWallet::CryptoWallet(QString shortname, QString longname, QString address,
     setAddress(address);
     setPrivateKey(privateKey);
     setNetwork(iNetwork);
+    setFilled(false);
     setIsValid(true);
 }
 
@@ -132,6 +133,15 @@ bool CryptoWallet::isValid() const
     return false;
 }
 
+bool CryptoWallet::isFilled() const
+{
+    QString key = "isFilled";
+    if (mWalletData.contains(key)) {
+        return (mWalletData[key].toBool());
+    }
+    return false;
+}
+
 bool CryptoWallet::isMicroWallet() const
 {
     QString key = "isMicroWallet";
@@ -223,6 +233,12 @@ void CryptoWallet::setValue(QString iValue)
 {
     QString key = "value";
     mWalletData[key] = iValue;
+}
+
+void CryptoWallet::setFilled(bool iFilled)
+{
+    QString key = "isFilled";
+    mWalletData[key] = iFilled;
 }
 
 QByteArray CryptoWallet::toData() const

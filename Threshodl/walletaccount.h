@@ -22,11 +22,13 @@ public:
     QString shortName();
     QString longName();
     QString seed();
+    QString owner();
 
     void setExchangeCurrency(QString iCurrency);
     void setMarketValue(QString iCurrentValue);
     void setConfirmedBalance(QString iBalance);
     void setUnconfirmedBalance(QString iBalance);
+    void setOwner(QString iOwner);
     void updateMarketValue();
 
     QString getBalance(bool lIsConfirmed = true);
@@ -53,12 +55,16 @@ public:
     bool sendRawTransaction(QString iRawTransaction, QString &oTxid);
     QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
+    bool estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError);
+    bool createMicroWallets(QString iAmount, QString &oFee, QString &oError);
+
     const QByteArray toData();
 
 private:
     QString                 mShortName;
     QString                 mLongName;
     bool                    mIsDark;
+    QString                 mOwner;
 
     QString                 mConfirmedBalance;
     QString                 mUnconfirmedBalance;
