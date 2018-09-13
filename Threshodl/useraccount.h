@@ -81,6 +81,7 @@ signals:
 
     void darkTransactionCreated(QByteArray oData, QString iFee, QString iAmount, QString toUser, QString toEmail);
     void darkDepositConfirmation(bool oSuccess, QString oFee, QString oActualAmountWithoutFee, QString oShortname);
+    void darkDepositComplete(bool oSuccess, QString oActualAmountWithoutFees, int oBreaks);
 
 public slots:
     void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey);

@@ -37,6 +37,9 @@
         <file>assets/testnetLitecoinIcon.png</file>
         <file>assets/bitcoinCashIcon.png</file>
         <file>assets/threshodlLockIcon.png</file>
+        <file>assets/darkDepositIcon.png</file>
+        <file>assets/darkWithdrawIcon.png</file>
+        <file>assets/walletIcon.png</file>
     </qresource>
     <qresource prefix="/brightWalletView">
         <file>SendConfirmationDialog.qml</file>
@@ -48,6 +51,7 @@
         <file>DarkReceiveView.qml</file>
         <file>DarkDepositPage.qml</file>
         <file>DarkWithdrawPage.qml</file>
+        <file>ViewDarkMicroWalletsPage.qml</file>
     </qresource>
     <qresource prefix="/settings">
         <file>ViewPrivateKeysPage.qml</file>

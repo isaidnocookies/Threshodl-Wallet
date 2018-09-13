@@ -300,7 +300,27 @@ void UserAccount::startDarkDeposit(QString iShortname, QString iAmount)
 
 void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
 {
-    // bool createMicroWallets(QString iAmount, QString &oFee, QString &oError);
+    if (!mDarkWallets.contains(iShortname)) {
+        CryptoNetwork network;
+        QString lLongname = AppWallets::walletNames()[iShortname];
+
+        if (iShortname.contains("t")) {
+            network = CryptoNetwork::TestNet;
+        } else {
+            network = CryptoNetwork::Main;
+        }
+
+        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets[iShortname].setOwner(mPublicKey);
+    }
+    QString lError;
+    QString lFinalAmount;
+    int lBreaks;
+    if (mDarkWallets[iShortname].createMicroWallets(iAmount, lBreaks, lFinalAmount, lError)) {
+        emit darkDepositComplete(true, lFinalAmount, lBreaks);
+    } else {
+        emit darkDepositComplete(false, "", 0);
+    }
 }
 
 void UserAccount::createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail)
@@ -321,9 +341,36 @@ void UserAccount::sendDarkTransaction(QByteArray iDarkPackage, QString iShortnam
 QVariantList UserAccount::getDarkWallets(QString iShortname)
 {
     QVariantList lList;
-    WalletAccount lDarkWallets = mDarkWallets[iShortname];
 
-    // TODO: ...
+    if (!mDarkWallets.contains(iShortname)) {
+        CryptoNetwork network;
+        QString lLongname = AppWallets::walletNames()[iShortname];
+
+        if (iShortname.contains("t")) {
+            network = CryptoNetwork::TestNet;
+        } else {
+            network = CryptoNetwork::Main;
+        }
+
+        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets[iShortname].setOwner(mPublicKey);
+    }
+
+    WalletAccount lDarkWallets = mDarkWallets[iShortname];
+    auto lWallets = lDarkWallets.getWallets();
+
+    if (lWallets.size() > 0) {
+        for (auto wallet : lWallets) {
+            for (auto wallet : lWallets) {
+                QVariantList lWalletList;
+                lWalletList.append(wallet.value());
+                lWalletList.append(wallet.address());
+                lWalletList.append(wallet.privateKey());
+                lList.append(lWalletList);
+            }
+        }
+        return lList;
+    }
 
     return lList;
 }

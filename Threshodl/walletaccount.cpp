@@ -431,7 +431,6 @@ QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmou
 bool WalletAccount::estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError)
 {
     QString lCoinName = mShortName;
-    auto lCurrentWallet = mWallets[0];
 
     bool lSuccess;
     QString lFee = "";
@@ -495,10 +494,17 @@ bool WalletAccount::estimateMicroWallets(QString iAmount, QString &oAmountWithou
     return lSuccess;
 }
 
-bool WalletAccount::createMicroWallets(QString iAmount, QString &oError)
+bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString &oError)
 {
     QString lCoinName = mShortName;
+
+    if (lCoinName.at(0) == "d") {
+        lCoinName.remove(0,1);
+    }
+
     bool lSuccess;
+    int breaks;
+    QString finalAmount;
 
     QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
@@ -540,7 +546,9 @@ bool WalletAccount::createMicroWallets(QString iAmount, QString &oError)
                 return false;
             }
 
+            finalAmount = (QStringMath(iAmount) - lMyMap["fee"].toString()).toString();
             auto lCoinWallet = lMyMap["wallets"].toMap();
+            breaks = lCoinWallet.keys().size();
 
             for (auto key : lCoinWallet.keys()) {
                 QString lAddress = lCoinWallet[key].toMap()["address"].toString();
@@ -557,6 +565,8 @@ bool WalletAccount::createMicroWallets(QString iAmount, QString &oError)
                 mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
             }
 
+            oBreaks = breaks;
+            oFinalAmount = finalAmount;
             lSuccess = true;
         } else {
             QString error = "Error(1).... Failed to send transaction";

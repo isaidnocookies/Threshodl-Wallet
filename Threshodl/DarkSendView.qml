@@ -14,7 +14,7 @@ Item {
         id: sendAmountTextField
         placeholderText: "Amount to Send"
         width: parent.width * 0.80
-        y: 20
+        y: 5
         anchors.horizontalCenter: parent.horizontalCenter
         height: 40
         horizontalAlignment: TextInput.AlignHCenter

@@ -56,7 +56,7 @@ public:
     QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
     bool estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError);
-    bool createMicroWallets(QString iAmount, QString &oFee, QString &oError);
+    bool createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString &oError);
 
     const QByteArray toData();
 

@@ -63,6 +63,76 @@ Item {
         mWaitingLayer.visible = false
     }
 
+    Connections {
+        target: userAccount
+
+        onDarkDepositConfirmation : {
+            stopBusyIndicatorAndEnable();
+            if (oSuccess) {
+                console.log("Success on first thing for deposit thing");
+                console.log("Fee:  " + oFee + "   WithoutFee: " + oActualAmountWithoutFee + "   Shortname: " + oShortname)
+                messageDialog.fee = oFee;
+                messageDialog.amountWithoutFee = oActualAmountWithoutFee;
+                messageDialog.text = messageDialog.getConfirmationMessage();
+                messageDialog.open()
+            } else {
+                console.log("Stupid fucking deposit thing");
+            }
+        }
+
+        onDarkDepositComplete : {
+            stopBusyIndicatorAndEnable();
+
+            if (oSuccess) {
+                console.log("Dark Deposit Complete!");
+                console.log("Breaks:  " + oBreaks + "   WithoutFee: " + oActualAmountWithoutFees)
+                messageDialog.getCompletedMessage();
+                messageDialog.open();
+            } else {
+                console.log("Stupid fucking deposit confirmation");
+            }
+        }
+
+        onWalletBalanceUpdateComplete: {
+            if (shortname === getBaseShortname(walletShortName)) {
+                totalCryptoForWallet.text = "(Available Balance: " + userAccount.getBalance(getBaseShortname(walletShortName), true) + " " + getBaseShortname(walletShortName) + ")"
+            }
+        }
+    }
+
+    MessageDialog {
+        id: messageDialog
+
+        property string amountWithoutFee;
+        property string fee;
+
+        function getConfirmationMessage() {
+            return "\n\n Amount: " + amountTextField.text + " " + getBaseShortname(walletShortName) + "\n\nFee:\n" + fee + " " + getBaseShortname(walletShortName) + "\n\nTotal Amount to turn dark:\n" + amountWithoutFee + " " + getBaseShortname(walletShortName) + "\n\nConfirm Transaction?"
+        }
+
+        function getCompletedMessage() {
+            return "Deposit Complete!"
+        }
+
+        title: "Dark Deposit"
+        text: ""
+
+        standardButtons: StandardButton.Cancel | StandardButton.Yes
+
+        onYes: {
+            console.log("Deposit Approved.")
+            messageDialog.visible = false
+
+            startBusyIndicatorAndDisable();
+            userAccount.depositDarkCoin(walletShortName, amountTextField.text);
+        }
+
+        onRejected: {
+            console.log("Cancel")
+            warningLabel.text = "Dark deposit was canceled!"
+        }
+    }
+
     Item {
         id: mWaitingLayer
 
@@ -192,15 +262,30 @@ Item {
         Component.onCompleted: {
             text = "(Available Balance: " + userAccount.getBalance(getBaseShortname(walletShortName), true) + " " + getBaseShortname(walletShortName) + ")"
         }
+    }
 
-        Connections {
-            target: userAccount
+    Text {
+        id: warningLabel
+        y: depositButton.y - 20 - height
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "red"
+        text: ""
 
-            onWalletBalanceUpdateComplete: {
-                if (shortname === getBaseShortname(walletShortName)) {
-                    totalCryptoForWallet.text = "(Available Balance: " + userAccount.getBalance(getBaseShortname(walletShortName), true) + " " + getBaseShortname(walletShortName) + ")"
-                }
-            }
+        onTextChanged: {
+            console.log("Warning label text changed")
+            warningLabelTimer.start()
+        }
+    }
+
+    Timer {
+        id: warningLabelTimer
+        repeat: false
+        running: false
+        interval: 5000
+
+        onTriggered: {
+            warningLabel.text = ""
+            console.log("Warning text reset")
         }
     }
 
@@ -221,7 +306,17 @@ Item {
         }
 
         onClicked: {
-            console.log("Start deposit into Dark...");
+            // Sanity check on value in field
+            if (amountTextField.text === "") {
+                warningLabel.text = "Please input amount!"
+            } else if (parseFloat(amountTextField.text) > parseFloat(userAccount.getBalance(getBaseShortname(walletShortName), true))) {
+                warningLabel.text = "Please input smaller amount"
+            } else {
+                console.log("Start deposit into Dark...");
+                startBusyIndicatorAndDisable();
+                userAccount.startDarkDeposit(walletShortName, amountTextField.text)
+            }
+
         }
 
         contentItem: Text {

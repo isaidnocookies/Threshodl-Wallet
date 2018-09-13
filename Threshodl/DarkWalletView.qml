@@ -145,12 +145,38 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/backButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
 
         onClicked: ourStackView.pop()
+    }
+
+    Button {
+        id: walletButton
+        height: 35
+        width: 35
+
+        background: Rectangle {
+            color: "white"
+            width: parent.height
+            height: parent.width
+            anchors.centerIn: parent
+        }
+
+        anchors.top: topBarSpacer.bottom
+        x: parent.width - width - 25
+
+        Image {
+            source: "qrc:/images/assets/walletIcon.png"
+            fillMode: Image.PreserveAspectFit
+            width: parent.width
+        }
+
+        onClicked: {
+
+        }
     }
 
     Text {
@@ -260,9 +286,8 @@ Item {
 
     Button {
         id: depositButton
-        text: "Deposit"
-        width: parent.width * 0.45
-        height: 40
+        width: 50
+        height: 50
         y: walletMarketValue.y + walletMarketValue.height + 25
         x: parent.width / 2 - 10 - width
 
@@ -279,14 +304,11 @@ Item {
             ourStackView.push(darkDepositPageView)
         }
 
-        contentItem: Text {
-            id: depositButtonText
-            color: "white"
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: depositButton.text
-            font.bold: true
-            font.pointSize: buttonFontSize
+        Image {
+            source: "qrc:/images/assets/darkDepositIcon.png"
+            anchors.centerIn: parent
+            fillMode: Image.PreserveAspectFit
+            height: parent.height * 0.6
         }
 
         background: Rectangle {
@@ -295,7 +317,7 @@ Item {
             height: parent.width
             anchors.centerIn: parent
             rotation: 270
-            radius: 20
+            radius: parent.height/2
             gradient: Gradient {
                 GradientStop {
                     position: 0
@@ -311,9 +333,8 @@ Item {
 
     Button {
         id: withdrawButton
-        text: "Withdraw"
-        width: parent.width * 0.45
-        height: 40
+        width: 50
+        height: 50
         y: depositButton.y
         x: parent.width / 2 + 10
 
@@ -330,14 +351,11 @@ Item {
             ourStackView.push(darkWithdrawPageView)
         }
 
-        contentItem: Text {
-            id: withdrawButtonText
-            color: "white"
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: withdrawButton.text
-            font.bold: true
-            font.pointSize: buttonFontSize
+        Image {
+            source: "qrc:/images/assets/darkWithdrawIcon.png"
+            anchors.centerIn: parent
+            fillMode: Image.PreserveAspectFit
+            height: parent.height * 0.6
         }
 
         background: Rectangle {
@@ -346,7 +364,7 @@ Item {
             height: parent.width
             anchors.centerIn: parent
             rotation: 270
-            radius: 20
+            radius: parent.height/2
             gradient: Gradient {
                 GradientStop {
                     position: 1
