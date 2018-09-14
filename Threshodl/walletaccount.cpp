@@ -83,8 +83,6 @@ void WalletAccount::setExchangeCurrency(QString iCurrency)
     }
 
     mExchangeCurrency = iCurrency;
-    updateMarketValue();
-//    emit marketValueChanged();
 }
 
 void WalletAccount::setMarketValue(QString iCurrentValue)
@@ -92,7 +90,7 @@ void WalletAccount::setMarketValue(QString iCurrentValue)
     if (QStringMath(mMarketValue) == QStringMath(iCurrentValue)) {
         return;
     }
-
+//    mAccountData->saveMarketValue(mShortName, iCurrentValue);
     mMarketValue = iCurrentValue;
 }
 
@@ -109,11 +107,6 @@ void WalletAccount::setUnconfirmedBalance(QString iBalance)
 void WalletAccount::setOwner(QString iOwner)
 {
     mOwner = iOwner;
-}
-
-void WalletAccount::updateMarketValue()
-{
-    setMarketValue(mMarketValue);
 }
 
 QString WalletAccount::getBalance(bool lIsConfirmed)
@@ -559,6 +552,7 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 lNewMicroWallet.setFilled(false);
                 lNewMicroWallet.setIsMicroWallet(true);
 
+                mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + lValue).toString();\
                 mWallets.append(lNewMicroWallet);
                 mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
             }
@@ -578,7 +572,6 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
         oError = error;
         lSuccess = false;
     }
-
     return lSuccess;
 }
 

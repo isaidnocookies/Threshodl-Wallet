@@ -142,6 +142,12 @@ Item {
             console.log("Cancel")
             warningLabel.text = "Dark deposit was canceled!"
         }
+
+        onAccepted: {
+            console.log("Confirmation dismissed");
+            amountTextField.text = "";
+            ourStackView.pop();
+        }
     }
 
     Item {

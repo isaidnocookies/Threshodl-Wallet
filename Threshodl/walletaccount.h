@@ -29,7 +29,6 @@ public:
     void setConfirmedBalance(QString iBalance);
     void setUnconfirmedBalance(QString iBalance);
     void setOwner(QString iOwner);
-    void updateMarketValue();
 
     QString getBalance(bool lIsConfirmed = true);
 

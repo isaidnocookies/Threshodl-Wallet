@@ -130,10 +130,22 @@ Component {
                         currencyValueOfTotalCryptoLabel.formatValueText()
                     }
                 }
+
+                onMarketValueChanged: {
+                    currencyValueOfTotalCryptoLabel.formatValueText()
+                }
             }
 
             function formatValueText() {
-                var text = "$" + threshodlTools.formatMarketValueString(userAccount.getBalanceValue(shortName))
+
+                var darkBalance = "0.00";
+                var brightBalance = userAccount.getBalanceValue(shortName);
+
+                if (hasDarkWallet) {
+                    darkBalance = userAccount.getBalanceValue("d" + shortName);
+                }
+
+                var text = "$" + threshodlTools.formatMarketValueString(threshodlTools.stringAdd(darkBalance, brightBalance));
                 if (text !== "$0.00") {
                     currencyValueOfTotalCryptoLabel.text = text
                 } else {

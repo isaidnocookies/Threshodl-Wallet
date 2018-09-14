@@ -23,15 +23,10 @@ Item {
 
     function getConfirmationText (iShortname, walletType) {
         if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
-            return "(Confirmed)"
+            return "(Confirmed)";
         } else {
-            var lValue
-            if (walletType === "Dark") {
-                lValue = userAccount.getBalance(iShortname, false)
-            } else {
-                lValue = userAccount.getBalance(iShortname, false)
-            }
-            return "(" + lValue + " " + iShortname + " Balance Confirming)"
+            var lValue = userAccount.getBalance(iShortname, false);
+            return "(" + lValue + " " + iShortname + " Balance Confirming)";
         }
     }
 
@@ -202,6 +197,12 @@ Item {
         Connections {
             target: userAccount
 
+            onMarketValueChanged: {
+                if (shortname === walletShortName || shortname === getBaseShortname(walletShortName)) {
+                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
+                }
+            }
+
             onWalletBalanceUpdateComplete: {
                 if (shortname == walletShortName) {
                     totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
@@ -219,14 +220,14 @@ Item {
 
         anchors.top: totalCurrencyForWallet.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        text:  userAccount.getBalance(walletShortName, true) + " " + walletShortName
+        text:  userAccount.getBalance(walletShortName, false) + " " + walletShortName
 
         Connections {
             target: userAccount
 
             onWalletBalanceUpdateComplete: {
                 if (shortname == walletShortName) {
-                    totalCryptoForWallet.text = userAccount.getBalance(walletShortName, true) + " " + walletShortName
+                    totalCryptoForWallet.text = userAccount.getBalance(walletShortName, false) + " " + walletShortName
 
                     walletConfirmationStatusLabel.text = getConfirmationText(walletShortName, "Dark")
                     if (userAccount.isWalletConfirmed(walletShortName, "Dark")) {

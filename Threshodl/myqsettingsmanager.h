@@ -31,6 +31,9 @@ public:
     void saveRecoverySeed(QString iSeed);
     QString getRecoverySeed();
 
+    void saveMarketValue(QString iShortname, QString iMarketValue);
+    QString getMarketValue(QString iShortname);
+
     void getBrightWalletAccounts(QList<WalletAccount> &oWalletAccounts);
     void getDarkWalletAccounts(QList<WalletAccount> &oDarkWalletAccounts);
 

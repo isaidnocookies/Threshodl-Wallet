@@ -27,6 +27,26 @@ Rectangle {
         return false
     }
 
+    function getBaseShortname(iShortname) {
+        var editedShortname = iShortname;
+
+        if (editedShortname.charAt(0) === "d") {
+            editedShortname = editedShortname.substring(1);
+        }
+
+        return editedShortname
+    }
+
+    Connections {
+        target: userAccount
+
+        onMarketValueChanged: {
+            if (shortname === expandedShortName || shortname === getBaseShortname(expandedShortName)) {
+                currencyValueOfTotalCryptoLabelExpanded.text = getCurrencySymbol("USD") + threshodlTools.formatMarketValueString(userAccount.getBalanceValue(expandedShortName));
+            }
+        }
+    }
+
     Item {
         width: parent.width
         height: 80
@@ -62,6 +82,9 @@ Rectangle {
         Text {
             id: totalCryptoTextExpanded
             text: {
+                if (isDark) {
+                    return getBalances(expandedShortName, false) + " " + expandedShortName
+                }
                 return getBalances(expandedShortName, true) + " " + expandedShortName
             }
             font.pointSize: 16
@@ -74,7 +97,7 @@ Rectangle {
         Text {
             id: currencyValueOfTotalCryptoLabelExpanded
 
-            text: getCurrencySymbol("USD") + getCurrencyValue(shortName, "USD") + " " + "USD"
+            text: getCurrencySymbol("USD") + threshodlTools.formatMarketValueString(getCurrencyValue(expandedShortName, "USD"))
             font.pointSize: 12
             font.bold: true
 

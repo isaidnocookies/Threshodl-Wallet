@@ -2,8 +2,9 @@
 #include "walletaccount.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 
-MyQSettingsManager::MyQSettingsManager(QObject *parent) : QObject(parent)
+MyQSettingsManager::MyQSettingsManager(QObject *parent) : QObject(parent), mAccountData {nullptr}
 {
     QCoreApplication::setOrganizationDomain(AppInfo::appDomain());
     QCoreApplication::setApplicationName(AppInfo::appName());
@@ -39,6 +40,26 @@ QString MyQSettingsManager::getRecoverySeed()
         return mAccountData->value(DataKeys::recoverySeedDataKey()).toString();
     }
     return "";
+}
+
+void MyQSettingsManager::saveMarketValue(QString iShortname, QString iMarketValue)
+{
+    mAccountData->beginGroup(iShortname);
+    mAccountData->setValue(DataKeys::marketValueDataKey(), iMarketValue);
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
+QString MyQSettingsManager::getMarketValue(QString iShortname)
+{
+    QString iValue;
+    mAccountData->beginGroup(iShortname);
+    if (mAccountData->contains(DataKeys::marketValueDataKey())) {
+        iValue = mAccountData->value(DataKeys::marketValueDataKey()).toString();
+    }
+    iValue = "";
+    mAccountData->endGroup();
+    return iValue;
 }
 
 void MyQSettingsManager::savePublicAndPrivateKeys(QString iPublicKey, QString iPrivateKey)

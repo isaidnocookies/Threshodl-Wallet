@@ -70,7 +70,7 @@ public:
 signals:
     void usernameChanged();
     void recoverySeedChanged();
-    void marketValueChanged();
+    void marketValueChanged(QString shortname);
     void walletBalanceUpdateComplete(QString shortname);
     void darkCryptoConfirmedBalanceChanged();
     void darkCryptoUnconfirmedBalanceChanged();
