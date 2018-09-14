@@ -8,6 +8,44 @@ import QtQuick.Dialogs 1.2
 Item {
     id: sendTab
 
+    Connections {
+        target: userAccount
+
+        onRawTransactionCreated: {
+            stopBusyIndicatorAndEnable();
+
+            if (success) {
+                messageDialog.txhex = lHex;
+                messageDialog.fee = lFee;
+                messageDialog.getConfirmationMessage();
+
+                messageDialog.open()
+            } else {
+                alertDialog.title = "Error"
+                alertDialog.text = "There was an error creating the raw transaction"
+
+                alertDialog.open()
+            }
+        }
+
+        onRawTransactionSent: {
+            stopBusyIndicatorAndEnable();
+
+            if (success) {
+                console.log("Success!")
+                sendTimeoutTimer.stop();
+                alertDialog.title = "Transaction Successful";
+                alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
+                alertDialog.open();
+            } else {
+                console.log("Failed to send...")
+                alertDialog.title = "Transaction Failed"
+                alertDialog.text = "The transaction has failed to send. Please try again"
+                alertDialog.open()
+            }
+        }
+    }
+
     TextField {
         id: sendAmountTextField
         placeholderText: "Amount to Send"
@@ -158,7 +196,7 @@ Item {
             messageDialog.visible = false
 
             startBusyIndicatorAndDisable();
-            userAccount.getRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
+            userAccount.createRawTransaction(walletShortName, addressTextField.text, sendAmountTextField.text);
         }
 
         onRejected: {

@@ -5,6 +5,8 @@ import QtQuick.Controls 2.2
 import QtQuick.Window 2.2
 import QtGraphicalEffects 1.0
 
+import "qrc:/";
+
 Item {
     id: newRecoveryPhrasePage
 
@@ -193,7 +195,7 @@ Item {
                 if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
                     userAccount.confirmPasscodeChange()
                     passcodeScreen.passcode = ""
-                    ourStackView.replace(Qt.resolvedUrl("arc:/DashboardPage.qml"))
+                    ourStackView.replace(Qt.resolvedUrl("qrc:/DashboardPage.qml"))
                     console.log("Passcode complete!")
                 } else {
                     console.log("Passcode process reset")

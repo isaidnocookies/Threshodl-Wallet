@@ -285,8 +285,11 @@ void UserAccount::startDarkDeposit(QString iShortname, QString iAmount)
             network = CryptoNetwork::Main;
         }
 
-        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
         mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setDataManager(mDataManager);
+
+        mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
 
     QString oAmountWithoutFee;
@@ -310,9 +313,13 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
             network = CryptoNetwork::Main;
         }
 
-        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
         mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setDataManager(mDataManager);
+
+        mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
+
     QString lError;
     QString lFinalAmount;
     int lBreaks;
@@ -352,8 +359,11 @@ QVariantList UserAccount::getDarkWallets(QString iShortname)
             network = CryptoNetwork::Main;
         }
 
-        mDarkWallets[iShortname] = WalletAccount(iShortname, lLongname, network);
+        mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
         mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setDataManager(mDataManager);
+
+        mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
 
     WalletAccount lDarkWallets = mDarkWallets[iShortname];
@@ -361,17 +371,13 @@ QVariantList UserAccount::getDarkWallets(QString iShortname)
 
     if (lWallets.size() > 0) {
         for (auto wallet : lWallets) {
-            for (auto wallet : lWallets) {
-                QVariantList lWalletList;
-                lWalletList.append(wallet.value());
-                lWalletList.append(wallet.address());
-                lWalletList.append(wallet.privateKey());
-                lList.append(lWalletList);
-            }
+            QVariantList lWalletList;
+            lWalletList.append(wallet.value());
+            lWalletList.append(wallet.address());
+            lWalletList.append(wallet.privateKey());
+            lList.append(lWalletList);
         }
-        return lList;
     }
-
     return lList;
 }
 
@@ -499,9 +505,10 @@ void UserAccount::loadAccountFromSettings()
         setEmailAddress(lEmail);
 
         QList<WalletAccount> lWalletAccounts;
-        mDataManager->getBrightWalletAccounts(lWalletAccounts);
+        QList<WalletAccount> lDarkWalletAccounts;
 
         qDebug() << "Loading wallets from settings..";
+        mDataManager->getBrightWalletAccounts(lWalletAccounts);
         for (auto lWA : lWalletAccounts) {
             mBrightWallets[lWA.shortName()] = lWA;
             QString lConfBalance, lUnconfBalance;
@@ -511,6 +518,16 @@ void UserAccount::loadAccountFromSettings()
 
             qDebug() << "Setting downloader address!";
             emit setDownloaderAddresses(lWA.shortName(), mBrightWallets[lWA.shortName()].getWalletAddresses());
+        }
+
+        qDebug() << "Loading DARK wallets from settings..";
+        mDataManager->getDarkWalletAccounts(lDarkWalletAccounts);
+        for (auto lDWA : lDarkWalletAccounts) {
+            mDarkWallets[lDWA.shortName()] = lDWA;
+            QString lConfBalance, lUnconfBalance;
+            mDataManager->getDarkWalletBalance(lDWA.shortName(), lConfBalance, lUnconfBalance);
+            mDarkWallets[lDWA.shortName()].setConfirmedBalance(lConfBalance);
+            mDarkWallets[lDWA.shortName()].setUnconfirmedBalance(lUnconfBalance);
         }
 
     } else {
@@ -539,10 +556,10 @@ void UserAccount::createCryptoWallets()
                 emit setDownloaderAddresses(lShortname, QStringList() << lWalletAddress);
             }
             mBrightWallets.insert(lShortname, lWA);
+            mDataManager->saveWalletAccount(lShortname, lLongname, lNetwork);
         } else {
             // TODO
-            //add dark wallet...
+            //add dark wallets...
         }
-        mDataManager->saveWalletAccount(lShortname, lLongname, lNetwork);
     }
 }

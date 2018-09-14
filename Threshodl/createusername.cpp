@@ -93,8 +93,8 @@ void CreateUsername::requestComplete(QNetworkReply *reply)
 
     if (lMyMap["success"].toBool()) {
         QString lSeed = lMyMap["seed"].toString();
-        QString lPublic = lMyMap["publicKey"].toString();
-        QString lPrivate = lMyMap["privateKey"].toString();
+        QString lPublic = lMyMap["publickey"].toString();
+        QString lPrivate = lMyMap["privatekey"].toString();
         emit usernameCreated(true, mUsername, lSeed, lPublic, lPrivate);
     } else {
         emit usernameCreated(false, "", "", "", "");

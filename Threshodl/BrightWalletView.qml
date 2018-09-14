@@ -49,38 +49,38 @@ Item {
 
     Connections {
         target: userAccount
-        onRawTransactionSent: {
-            stopBusyIndicatorAndEnable();
+//        onRawTransactionSent: {
+//            stopBusyIndicatorAndEnable();
 
-            if (success) {
-                console.log("Success!")
-                sendTimeoutTimer.stop();
-                alertDialog.title = "Transaction Successful";
-                alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
-                alertDialog.open();
-            } else {
-                console.log("Failed to send...")
-                alertDialog.title = "Transaction Failed"
-                alertDialog.text = "The transaction has failed to send. Please try again"
-                alertDialog.open()
-            }
-        }
+//            if (success) {
+//                console.log("Success!")
+//                sendTimeoutTimer.stop();
+//                sendTab.alertDialog.title = "Transaction Successful";
+//                sendTab.alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
+//                sendTab.alertDialog.open();
+//            } else {
+//                console.log("Failed to send...")
+//                sendTab.alertDialog.title = "Transaction Failed"
+//                sendTab.alertDialog.text = "The transaction has failed to send. Please try again"
+//                sendTab.alertDialog.open()
+//            }
+//        }
 
-        onRawTransactionCreated: {
-            stopBusyIndicatorAndEnable();
+//        onRawTransactionCreated: {
+//            stopBusyIndicatorAndEnable();
 
-            if (success) {
-                messageDialog.txhex = lHex;
-                messageDialog.fee = lFee;
+//            if (success) {
+//                sendTab.messageDialog.txhex = lHex;
+//                sendTab.messageDialog.fee = lFee;
 
-                messageDialog.open()
-            } else {
-                alertDialog.title = "Error"
-                alertDialog.text = "There was an error creating the raw transaction"
+//                sendTab.messageDialog.open()
+//            } else {
+//                sendTab.alertDialog.title = "Error"
+//                sendTab.alertDialog.text = "There was an error creating the raw transaction"
 
-                alertDialog.open()
-            }
-        }
+//                sendTab.alertDialog.open()
+//            }
+//        }
     }
 
     QrScannerView {
@@ -245,7 +245,7 @@ Item {
         Connections {
             target: userAccount
             onMarketValueChanged: {
-                marketValueText.text = "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
+                walletMarketValue.text = "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
             }
         }
     }

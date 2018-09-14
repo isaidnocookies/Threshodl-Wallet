@@ -541,10 +541,8 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
 
         if (lMyMap["success"].toBool()) {
             CryptoNetwork lNetwork = (mShortName.contains("t") ? CryptoNetwork::TestNet : CryptoNetwork::Main);
-            if (lMyMap["coin"] != mShortName) {
-                qDebug() << "Wrong stuffs";
-                return false;
-            }
+
+            qDebug() << "Coin from response: " << lMyMap["coin"].toString() << "    Shortname from object" << mShortName;
 
             finalAmount = (QStringMath(iAmount) - lMyMap["fee"].toString()).toString();
             auto lCoinWallet = lMyMap["wallets"].toMap();
@@ -555,7 +553,7 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 QString lPrivateKey = lCoinWallet[key].toMap()["privateKey"].toString();
                 QString lValue = lCoinWallet[key].toMap()["value"].toString();
 
-                CryptoWallet lNewMicroWallet(mShortName, mLongName, "addr", "privateKey", lNetwork);
+                CryptoWallet lNewMicroWallet(mShortName, mLongName, lAddress, lPrivateKey, lNetwork);
                 lNewMicroWallet.setOwner(mOwner);
                 lNewMicroWallet.setValue(lValue);
                 lNewMicroWallet.setFilled(false);

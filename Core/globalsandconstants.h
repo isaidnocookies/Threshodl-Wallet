@@ -19,7 +19,7 @@ namespace AppWallets {
                                                                 {"BTC",     "Bitcoin"},
                                                                 {"tBTC",    "Testnet Bitcoin"},
 //                                                                {"dBTC",    "Dark Bitcoin"},
-                                                                {"dtBTC",   "Testnet Dark Bitcoin"},
+                                                                {"dtBTC",   "Dark Testnet Bitcoin"},
                                                                 {"DASH",    "Dash"},
 //                                                                {"tDASH",   "Testnet Dash"},
                                                                 {"LTC",     "Litecoin"},
@@ -86,6 +86,7 @@ namespace DataKeys {
     inline QString publicKeyDataKey()                   { return QString("publicKeyDataKey"); }
     inline QString privateKeyDataKey()                  { return QString("privateKeyDataKey"); }
     inline QString walletsDataKey()                     { return QString("walletDataKey"); }
+    inline QString darkWalletDataKey()                  { return QString("darkWalletDataKey"); }
 
     inline QString shortNameDataKey()                   { return QString("shortNameDataKey"); }
     inline QString longNameDataKey()                    { return QString("longNameDataKey"); }

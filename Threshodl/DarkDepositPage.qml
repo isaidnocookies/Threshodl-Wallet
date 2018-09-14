@@ -74,6 +74,7 @@ Item {
                 messageDialog.fee = oFee;
                 messageDialog.amountWithoutFee = oActualAmountWithoutFee;
                 messageDialog.text = messageDialog.getConfirmationMessage();
+                messageDialog.standardButtons = StandardButton.Cancel | StandardButton.Yes;
                 messageDialog.open()
             } else {
                 console.log("Stupid fucking deposit thing");
@@ -86,7 +87,8 @@ Item {
             if (oSuccess) {
                 console.log("Dark Deposit Complete!");
                 console.log("Breaks:  " + oBreaks + "   WithoutFee: " + oActualAmountWithoutFees)
-                messageDialog.getCompletedMessage();
+                messageDialog.text = messageDialog.getCompletedMessage();
+                messageDialog.standardButtons = StandardButton.Ok;
                 messageDialog.open();
             } else {
                 console.log("Stupid fucking deposit confirmation");
@@ -106,11 +108,15 @@ Item {
         property string amountWithoutFee;
         property string fee;
 
+        property bool completed: false;
+
         function getConfirmationMessage() {
+            completed = false;
             return "\n\n Amount: " + amountTextField.text + " " + getBaseShortname(walletShortName) + "\n\nFee:\n" + fee + " " + getBaseShortname(walletShortName) + "\n\nTotal Amount to turn dark:\n" + amountWithoutFee + " " + getBaseShortname(walletShortName) + "\n\nConfirm Transaction?"
         }
 
         function getCompletedMessage() {
+            completed = true;
             return "Deposit Complete!"
         }
 
@@ -121,10 +127,15 @@ Item {
 
         onYes: {
             console.log("Deposit Approved.")
-            messageDialog.visible = false
+            messageDialog.visible = false;
 
-            startBusyIndicatorAndDisable();
-            userAccount.depositDarkCoin(walletShortName, amountTextField.text);
+            if (!completed) {
+                startBusyIndicatorAndDisable();
+                userAccount.depositDarkCoin(walletShortName, amountTextField.text);
+            } else {
+                warningLabel.text = "Deposit Completed";
+            }
+
         }
 
         onRejected: {
@@ -309,9 +320,9 @@ Item {
             // Sanity check on value in field
             if (amountTextField.text === "") {
                 warningLabel.text = "Please input amount!"
-            } else if (parseFloat(amountTextField.text) > parseFloat(userAccount.getBalance(getBaseShortname(walletShortName), true))) {
+            } /*else if (parseFloat(amountTextField.text) > parseFloat(userAccount.getBalance(getBaseShortname(walletShortName), true))) {
                 warningLabel.text = "Please input smaller amount"
-            } else {
+            }*/ else {
                 console.log("Start deposit into Dark...");
                 startBusyIndicatorAndDisable();
                 userAccount.startDarkDeposit(walletShortName, amountTextField.text)

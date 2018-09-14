@@ -35,6 +35,7 @@ public:
     void getDarkWalletAccounts(QList<WalletAccount> &oDarkWalletAccounts);
 
     void getWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed);
+    void getDarkWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed);
     void saveWalletBalance(QString iShortname, QString iConfirmedBalance, QString iUnconfirmedBalance);
 
 protected:

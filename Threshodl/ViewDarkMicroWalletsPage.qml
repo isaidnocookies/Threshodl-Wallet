@@ -10,7 +10,9 @@ Item {
     property var shortName
     property var walletList
 
-    Component.onCompleted: {
+    function populateTable() {
+        console.log("Getting wallets for ... " + shortName);
+        walletModel.clear();
         walletList = userAccount.getDarkWallets(shortName);
         for (var i = 0; i < walletList.length; i = i + 3) {
             walletModel.append({ value: walletList[i], address: walletList[i+1], privateKey: walletList[i+2] });
@@ -88,7 +90,7 @@ Item {
 
         Item {
             width: parent.width
-            height: (rowLine.y + rowLine.height) - coinName.y + 20
+            height: (rowLine.y + rowLine.height) - valueOfMicroWallet.y + 20
 
             Text {
                 id: valueOfMicroWallet
@@ -104,7 +106,7 @@ Item {
             Text {
                 id: addressLabel
                 text: address
-                y: coinName.y + coinName.height + 10
+                y: valueOfMicroWallet.y + valueOfMicroWallet.height + 10
                 width: parent.width
                 wrapMode: Text.WrapAnywhere
                 color: "black"

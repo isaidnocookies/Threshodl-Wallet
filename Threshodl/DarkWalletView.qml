@@ -153,6 +153,12 @@ Item {
         onClicked: ourStackView.pop()
     }
 
+    ViewDarkMicroWalletsPage {
+        id: microWalletVewPage
+        visible: false
+        shortName: walletShortName
+    }
+
     Button {
         id: walletButton
         height: 35
@@ -175,7 +181,8 @@ Item {
         }
 
         onClicked: {
-
+            ourStackView.push(microWalletVewPage)
+            microWalletVewPage.populateTable();
         }
     }
 
@@ -261,7 +268,7 @@ Item {
         Connections {
             target: userAccount
             onMarketValueChanged: {
-                marketValueText.text = "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
+                walletMarketValue.text = "(Market Value: $" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
             }
         }
     }
@@ -290,14 +297,6 @@ Item {
         height: 50
         y: walletMarketValue.y + walletMarketValue.height + 25
         x: parent.width / 2 - 10 - width
-
-        onDownChanged: {
-            if (depositButton.down === true) {
-                depositButtonText.color = "darkgray"
-            } else {
-                depositButtonText.color = "white"
-            }
-        }
 
         onClicked: {
             console.log("Start deposit into Dark...");
@@ -337,14 +336,6 @@ Item {
         height: 50
         y: depositButton.y
         x: parent.width / 2 + 10
-
-        onDownChanged: {
-            if (withdrawButton.down === true) {
-                withdrawButtonText.color = "darkgray"
-            } else {
-                withdrawButtonText.color = "white"
-            }
-        }
 
         onClicked: {
             console.log("Start withdraw from Dark...");
