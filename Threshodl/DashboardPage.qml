@@ -6,6 +6,28 @@ import QtGraphicalEffects 1.0
 Item {
     id: dashboardPage
 
+    Rectangle {
+        z:0
+        anchors.fill: parent
+        Image {
+            source: "qrc:/images/assets/appBackgroundForDashboard.jpg"
+            fillMode: Image.PreserveAspectFit
+            anchors.centerIn: parent
+            height: parent.height
+        }
+
+//        gradient: Gradient {
+//            GradientStop {
+//                position: 1
+//                color: "#000000"
+//            }
+//            GradientStop {
+//                position: 0
+//                color: "#333"
+//            }
+//        }
+    }
+
     function getCurrencySymbol(iCurrency) {
         if (iCurrency === "USD") {
             return "$"
@@ -27,7 +49,7 @@ Item {
 
     Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -41,6 +63,7 @@ Item {
         y: inboxButton.y
         x: (parent.width / 2) - (width / 2)
         z:10
+        color: "white"
     }
 
     Text {
@@ -49,6 +72,7 @@ Item {
         y: titleLabel.y + titleLabel.height + 10
         x: (parent.width / 2) - (width / 2)
         z:10
+        color: "white"
     }
 
     Button {
@@ -85,7 +109,7 @@ Item {
         id: settingsButton
         height: 30
         width: 30
-        z:10
+        z:100
 
         background: Rectangle {
             color: "transparent"
@@ -103,16 +127,20 @@ Item {
             width: parent.width
         }
 
-        onClicked: {
-//            ourStackView.push(passcodeLockScreen)
-            ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                console.log("CLicked settings");
+                ourStackView.push(Qt.resolvedUrl("settingsPage.qml"))
+            }
         }
+
     }
 
     Text {
         id: totalCurrencyLabel
         z:10
-//        visible: false
+        color: "white"
 
         fontSizeMode: Text.Fit
 
@@ -148,6 +176,7 @@ Item {
         z:10
 
         visible: false
+        color: "white"
 
         text: "USD"
 
@@ -162,46 +191,16 @@ Item {
         height: 20
         width: parent.width
         z:8
-        color: Qt.rgba(1,1,1,0)
+        color: "transparent"
     }
-
-//    Rectangle {
-//        z:9
-//        id: colorBackgroundHeader
-//        width: parent.width
-//        anchors.top: topBarSpacer.top
-//        anchors.bottom: listMask.bottom
-
-//        gradient: Gradient {
-//            GradientStop {
-//                position: 1
-//                color: "#6796FF"
-//            }
-//            GradientStop {
-//                position: 0
-//                color: "#00CFF5"
-//            }
-//        }
-//    }
 
     Rectangle {
         z:8
         id: listMask
-        color: "white"
+        color: "transparent"
         width: parent.width
         anchors.top: parent.top
         anchors.bottom: totalToListSpacer.bottom
-
-//        gradient: Gradient {
-//            GradientStop {
-//                position: 0.9
-//                color: Qt.rgba(1, 1, 1, 1)
-//            }
-//            GradientStop {
-//                position: 1
-//                color: Qt.rgba(1, 1, 1, 0)
-//            }
-//        }
     }
 
     Rectangle {
@@ -211,27 +210,28 @@ Item {
         width: parent.width
         z:9
         opacity: 0.4
-
-        gradient: Gradient {
-            GradientStop {
-                position: 0
-                color: Qt.rgba(0, 0, 0, 0.5)
-            }
-            GradientStop {
-                position: 1
-                color: Qt.rgba(0, 0, 0, 0)
-            }
-        }
+        color: "transparent"
     }
 
     ListView {
-        z: 5
+        z:50
         id: cryptoWallets
         model: DashboardListModel {}
         delegate: CryptoWalletDelegate{}
 
-        width: parent.width
-        anchors.top: totalToListSpacer.bottom
+        spacing: 5
+
+        header: Component {
+            Rectangle {
+                height: 250
+                color: "transparent"
+                width: parent.parent.width;
+            }
+        }
+
+        width: parent.width * 0.96
+        x: parent.width * 0.04
+        anchors.top: parent.top
         anchors.bottom: bottomBarCorrectionSpacer.top
     }
 

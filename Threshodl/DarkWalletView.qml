@@ -13,6 +13,11 @@ Item {
     property string walletShortName
     property string walletIconPath
 
+    Rectangle {
+        anchors.fill: parent
+        color: "white";
+    }
+
     Component.onCompleted: {
         darkDepositPageView.walletShortName = walletShortName
         darkWithdrawPageView.walletShortName = walletShortName

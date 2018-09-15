@@ -14,6 +14,12 @@ Item {
     property bool isPasscodeConfirmed: false
 
     Rectangle {
+        id: backgroundForSettingsPage
+        anchors.fill: parent
+        color: "white"
+    }
+
+    Rectangle {
         id: topBarSpacer
         color: "white"
         anchors.top: parent.top

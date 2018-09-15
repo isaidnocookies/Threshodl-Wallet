@@ -48,15 +48,21 @@ Rectangle {
     }
 
     Item {
-        width: parent.width
-        height: 80
+//        width: parent.width
+//        height: 70
+        anchors.fill: parent
+
+//        Rectangle {
+//            height: 0.5
+//            width: parent.width * 0.8
+//            y: 0
+//            x: parent.width - width - (parent.width * 0.05)
+//            color: "lightgray"
+//        }
 
         Rectangle {
-            height: 0.5
-            width: parent.width * 0.8
-            y: 0
-            x: parent.width - width - (parent.width * 0.05)
-            color: "lightgray"
+            anchors.fill: parent
+            color: "transparent"
         }
 
         Image {
@@ -65,8 +71,8 @@ Rectangle {
             height: 20
             width: 20
 
-            x: 60
-            y: 35
+            x: 20
+            y: 25
         }
 
         Text {
@@ -75,7 +81,7 @@ Rectangle {
             font.weight: Font.Thin
             font.pointSize: 16
 
-            y: littleIconImage.y + littleIconImage.height/2 - (height/2) - 3
+            y: littleIconImage.y + (littleIconImage.height/2) - (height/2)
             x: littleIconImage.x + littleIconImage.width + 10
         }
 
@@ -90,7 +96,7 @@ Rectangle {
             font.pointSize: 16
             font.weight: Font.Thin
 
-            y: nameText.y - 10
+            y: nameText.y - 12
             x: parent.width / 2 + parent.width * 0.1
         }
 

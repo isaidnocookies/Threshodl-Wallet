@@ -7,8 +7,19 @@ Component {
     id: cryptoRowDelegate
 
     Item {
-        width: parent.width
+        width: parent.width * 0.96
         height: 100
+
+        Rectangle {
+            id: walletCellBackground
+            width: parent.width
+            height: 100
+            color: "white"
+
+            radius: 25
+            anchors.top: parent.top
+            z: 1
+        }
 
         function getTotalConfirmedCryptoValue (iShortname) {
             if (hasDarkWallet === true) {
@@ -38,15 +49,6 @@ Component {
             }
         }
 
-        Rectangle {
-            y: 0
-            x: parent.width*0.05
-            height: (index === 0 ? 0 : 0.5)
-            color: "lightgray"
-            width: parent.width * 0.9
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
         Image {
             id: iconImage
             source: Qt.resolvedUrl(imageName)
@@ -55,6 +57,7 @@ Component {
 
             x: 20
             y: 25
+            z: 10
         }
 
         Text {
@@ -65,6 +68,7 @@ Component {
 
             y: iconImage.y + 10
             x: iconImage.x + iconImage.width + 10
+            z:10
         }
 
         Text {
@@ -75,6 +79,7 @@ Component {
 
             x: longNameText.x
             y: longNameText.y + longNameText.height + 10
+            z: 10
 
             Connections {
                 target: userAccount
@@ -92,6 +97,7 @@ Component {
 
             y: longNameText.y - 8
             x: parent.width / 2 + parent.width * 0.1
+            z: 10
 
             Connections {
                 target: userAccount
@@ -114,6 +120,8 @@ Component {
 
         Text {
             id: currencyValueOfTotalCryptoLabel
+
+            z:10
 
             font.pointSize: 12
             font.bold: true
@@ -170,6 +178,8 @@ Component {
 
             font.weight: Font.Thin
             font.pointSize: 11
+
+            z:10
         }
 
         Button {
@@ -178,6 +188,7 @@ Component {
 
             height: 8
             width: 15
+            z: 10
 
             background: Rectangle {
                 color: "white"
@@ -202,28 +213,71 @@ Component {
             visible: false
 
             x: 0
-
             width: parent.width
-            height: 220
+
+            Rectangle {
+                x: 0
+                width: parent.width
+                y: iconImage.y + iconImage.height/2
+                height: (darkWalletCell.y + darkWalletCell.height) - y
+                color: "white"
+                z:1
+                radius: 20
+            }
+
+            Rectangle {
+                id: topExpandedShadowEffect
+                y: walletCellBackground.y + walletCellBackground.height
+                height: 8
+                width: parent.width
+                z:9
+                opacity: 0.4
+
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: Qt.rgba(0, 0, 0, 0.5)
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Qt.rgba(0, 0, 0, 0)
+                    }
+                }
+            }
 
             ExpandedCellComponent
             {
                 id: brightWalletCell
                 height: 80
                 y: iconImage.y + iconImage.height + 30
+                z:1
                 iconPath: brightIconName
                 name: shortName
                 expandedShortName: shortName
+
+                color: "transparent"
+            }
+
+            Rectangle {
+                y: brightWalletCell.y + brightWalletCell.height
+                height: 1
+                z: 1
+                color: "lightgray"
+                width: parent.width * 0.7
+                x: parent.width * 0.15
             }
 
             ExpandedCellComponent
             {
                 id: darkWalletCell
-                height: 80
+                height: 85
                 y: brightWalletCell.y + brightWalletCell.height + 10
+                z:1
                 iconPath: darkIconName
                 name: "Dark " + shortName
                 expandedShortName: "d" + shortName
+
+                color: "transparent"
             }
         }
 
@@ -237,12 +291,12 @@ Component {
                 if (hasDarkWallet) {
                     if (!cellExpanded) {
                         cellExpanded = !cellExpanded
-                        parent.height = parent.height + 190
+                        parent.height = parent.height + 181
                         expandCellButtonImage.source = "images/assets/upNavArrowIcon.png"
                         expandedWalletArea.visible = true
                     } else {
                         cellExpanded = !cellExpanded
-                        parent.height = parent.height - 190
+                        parent.height = parent.height - 181
                         expandedWalletArea.visible = false
                         expandCellButtonImage.source = "images/assets/downNavArrowIcon.png"
                     }

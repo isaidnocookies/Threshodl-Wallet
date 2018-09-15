@@ -83,6 +83,11 @@ Item {
 //        }
     }
 
+    Rectangle {
+        anchors.fill: parent
+        color: "white";
+    }
+
     QrScannerView {
         id: myQrScanner
 
