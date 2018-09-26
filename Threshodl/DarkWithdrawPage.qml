@@ -92,8 +92,26 @@ Item {
     }
 
     Rectangle {
+        id: topBackgroundShape
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: "#12003f"
+            }
+            GradientStop {
+                position: 0.3
+                color: "#500088"
+            }
+        }
+    }
+
+    Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -105,7 +123,7 @@ Item {
         width: 30
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -115,7 +133,7 @@ Item {
         x: 25
 
         Image {
-            source: "qrc:/images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -139,12 +157,24 @@ Item {
         y: topBarIcon.y + (topBarIcon.height) + 40
         anchors.horizontalCenter: parent.horizontalCenter
         text: "Withdraw From " + walletShortName;
-        font.pointSize: 14
+        font.pointSize: 20
+
+        color: "white"
+        font.bold: true
+    }
+
+    Rectangle {
+        id: bottomBackgroundShape
+        radius: 25
+        width: parent.width
+        anchors.top: title.bottom
+        anchors.topMargin: 30
+        anchors.bottom: parent.bottom
     }
 
     Text {
         id: descriptionLabel
-        y: title.y + title.height + 40
+        y: bottomBackgroundShape.y + 20
         width: parent.width * 0.80
         text: ""
         Component.onCompleted: {
@@ -211,9 +241,9 @@ Item {
 
         onDownChanged: {
             if (depositButton.down === true) {
-                depositButtonText.color = "darkgray"
+                withdrawButtonText.color = "darkgray"
             } else {
-                depositButtonText.color = "white"
+                withdrawButtonText.color = "white"
             }
         }
 
@@ -226,7 +256,7 @@ Item {
             color: "white"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: depositButton.text
+            text: withdrawButton.text
             font.bold: true
             font.pointSize: buttonFontSize
         }

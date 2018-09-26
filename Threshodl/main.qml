@@ -21,8 +21,28 @@ ApplicationWindow {
     property real topAreaCorrectionHeight: (platformInformation.getTopAreaCorrection())
     property real bottomAreaCorrectionHeight: (platformInformation.getBottomAreaCorrection())
     property string titleName: "Threshodl Beta"
-
+    property real cellWidthPercent: 0.97
     property int buttonFontSize: 13
+
+    Connections {
+        target: userAccount
+
+        // void importDarkWalletsSignal(QString type, QString amount, QString notes, QVariantList wallets)
+        onImportDarkWalletsSignal: {
+            console.log("open import view....")
+            darkWalletImport.shortname = type
+            darkWalletImport.amount = amount
+            darkWalletImport.notes = notes
+            darkWalletImport.wallets = wallets
+            darkWalletImport.setText()
+            ourStackView.push(darkWalletImport)
+        }
+    }
+
+    DarkWalletImportPage {
+        id: darkWalletImport
+        visible: false
+    }
 
     DashboardPage {
         id: dashboard

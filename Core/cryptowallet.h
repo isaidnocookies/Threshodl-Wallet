@@ -16,6 +16,7 @@ public:
     CryptoWallet(QString shortname, QString longname, QString address, QString privateKey, CryptoNetwork iNetwork);
     CryptoWallet(QString shortname, QString longname, QString iSeed, CryptoNetwork iNetwork);
 
+    QString uid() const;
     QString shortname() const;
     QString longname() const;
     bool isMainnet() const;
@@ -31,6 +32,7 @@ public:
     QString owner() const;
     QString value() const;
 
+    void setUid(QString iUID);
     void setShortname(QString iShortname);
     void setLongname(QString iLongname);
     void setAddress(QString iAddress);

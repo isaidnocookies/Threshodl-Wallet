@@ -29,6 +29,7 @@ public:
     void setConfirmedBalance(QString iBalance);
     void setUnconfirmedBalance(QString iBalance);
     void setOwner(QString iOwner);
+    void setPublicKey(QString iPub);
 
     QString getBalance(bool lIsConfirmed = true);
 
@@ -47,6 +48,8 @@ public:
     bool hasBrightWallet();
 
     QList<CryptoWallet> getWallets();
+    void sortDarkWallets();
+    void setDarkWallets(QList<CryptoWallet> wallets);
 
     void createNewBrightWallet(QString iSeed);
 
@@ -55,7 +58,7 @@ public:
     QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
     bool estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError);
-    bool createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString &oError);
+    bool createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString iPublicKey, QString &oError);
 
     const QByteArray toData();
 
@@ -64,6 +67,7 @@ private:
     QString                 mLongName;
     bool                    mIsDark;
     QString                 mOwner;
+    QString                 mPublicKey;
 
     QString                 mConfirmedBalance;
     QString                 mUnconfirmedBalance;

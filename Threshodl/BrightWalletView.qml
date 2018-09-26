@@ -5,7 +5,7 @@ import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 
-import "qrc:/brightWalletView/";
+import "qrc:/brightWalletView/"
 
 Item {
     id: brightWalletViewPage
@@ -47,45 +47,19 @@ Item {
         mWaitingLayer.visible = false
     }
 
-    Connections {
-        target: userAccount
-//        onRawTransactionSent: {
-//            stopBusyIndicatorAndEnable();
-
-//            if (success) {
-//                console.log("Success!")
-//                sendTimeoutTimer.stop();
-//                sendTab.alertDialog.title = "Transaction Successful";
-//                sendTab.alertDialog.text = "The transaction has been completed. Please wait for the transaction to be confirmed\n\n" + lTxid;
-//                sendTab.alertDialog.open();
-//            } else {
-//                console.log("Failed to send...")
-//                sendTab.alertDialog.title = "Transaction Failed"
-//                sendTab.alertDialog.text = "The transaction has failed to send. Please try again"
-//                sendTab.alertDialog.open()
-//            }
-//        }
-
-//        onRawTransactionCreated: {
-//            stopBusyIndicatorAndEnable();
-
-//            if (success) {
-//                sendTab.messageDialog.txhex = lHex;
-//                sendTab.messageDialog.fee = lFee;
-
-//                sendTab.messageDialog.open()
-//            } else {
-//                sendTab.alertDialog.title = "Error"
-//                sendTab.alertDialog.text = "There was an error creating the raw transaction"
-
-//                sendTab.alertDialog.open()
-//            }
-//        }
-    }
-
     Rectangle {
+        z:0
         anchors.fill: parent
-        color: "white";
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: "#0053b2"
+            }
+            GradientStop {
+                position: 0.5
+                color: "#00CFF5"
+            }
+        }
     }
 
     QrScannerView {
@@ -119,7 +93,7 @@ Item {
 
     Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -142,7 +116,7 @@ Item {
         width: 30
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -152,7 +126,7 @@ Item {
         x: 25
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -166,6 +140,8 @@ Item {
 
         font.pointSize: 60
         wrapMode: Text.NoWrap
+
+        color: "white"
 
         font.weight: Font.ExtraLight
 
@@ -191,6 +167,8 @@ Item {
         font.bold: true
         font.pointSize: 20
 
+        color: "white"
+
         anchors.top: totalCurrencyForWallet.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         text: userAccount.getBalance(walletShortName, true) + " " + walletShortName
@@ -204,9 +182,9 @@ Item {
 
                     walletConfirmationStatusLabel.text = getConfirmationText(walletShortName, "Bright")
                     if (userAccount.isWalletConfirmed(walletShortName, "Bright")) {
-                        walletConfirmationStatusLabel.color = "#116F00"
+                        walletConfirmationStatusLabel.color = "#c1ffba"
                     } else {
-                        walletConfirmationStatusLabel.color = "red"
+                        walletConfirmationStatusLabel.color = "#ff9756"
                     }
                 }
             }
@@ -224,9 +202,9 @@ Item {
 
         color: {
             if (userAccount.isWalletConfirmed(walletShortName, "Bright")) {
-                walletConfirmationStatusLabel.color = "#116F00"
+                walletConfirmationStatusLabel.color = "#c1ffba"
             } else {
-                walletConfirmationStatusLabel.color = "red"
+                walletConfirmationStatusLabel.color = "#ff9756"
             }
         }
     }
@@ -236,6 +214,8 @@ Item {
         z:10
 
         font.pointSize: 13
+
+        color: "white"
 
         y: walletConfirmationStatusLabel.y + walletConfirmationStatusLabel.height + 5
         anchors.horizontalCenter: parent.horizontalCenter
@@ -257,23 +237,41 @@ Item {
 
     Rectangle {
         id: aboveLineSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: walletMarketValue.bottom
         height: 30
     }
 
     Rectangle {
         id: bottomBarCorrectionSpacer
-        color: "white"
+        color: "transparent"
         anchors.bottom: parent.bottom
         height: bottomAreaCorrectionHeight
         width: parent.width
+    }
+
+    Rectangle {
+        id: bottomSectionBackground
+        width: parent.width
+        anchors.top: walletMarketValue.bottom
+        anchors.topMargin: 15
+        anchors.bottom: parent.bottom
+        color:"white"
+        radius: 25
+        z:0
     }
 
     TabBar {
         id: miniNavBar
         width: parent.width
         height: 70
+
+        z: 100
+
+        background: Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+        }
 
         anchors.top: aboveLineSpacer.bottom
 
@@ -297,6 +295,7 @@ Item {
 
             background: Rectangle {
                 anchors.fill: parent
+                color: "transparent"
                 Rectangle {
                     visible: miniNavBar.currentIndex == 0 ? true : false
                     color: "#31B4FA"
@@ -322,7 +321,7 @@ Item {
             }
 
             background: Rectangle {
-                color: "white"
+                color: "transparent"
 
                 Rectangle {
                     visible: miniNavBar.currentIndex == 1 ? true : false

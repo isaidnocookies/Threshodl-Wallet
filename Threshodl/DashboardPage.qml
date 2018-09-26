@@ -163,7 +163,7 @@ Item {
         }
 
         function checkFont() {
-            if (currencyTypeLabel.x + currencyTypeLabel.width + 10 > parent.width) {
+            if (currencyTypeLabel.x + currencyTypeLabel.width + 5 > parent.width) {
                 totalCurrencyLabel.font.pointSize = 30
             } else {
                 totalCurrencyLabel.font.pointSize = 55
@@ -219,7 +219,7 @@ Item {
         model: DashboardListModel {}
         delegate: CryptoWalletDelegate{}
 
-        spacing: 5
+        spacing: 8
 
         header: Component {
             Rectangle {
@@ -229,8 +229,8 @@ Item {
             }
         }
 
-        width: parent.width * 0.96
-        x: parent.width * 0.04
+        width: parent.width * cellWidthPercent
+        x: parent.width * (1 - cellWidthPercent)
         anchors.top: parent.top
         anchors.bottom: bottomBarCorrectionSpacer.top
     }

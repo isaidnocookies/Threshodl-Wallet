@@ -1,4 +1,5 @@
 #include "useraccount.h"
+#include "darkwallettools.h"
 
 #include <QDebug>
 #include <QFile>
@@ -6,11 +7,16 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QCoreApplication>
+#include <QObject>
+#include <QDesktopServices>
 
 UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
     qDebug() << "UserAccount created";
     mDataManager = new MyQSettingsManager;
+
+    QDesktopServices::setUrlHandler("file", this, "handleFileUrlReceived");
 
     mDownloaderWaitCondition = new QWaitCondition;
     mDownloaderMutex = new QMutex;
@@ -247,7 +253,8 @@ QString UserAccount::createBrightWallet(QString iShortname)
     }
 
     WalletAccount lWA(iShortname, lLongname, lNetwork);
-    lWA.setOwner(mPublicKey);
+    lWA.setOwner(mUsername);
+    lWA.setPublicKey(mPublicKey);
     lWA.setDataManager(mDataManager);
 
     if (!lLongname.contains("Dark", Qt::CaseSensitive) && iShortname.at(0) != "d") {
@@ -295,7 +302,8 @@ void UserAccount::startDarkDeposit(QString iShortname, QString iAmount)
         }
 
         mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
-        mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setOwner(mUsername);
+        mDarkWallets[iShortname].setPublicKey(mPublicKey);
 
         mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
@@ -324,7 +332,8 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
         }
 
         mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
-        mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setOwner(mUsername);
+        mDarkWallets[iShortname].setPublicKey(mPublicKey);
 
         mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
@@ -334,26 +343,96 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
     QString lError;
     QString lFinalAmount;
     int lBreaks;
-    if (mDarkWallets[iShortname].createMicroWallets(iAmount, lBreaks, lFinalAmount, lError)) {
+    if (mDarkWallets[iShortname].createMicroWallets(iAmount, lBreaks, lFinalAmount, mPublicKey, lError)) {
         emit darkDepositComplete(true, lFinalAmount, lBreaks);
     } else {
         emit darkDepositComplete(false, "", 0);
     }
 }
 
-void UserAccount::createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail)
+void UserAccount::estimateDarkTransaction(QString iShortname, QString toAmount)
 {
+    qDebug() << "Estimating dark transaction fees for ... " + iShortname;
+    DarkWalletTools lDarkTools;
+    lDarkTools.setUserDetails(mUsername, mPublicKey, mPrivateKey);
+    QString fee = lDarkTools.estimateFeesForDark(toAmount, iShortname);
+    bool success = false;
 
+    if (fee == "-1") {
+        success = false;
+    } else {
+        success = true;
+    }
+
+    emit darkTransactionEstimated(success, fee);
 }
 
-void UserAccount::sendDarkTransaction(QByteArray iDarkPackage, QString iShortname, QString toAddress, QString toEmail)
+void UserAccount::checkIfDarkTransactionIsPossible(QString iShortname, QString sendAmount)
 {
-    Q_UNUSED(iDarkPackage);
-    Q_UNUSED(iShortname);
-    Q_UNUSED(toAddress);
-    Q_UNUSED(toEmail);
+    ErrorCodes::DarkErrors lError;
+    bool lSuccess = false;
+    QStringMath lSumOfValidWallets;
 
-    // TODO: ...
+    qDebug() << "Checking if " + iShortname + " transaction is possible...";
+    if (mDarkWallets.contains(iShortname)) {
+        mDarkWallets[iShortname].sortDarkWallets();
+        QList<CryptoWallet> lWallets = mDarkWallets[iShortname].getWallets();
+        for (auto lW : lWallets) {
+            if ((lSumOfValidWallets + lW.value()) <= sendAmount) {
+                lSumOfValidWallets = lSumOfValidWallets + lW.value();
+            }
+        }
+
+        if (lSumOfValidWallets == QStringMath(sendAmount)) {
+            lError = ErrorCodes::DarkErrors::None;
+            lSuccess = true;
+        } else {
+            lError = ErrorCodes::DarkErrors::NotEnoughChange;
+            lSuccess = false;
+        }
+    } else {
+        lError = ErrorCodes::DarkErrors::NoMicroWallets;
+    }
+
+    emit darkTransactionIsPossible(lSuccess, lError);
+}
+
+void UserAccount::sendDarkTransaction(QString iAmount, QString iShortname, QString toAddress, QString toEmail)
+{
+    DarkWalletTools lDarkTools;
+    ErrorCodes::DarkErrors lError;
+    bool lSuccess = false;
+    QStringMath lTotal;
+    QList<CryptoWallet> lWalletsToSave;
+    QList<CryptoWallet> lWalletsToSend;
+    QVariantList lWallets;
+
+    lDarkTools.setUserDetails(mUsername, mPublicKey, mPrivateKey);
+
+    mDarkWallets[iShortname].sortDarkWallets();
+    auto darkWallets = mDarkWallets[iShortname].getWallets();
+
+    for (auto ldw : darkWallets) {
+        if (QStringMath((lTotal + ldw.value()).toString()) <= iAmount) {
+            lWalletsToSend.append(ldw);
+            lWallets.append(ldw.toData());
+            lTotal = lTotal + ldw.value();
+        } else {
+            lWalletsToSave.append(ldw);
+        }
+    }
+
+    if (lDarkTools.sendWallets(lWallets, username(), iShortname, toEmail, toAddress, lError)) {
+        lSuccess = true;
+        qDebug() << "Dark transaction successful";
+    } else {
+        qDebug() << "Dark transaction failed";
+        lSuccess = false;
+        lWalletsToSave.append(lWalletsToSend);
+    }
+    mDarkWallets[iShortname].setDarkWallets(lWalletsToSave);
+
+    emit darkTransactionSent(lSuccess, lError);
 }
 
 QVariantList UserAccount::getDarkWallets(QString iShortname)
@@ -371,13 +450,15 @@ QVariantList UserAccount::getDarkWallets(QString iShortname)
         }
 
         mDarkWallets.insert(iShortname, WalletAccount(iShortname, lLongname, network));
-        mDarkWallets[iShortname].setOwner(mPublicKey);
+        mDarkWallets[iShortname].setPublicKey(mPublicKey);
+        mDarkWallets[iShortname].setOwner(mUsername);
 
         mDataManager->saveWalletAccount(iShortname, lLongname, network);
     }
-
     mDarkWallets[iShortname].setDataManager(mDataManager);
 
+
+    mDarkWallets[iShortname].sortDarkWallets();
     WalletAccount lDarkWallets = mDarkWallets[iShortname];
     auto lWallets = lDarkWallets.getWallets();
 
@@ -422,12 +503,24 @@ void UserAccount::handleFileUrlReceived(const QUrl &url)
             QJsonDocument lDoc = QJsonDocument::fromJson(lPackageArray);
             QJsonObject lObject = lDoc.object();
 
-            if (lObject["Action"].toString() == "ImportWallets") {
+            qDebug() << lPackageArray;
+
+            if (lObject["Action"].toString() == "Dark Transaction") {
                 QJsonArray lArray = lObject["wallets"].toArray();
 
-            }
+                QString amount = lObject["Amount"].toString();
+                QString notes = lObject["Notes"].toString();
+                QString type = lObject["Type"].toString();
+                QJsonArray lWallets = lObject["Wallets"].toArray();
+                QVariantList lWalletsToImport;
 
-            qDebug() << lPackageArray;
+                for (auto lw : lWallets) {
+                    lWalletsToImport.append(lw.toVariant().toByteArray());
+                }
+
+                qDebug() << "Emitting signal...";
+                emit importDarkWalletsSignal(type, amount, notes, lWalletsToImport);
+            }
         }
 
     } else {

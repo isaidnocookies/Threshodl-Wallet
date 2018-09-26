@@ -52,8 +52,9 @@ public:
 
     Q_INVOKABLE void            startDarkDeposit(QString iShortname, QString iAmount);
     Q_INVOKABLE void            depositDarkCoin(QString iShortname, QString iAmount);
-    Q_INVOKABLE void            createDarkTransaction(QString iShortname, QString toAmount, QString toAddress, QString toEmail);
-    Q_INVOKABLE void            sendDarkTransaction(QByteArray iDarkPackage, QString iShortname, QString toAddress, QString toEmail);
+    Q_INVOKABLE void            estimateDarkTransaction(QString iShortname, QString toAmount);
+    Q_INVOKABLE void            checkIfDarkTransactionIsPossible(QString iShortname, QString sendAmount);
+    Q_INVOKABLE void            sendDarkTransaction(QString iAmount, QString iShortname, QString toAddress, QString toEmail);
     Q_INVOKABLE QVariantList    getDarkWallets(QString iShortname);
 
     Q_INVOKABLE void            handleFileUrlReceived(const QUrl &url);
@@ -79,9 +80,13 @@ signals:
     void rawTransactionCreated(bool success, QString lHex, QString lFee);
     void rawTransactionSent(bool success, QString lTxid);
 
-    void darkTransactionCreated(QByteArray oData, QString iFee, QString iAmount, QString toUser, QString toEmail);
+    void darkTransactionEstimated(bool success, QString fee);
+    void darkTransactionSent(bool success, int error);
     void darkDepositConfirmation(bool oSuccess, QString oFee, QString oActualAmountWithoutFee, QString oShortname);
     void darkDepositComplete(bool oSuccess, QString oActualAmountWithoutFees, int oBreaks);
+    void darkTransactionIsPossible(bool success, int error);
+
+    void importDarkWalletsSignal(QString type, QString amount, QString notes, QVariantList wallets);
 
 public slots:
     void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey);

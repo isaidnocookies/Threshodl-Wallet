@@ -18,10 +18,16 @@ Item {
 
     Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
+    }
+
+    Rectangle {
+        id: lockScreenBackground
+        color: "black"
+        anchors.fill: parent
     }
 
 //    Text {
@@ -53,14 +59,14 @@ Item {
         x: 25
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
         }
 
         Image {
-            source: "images/assets/backButtonIcon.png"
+            source: "images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -75,7 +81,7 @@ Item {
     Text {
         id: pageTitleDescription
         text: "Please enter your passcode"
-        color: "black"
+        color: "white"
         font.bold: false
         font.pointSize: 16
 
@@ -86,7 +92,7 @@ Item {
     Text {
         id: pageWarning
         text: ""
-        color: "black"
+        color: "white"
         font.pointSize: 14
 
         width: parent.width * 0.8
@@ -94,6 +100,7 @@ Item {
     }
 
     GridLayout {
+
         id: digitInputBubbles
         width: parent.width * 0.7
         columns: 4
@@ -104,26 +111,26 @@ Item {
 
         Rectangle {
             id: digit0; height: 20; width: 20; radius: width * 0.5
-            border.color: { if (isDigitCompleted(0)) { "black" } else { "gray" } }
-            color: { if (isDigitCompleted(0)) { "black" } else { "transparent" } }
+            border.color: { if (isDigitCompleted(0)) { "white" } else { "white" } }
+            color: { if (isDigitCompleted(0)) { "white" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit1; height: 20; width: 20; radius: width * 0.5
-            border.color: { if (isDigitCompleted(1)) { "black" } else { "gray" } }
-            color: { if (isDigitCompleted(1)) { "black" } else { "transparent" } }
+            border.color: { if (isDigitCompleted(1)) { "white" } else { "white" } }
+            color: { if (isDigitCompleted(1)) { "white" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit2; height: 20; width: 20; radius: width * 0.5
-            border.color: { if (isDigitCompleted(2)) { "black" } else { "gray" } }
-            color: { if (isDigitCompleted(2)) { "black" } else { "transparent" } }
+            border.color: { if (isDigitCompleted(2)) { "white" } else { "white" } }
+            color: { if (isDigitCompleted(2)) { "white" } else { "transparent" } }
         }
 
         Rectangle {
             id: digit3; height: 20; width: 20; radius: width * 0.5
-            border.color: { if (isDigitCompleted(3)) { "black" } else { "gray" } }
-            color: { if (isDigitCompleted(3)) { "black" } else { "transparent" } }
+            border.color: { if (isDigitCompleted(3)) { "white" } else { "white" } }
+            color: { if (isDigitCompleted(3)) { "white" } else { "transparent" } }
         }
     }
 
@@ -144,7 +151,6 @@ Item {
 
         Layout.alignment: Qt.AlignHCenter
         columnSpacing: 30
-
         columns: 3
 
         Repeater {
@@ -160,7 +166,7 @@ Item {
                     id: buttonShape
                     width: parent.width
                     height: width
-                    color: "white"
+                    color: "transparent"
                     border.color: getButtonColor(index)
                     border.width: 1
 
@@ -184,11 +190,11 @@ Item {
                     enabled: (index === 9 || index === 11) ? false : true
 
                     onPressed: {
-                        buttonShape.color = "#527bd5"
+                        buttonShape.color = "lightgray"
                     }
 
                     onReleased: {
-                        buttonShape.color = "white"
+                        buttonShape.color = "transparent"
                     }
 
                     onClicked: {
@@ -218,30 +224,33 @@ Item {
     }
 
     function getButtonColor(index) {
-        switch(index) {
-        case 1:
-            return "#01cff5";
-        case 2:
-            return "#0ac9f6";
-        case 3:
-            return "#21bdf8";
-        case 4:
-            return "#2eb5f9";
-        case 5:
-            return "#3dadfb";
-        case 6:
-            return "#46a8fc";
-        case 7:
-            return "#4ea4fd";
-        case 8:
-            return "#54a0fd";
-        case 9:
-            return "#599efe";
-        case 10:
-            return "#5e9bfe";
-        default:
-            return "#6796ff";
-        }
+
+        return "white"
+
+//        switch(index) {
+//        case 1:
+//            return "#01cff5";
+//        case 2:
+//            return "#0ac9f6";
+//        case 3:
+//            return "#21bdf8";
+//        case 4:
+//            return "#2eb5f9";
+//        case 5:
+//            return "#3dadfb";
+//        case 6:
+//            return "#46a8fc";
+//        case 7:
+//            return "#4ea4fd";
+//        case 8:
+//            return "#54a0fd";
+//        case 9:
+//            return "#599efe";
+//        case 10:
+//            return "#5e9bfe";
+//        default:
+//            return "#6796ff";
+//        }
     }
 
     function getDigitValue(index) {

@@ -20,8 +20,17 @@ Item {
     }
 
     Rectangle {
+        id: topBackground
+        anchors.top: parent.top
+        width: parent.width
+        height: parent.height / 3
+
+        color: "black"
+    }
+
+    Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -31,24 +40,37 @@ Item {
     Text {
         id: title
         text: "Microwallets"
-        font.bold: true
-        y: backButton.y + backButton.height / 3
+        y: backButton.y + (backButton.height / 2) - (height/2)
         x: (parent.width / 2) - (width / 2)
         z: 5
+
+        font.pointSize: 14
+        font.bold: true
+        color: "white"
+    }
+
+    Rectangle {
+        id: bottomBackground
+        width: parent.width
+        radius: 25
+        color: "white"
+        anchors.bottom: parent.bottom
+        anchors.top: titleSpacer.bottom
+        anchors.topMargin: 20
     }
 
     Rectangle {
         id: titleSpacer
-        color: "white"
+        color: "transparent"
         width: parent.width
-        height: 40
+        height: 20
         anchors.top: title.bottom
         z: 5
     }
 
     Rectangle {
         id: headerBackground
-        color: "white"
+        color: "transparent"
         width: parent.width
         anchors.top: parent.top
         anchors.bottom: titleSpacer.bottom
@@ -62,7 +84,7 @@ Item {
         z: 5
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -72,7 +94,7 @@ Item {
         x: 25
 
         Image {
-            source: "qrc:/images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -154,9 +176,10 @@ Item {
     ListView {
         id: walletListView
         model: walletModel
-        anchors.top: titleSpacer.bottom
+        anchors.top: bottomBackground.top
+        anchors.topMargin: 45
         anchors.bottom: bottomBarCorrectionSpacer.top
-        width: parent.width * 0.9
+        width: parent.width
         anchors.horizontalCenter: parent.horizontalCenter
         delegate: walletModelDelegate
 
@@ -165,7 +188,7 @@ Item {
 
     Rectangle {
         id: bottomBarCorrectionSpacer
-        color: "white"
+        color: "transparent"
         anchors.bottom: parent.bottom
         height: bottomAreaCorrectionHeight
         width: parent.width

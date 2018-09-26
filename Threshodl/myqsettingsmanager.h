@@ -20,6 +20,7 @@ public:
     void usernameAndKeys(QString &oUsername, QString &oPublicKey, QString &oPrivateKey);
 
     void saveWallet(QByteArray iWalletData, QString iShortname, bool isDark);
+    void saveWallets(QList<QByteArray> iWallets, QString iShortname, bool isDark);
     void saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType);
 
     void savePasscode(QString iPasscode);

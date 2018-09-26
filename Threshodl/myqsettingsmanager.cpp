@@ -95,6 +95,25 @@ void MyQSettingsManager::saveWallet(QByteArray iWalletData, QString iShortname, 
     mAccountData->sync();
 }
 
+void MyQSettingsManager::saveWallets(QList<QByteArray> iWallets, QString iShortname, bool isDark)
+{
+    mAccountData->beginGroup(iShortname);
+    QVariantList lNewWalletsToSave;
+
+    for (auto lw : iWallets) {
+        lNewWalletsToSave.append(lw);
+    }
+
+    if (isDark) {
+        mAccountData->setValue(DataKeys::darkWalletDataKey(), lNewWalletsToSave);
+    } else {
+        mAccountData->setValue(DataKeys::walletsDataKey(), lNewWalletsToSave);
+    }
+
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
 void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType)
 {
     mAccountData->beginGroup(iShortName);

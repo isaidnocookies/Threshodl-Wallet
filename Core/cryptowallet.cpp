@@ -52,6 +52,15 @@ CryptoWallet::CryptoWallet(QString shortname, QString longname, QString iSeed, C
     }
 }
 
+QString CryptoWallet::uid() const
+{
+    QString key = "uid";
+    if (mWalletData.contains(key)) {
+        return mWalletData[key].toString();
+    }
+    return QString();
+}
+
 QString CryptoWallet::shortname() const
 {
     QString key = "shortname";
@@ -167,6 +176,12 @@ QString CryptoWallet::value() const
         return mWalletData[key].toString();
     }
     return QString();
+}
+
+void CryptoWallet::setUid(QString iUID)
+{
+    QString key = "uid";
+    mWalletData[key] = iUID;
 }
 
 void CryptoWallet::setShortname(QString iShortname)

@@ -12,6 +12,7 @@
 //#define MY_WALLET_SERVER_ADDRESS "http://13.57.145.171:3333"
 #define TASK_SERVER_URL "https://pyts.threebx.com"
 #define POLLING_INTERVAL 60
+#define THRESHODL_PASSWORD "threshodlpassword"
 
 namespace AppWallets {
 
@@ -80,6 +81,18 @@ enum CryptoNetwork {
     RegressionNet   = 0x3
 };
 
+namespace ErrorCodes {
+    enum DarkErrors {
+        None = 0,
+        NotEnoughChange = 1,
+        NoMicroWallets = 2,
+        TransferFailed = 3,
+        EmailFailed = 4,
+        AttachmentFailed = 5,
+        InvalidAmount = 6
+    };
+}
+
 namespace DataKeys {
     inline QString usernameDataKey()                    { return QString("usernameDataKey"); }
     inline QString recoverySeedDataKey()                { return QString("recoverySeedDataKey"); }
@@ -109,6 +122,7 @@ namespace AppInfo {
     inline QString appDomain()                   { return QString("threshodl.com"); }
     inline QString appName()                     { return QString("Threshodl Beta"); }
     inline QString appOrganization()             { return QString("ThreeB"); }
+    inline QString myDateFormat()                { return QString("d.M.yy"); }
 }
 
 #endif // GLOBALSANDCONSTANTS_H

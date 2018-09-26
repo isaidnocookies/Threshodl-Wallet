@@ -9,14 +9,20 @@
 
 CreateUsername::CreateUsername(QObject *parent) : QObject(parent)
 {
-    mNetworkManager = new QNetworkAccessManager(this);
-
-    connect(mNetworkManager, &QNetworkAccessManager::finished, this, &CreateUsername::requestComplete);
+//    mNetworkManager = new QNetworkAccessManager();
+//    connect(mNetworkManager, &QNetworkAccessManager::finished, this, &CreateUsername::requestComplete);
 }
 
 void CreateUsername::create(QString iUsername)
 {
-    mUsername = iUsername;
+    QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+
+    QString lSeed, lPublic, lPrivate;
+    bool lSuccess = false;
+
+    connect(lNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
     QJsonObject jsonData;
     jsonData.insert("username", iUsername);
@@ -25,12 +31,38 @@ void CreateUsername::create(QString iUsername)
     jsonDataDocument.setObject(jsonData);
 
     QByteArray request_body = jsonDataDocument.toJson();
-    QUrl lUrl = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/create/"));
 
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/create/"));
     QNetworkRequest lRequest;
-    lRequest.setUrl(lUrl);
+    lRequest.setUrl(lRequestURL);
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    mNetworkManager->post(lRequest, request_body);
+
+    lReply = lNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        if (lMyMap["success"].toBool()) {
+            lSeed = lMyMap["seed"].toString();
+            lPublic = lMyMap["publickey"].toString();
+            QString lPrivate = lMyMap["privatekey"].toString();
+            lSuccess = true;
+        } else {
+            lSuccess = false;
+        }
+    }
+
+    if (!lSuccess) {
+        lSuccess = false;
+        lSeed = "";
+        lPublic = "";
+        lPrivate = "";
+        qDebug() << "Error.... Cannot create account...";
+    }
+
+    emit usernameCreated(lSuccess, mUsername, lSeed, lPublic, lPrivate);
 }
 
 void CreateUsername::recoverAccount(QString iSeed)
@@ -97,6 +129,7 @@ void CreateUsername::requestComplete(QNetworkReply *reply)
         QString lPrivate = lMyMap["privatekey"].toString();
         emit usernameCreated(true, mUsername, lSeed, lPublic, lPrivate);
     } else {
+        qDebug() << reply->errorString();
         emit usernameCreated(false, "", "", "", "");
     }
 }

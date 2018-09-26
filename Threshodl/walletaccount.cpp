@@ -1,4 +1,5 @@
 #include "walletaccount.h"
+#include "core.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -109,6 +110,11 @@ void WalletAccount::setOwner(QString iOwner)
     mOwner = iOwner;
 }
 
+void WalletAccount::setPublicKey(QString iPub)
+{
+    mPublicKey = iPub;
+}
+
 QString WalletAccount::getBalance(bool lIsConfirmed)
 {
     if (lIsConfirmed) {
@@ -217,9 +223,38 @@ QList<CryptoWallet> WalletAccount::getWallets()
     return mWallets;
 }
 
+void WalletAccount::sortDarkWallets()
+{
+    std::sort(mWallets.begin(), mWallets.end(), [](CryptoWallet iLHS, CryptoWallet iRHS) -> bool
+    {
+        if (iLHS.value() == iRHS.value()) {
+            return false;
+        } else {
+            return iLHS.value() > iRHS.value();
+        }
+    });
+}
+
+void WalletAccount::setDarkWallets(QList<CryptoWallet> wallets)
+{
+    QList<QByteArray> lWallets;
+    mWallets.clear();
+    mUnconfirmedBalance = "0.00";
+    for (auto lw : wallets) {
+        setUnconfirmedBalance((QStringMath(mConfirmedBalance) + lw.value()).toString());
+        if (lw.isFilled()) {
+            setConfirmedBalance((QStringMath(mConfirmedBalance) + lw.value()).toString());
+        }
+
+        mWallets.append(lw);
+        lWallets.append(lw.toData());
+    }
+    mAccountData->saveWallets(lWallets, mShortName, true);
+}
+
 void WalletAccount::createNewBrightWallet(QString iSeed)
 {
-    CryptoWallet lNewCryptoWallet = CryptoWallet(mShortName, mLongName, iSeed, mChain);
+    CryptoWallet lNewCryptoWallet = CryptoWallet(mShortName, mLongName, iSeed, static_cast<CryptoNetwork>(mChain));
     lNewCryptoWallet.setOwner(mOwner);
     mWallets.append(lNewCryptoWallet);
     mAccountData->saveWallet(lNewCryptoWallet.toData(), mShortName, false);
@@ -487,12 +522,14 @@ bool WalletAccount::estimateMicroWallets(QString iAmount, QString &oAmountWithou
     return lSuccess;
 }
 
-bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString &oError)
+bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString iPublicKey, QString &oError)
 {
     QString lCoinName = mShortName;
+    QString lPrefix;
 
     if (lCoinName.at(0) == "d") {
         lCoinName.remove(0,1);
+        lPrefix = "d";
     }
 
     bool lSuccess;
@@ -508,7 +545,7 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
 
     jsonData.insert("coin", lCoinName);
     jsonData.insert("value", iAmount);
-    jsonData.insert("owner", mOwner);
+    jsonData.insert("ownerId", iPublicKey);
 
     QJsonDocument jsonDataDocument;
     jsonDataDocument.setObject(jsonData);
@@ -552,7 +589,7 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 lNewMicroWallet.setFilled(false);
                 lNewMicroWallet.setIsMicroWallet(true);
 
-                mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + lValue).toString();\
+                mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + lValue).toString();
                 mWallets.append(lNewMicroWallet);
                 mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
             }
@@ -561,13 +598,13 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
             oFinalAmount = finalAmount;
             lSuccess = true;
         } else {
-            QString error = "Error(1).... Failed to send transaction";
+            QString error = "Error(1).... Failed to create microwallets";
             oError = error;
             qDebug() << error;
             lSuccess = false;
         }
     } else {
-        QString error = "Error(2).... Failed to send transaction" + lReply->errorString();
+        QString error = "Error(2).... failed to create micrwallets" + lReply->errorString();
         qDebug() << error;
         oError = error;
         lSuccess = false;

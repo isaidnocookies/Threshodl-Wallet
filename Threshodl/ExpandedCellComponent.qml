@@ -48,17 +48,7 @@ Rectangle {
     }
 
     Item {
-//        width: parent.width
-//        height: 70
         anchors.fill: parent
-
-//        Rectangle {
-//            height: 0.5
-//            width: parent.width * 0.8
-//            y: 0
-//            x: parent.width - width - (parent.width * 0.05)
-//            color: "lightgray"
-//        }
 
         Rectangle {
             anchors.fill: parent
@@ -68,10 +58,10 @@ Rectangle {
         Image {
             id: littleIconImage
             source: Qt.resolvedUrl(iconPath)
-            height: 20
-            width: 20
+            height: 25
+            width: 25
 
-            x: 20
+            x: 30
             y: 25
         }
 
@@ -97,7 +87,7 @@ Rectangle {
             font.weight: Font.Thin
 
             y: nameText.y - 12
-            x: parent.width / 2 + parent.width * 0.1
+            x: parent.width - width - 20 //parent.width / 2 + parent.width * 0.1
         }
 
         Text {
@@ -107,7 +97,7 @@ Rectangle {
             font.pointSize: 12
             font.bold: true
 
-            x: totalCryptoTextExpanded.x
+            x: parent.width - width - 20 //totalCryptoTextExpanded.x
             y: totalCryptoTextExpanded.y + totalCryptoTextExpanded.height + 5
         }
 
@@ -122,7 +112,7 @@ Rectangle {
                     return "red"
                 }
             }
-            x: totalCryptoTextExpanded.x
+            x: parent.width - width - 20 //totalCryptoTextExpanded.x
             y: currencyValueOfTotalCryptoLabelExpanded.y + currencyValueOfTotalCryptoLabelExpanded.height + 5
 
             font.weight: Font.Thin

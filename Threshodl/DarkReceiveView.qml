@@ -20,11 +20,11 @@ Item {
 
         }
         cache: false;
-        width: parent.width * 0.5
+        width: parent.width * 0.45
         height: width
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 5
+        y: 0
     }
 
     Text {
@@ -98,11 +98,11 @@ Item {
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: "#000"
+                    color: "#9b0014"
                 }
                 GradientStop {
                     position: 1
-                    color: "#555"
+                    color: "#cc001b"
                 }
             }
         }

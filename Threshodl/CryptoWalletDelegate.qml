@@ -7,7 +7,7 @@ Component {
     id: cryptoRowDelegate
 
     Item {
-        width: parent.width * 0.96
+        width: parent.width * cellWidthPercent
         height: 100
 
         Rectangle {
@@ -66,7 +66,7 @@ Component {
             font.bold: true
             font.pointSize: 15
 
-            y: iconImage.y + 10
+            y: iconImage.y + 8
             x: iconImage.x + iconImage.width + 10
             z:10
         }
@@ -96,7 +96,7 @@ Component {
             font.weight: Font.Thin
 
             y: longNameText.y - 8
-            x: parent.width / 2 + parent.width * 0.1
+            x: parent.width - 20 - width //parent.width / 2 + parent.width * 0.1
             z: 10
 
             Connections {
@@ -126,7 +126,7 @@ Component {
             font.pointSize: 12
             font.bold: true
 
-            x: totalCryptoText.x
+            x: parent.width - 20 - width //totalCryptoText.x
             y: totalCryptoText.y + totalCryptoText.height + 5
 
             Component.onCompleted: formatValueText()
@@ -173,7 +173,7 @@ Component {
                     confirmedCrytoStatus.color = "red"
                 }
             }
-            x: totalCryptoText.x
+            x: parent.width - 20 - width //totalCryptoText.x
             y: currencyValueOfTotalCryptoLabel.y + currencyValueOfTotalCryptoLabel.height + 5
 
             font.weight: Font.Thin
@@ -186,23 +186,23 @@ Component {
             id:expandCellButton
             visible: hasDarkWallet
 
-            height: 8
-            width: 15
+            height: 20
+            width: 20
             z: 10
 
             background: Rectangle {
-                color: "white"
+                color: "transparent"
                 width: parent.height
                 height: parent.width
                 anchors.centerIn: parent
             }
 
-            x: parent.width - 30
-            y: iconImage.y + iconImage.height / 2 - height/2
+            x: (parent.width / 2) - (width / 2)
+            y: marketValueText.y + marketValueText.height + 5
 
             Image {
                 id: expandCellButtonImage
-                source: "images/assets/downNavArrowIcon.png"
+                source: "images/assets/dotdotdotIcon.png"
                 fillMode: Image.PreserveAspectFit
                 width: parent.width
             }
@@ -263,7 +263,7 @@ Component {
                 height: 1
                 z: 1
                 color: "lightgray"
-                width: parent.width * 0.7
+                width: parent.width * 0.8
                 x: parent.width * 0.15
             }
 
@@ -292,13 +292,11 @@ Component {
                     if (!cellExpanded) {
                         cellExpanded = !cellExpanded
                         parent.height = parent.height + 181
-                        expandCellButtonImage.source = "images/assets/upNavArrowIcon.png"
                         expandedWalletArea.visible = true
                     } else {
                         cellExpanded = !cellExpanded
                         parent.height = parent.height - 181
                         expandedWalletArea.visible = false
-                        expandCellButtonImage.source = "images/assets/downNavArrowIcon.png"
                     }
                 } else {
                     console.log("Clicked non-dark wallet")

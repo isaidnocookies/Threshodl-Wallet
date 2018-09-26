@@ -16,12 +16,12 @@ Item {
     Rectangle {
         id: backgroundForSettingsPage
         anchors.fill: parent
-        color: "white"
+        color: "black"
     }
 
     Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -31,8 +31,11 @@ Item {
         id: title
         text: "Settings"
         font.bold: true
-        y: backButton.y + backButton.height / 3
+        font.pointSize: 14
+        y: backButton.y + (backButton.height / 2) - (height / 2)
         x: (parent.width / 2) - (width / 2)
+
+        color: "white"
     }
 
     Button {
@@ -42,7 +45,7 @@ Item {
         z: 2
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -52,7 +55,7 @@ Item {
         x: 25
 
         Image {
-            source: "qrc:/images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -76,8 +79,17 @@ Item {
         anchors.top: title.bottom
         width: parent.width
         height: 100
-        color: "white"
+        color: "transparent"
         z: 0
+    }
+
+    Rectangle {
+        id: bottomBackground
+        color: "white"
+        width: parent.width
+        anchors.bottom: parent.bottom
+        radius: 25
+        anchors.top: topTableSpacer.bottom
     }
 
     LockScreen {
@@ -130,19 +142,18 @@ Item {
 
     Item {
         id: settingOptions
-        anchors.top: topTableSpacer.bottom
+        anchors.top: bottomBackground.top
+        anchors.topMargin: 1
         width: parent.width
         anchors.bottom: parent.bottom
-
-        // settings stuff
 
         Column {
             anchors.fill: parent
             spacing: 5
 
-            Row { height: 1; width: parent.width; leftPadding: (width * 0.15)/2;
-                Rectangle { height: parent.height; width: parent.width * 0.85; color: "lightgray"; }
-            }
+//            Row { height: 1; width: parent.width; leftPadding: (width * 0.15)/2;
+//                Rectangle { height: parent.height; width: parent.width * 0.85; color: "lightgray"; }
+//            }
 
             Row {
                 height: 60
@@ -159,7 +170,7 @@ Item {
                     font.pointSize: 14
 
                     background: Rectangle {
-                        color: "white"
+                        color: "transparent"
                         anchors.fill: parent
                     }
 
@@ -190,7 +201,7 @@ Item {
                     font.pointSize: 14
 
                     background: Rectangle {
-                        color: "white"
+                        color: "transparent"
                         anchors.fill: parent
                     }
 
@@ -220,7 +231,7 @@ Item {
                     font.pointSize: 14
 
                     background: Rectangle {
-                        color: "white"
+                        color: "transparent"
                         anchors.fill: parent
                     }
 
@@ -255,7 +266,7 @@ Item {
                     font.pointSize: 14
 
                     background: Rectangle {
-                        color: "white"
+                        color: "transparent"
                         radius: 20
                         anchors.fill: parent
                     }
@@ -288,7 +299,7 @@ Item {
                     font.pointSize: 14
 
                     background: Rectangle {
-                        color: "white"
+                        color: "transparent"
                         radius: 20
                         anchors.fill: parent
                     }

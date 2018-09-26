@@ -53,20 +53,27 @@ Item {
         return userAccount.getBalanceValue(iShortname)
     }
 
-    function prepareDarkTransaction(iShortname) {
-
-    }
-
-    function sendDarkTransaction(iShortname) {
-
-    }
-
     function startBusyIndicatorAndDisable() {
         mWaitingLayer.visible = true
     }
 
     function stopBusyIndicatorAndEnable() {
         mWaitingLayer.visible = false
+    }
+
+    Rectangle {
+        z:0
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: "#000000"
+            }
+            GradientStop {
+                position: 0.5
+                color: "#222222"
+            }
+        }
     }
 
     Item {
@@ -112,7 +119,7 @@ Item {
 
     Rectangle {
         id: topBarSpacer
-        color: "white"
+        color: "transparent"
         anchors.top: parent.top
         width: parent.width
         height: topAreaCorrectionHeight
@@ -135,7 +142,7 @@ Item {
         width: 30
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -145,7 +152,7 @@ Item {
         x: 25
 
         Image {
-            source: "qrc:/images/assets/backButtonIcon.png"
+            source: "qrc:/images/assets/whiteBackButtonIcon.png"
             fillMode: Image.PreserveAspectFit
             width: parent.width
         }
@@ -165,7 +172,7 @@ Item {
         width: 35
 
         background: Rectangle {
-            color: "white"
+            color: "transparent"
             width: parent.height
             height: parent.width
             anchors.centerIn: parent
@@ -190,8 +197,10 @@ Item {
         id: totalCurrencyForWallet
         z:10
 
-        font.pointSize: 60
+        font.pointSize: 50
         wrapMode: Text.NoWrap
+
+        color: "white"
 
         font.weight: Font.ExtraLight
 
@@ -223,6 +232,8 @@ Item {
         font.bold: true
         font.pointSize: 20
 
+        color: "white"
+
         anchors.top: totalCurrencyForWallet.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         text:  userAccount.getBalance(walletShortName, false) + " " + walletShortName
@@ -236,9 +247,9 @@ Item {
 
                     walletConfirmationStatusLabel.text = getConfirmationText(walletShortName, "Dark")
                     if (userAccount.isWalletConfirmed(walletShortName, "Dark")) {
-                        walletConfirmationStatusLabel.color = "#116F00"
+                        walletConfirmationStatusLabel.color = "#c1ffba"
                     } else {
-                        walletConfirmationStatusLabel.color = "red"
+                        walletConfirmationStatusLabel.color = "#ff9756"
                     }
                 }
             }
@@ -253,6 +264,14 @@ Item {
         y: totalCryptoForWallet.y + totalCryptoForWallet.height + 5
         anchors.horizontalCenter: parent.horizontalCenter
         text: getConfirmationText(walletShortName, "Dark")
+
+        color: {
+            if (userAccount.isWalletConfirmed(walletShortName, "Dark")) {
+                "#c1ffba"
+            } else {
+                "#ff9756"
+            }
+        }
     }
 
     Text {
@@ -260,6 +279,8 @@ Item {
         z:10
 
         font.pointSize: 13
+
+        color: "white"
 
         y: walletConfirmationStatusLabel.y + walletConfirmationStatusLabel.height + 5
         anchors.horizontalCenter: parent.horizontalCenter
@@ -299,9 +320,9 @@ Item {
 
     Button {
         id: depositButton
-        width: 50
-        height: 50
-        y: walletMarketValue.y + walletMarketValue.height + 25
+        width: 45
+        height: 45
+        y: walletMarketValue.y + walletMarketValue.height + 20
         x: parent.width / 2 - 10 - width
 
         onClicked: {
@@ -323,23 +344,27 @@ Item {
             anchors.centerIn: parent
             rotation: 270
             radius: parent.height/2
-            gradient: Gradient {
-                GradientStop {
-                    position: 0
-                    color: "#00223f"
-                }
-                GradientStop {
-                    position: 1
-                    color: "#064880"
-                }
-            }
+
+            border.color: "#404040"
+            color: "black"
+
+//            gradient: Gradient {
+//                GradientStop {
+//                    position: 0
+//                    color: "#00223f"
+//                }
+//                GradientStop {
+//                    position: 1
+//                    color: "#064880"
+//                }
+//            }
         }
     }
 
     Button {
         id: withdrawButton
-        width: 50
-        height: 50
+        width: depositButton.width
+        height: depositButton.height
         y: depositButton.y
         x: parent.width / 2 + 10
 
@@ -362,16 +387,9 @@ Item {
             anchors.centerIn: parent
             rotation: 270
             radius: parent.height/2
-            gradient: Gradient {
-                GradientStop {
-                    position: 1
-                    color: "#12003f"
-                }
-                GradientStop {
-                    position: 0
-                    color: "#500088"
-                }
-            }
+
+            color: "black"
+            border.color: "#404040"
         }
     }
 
@@ -379,7 +397,7 @@ Item {
         id: aboveLineSpacer
         color: "white"
         anchors.top: depositButton.bottom
-        height: 15
+        height: 35
     }
 
     Rectangle {
@@ -390,12 +408,28 @@ Item {
         width: parent.width
     }
 
+    Rectangle {
+        id: bottomSectionBackground
+        width: parent.width
+        anchors.top: depositButton.bottom
+        anchors.topMargin: 20
+        anchors.bottom: parent.bottom
+        color:"white"
+        radius: 25
+        z:0
+    }
+
     TabBar {
         id: miniNavBar
         width: parent.width
         height: 70
 
         anchors.top: aboveLineSpacer.bottom
+
+        background: Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+        }
 
         ItemDelegate {
             id: tabButtonDelegate
@@ -417,6 +451,8 @@ Item {
 
             background: Rectangle {
                 anchors.fill: parent
+                color: "transparent"
+
                 Rectangle {
                     visible: miniNavBar.currentIndex == 0 ? true : false
                     color: "#000000"
@@ -442,7 +478,8 @@ Item {
             }
 
             background: Rectangle {
-                color: "white"
+                anchors.fill: parent
+                color: "transparent"
 
                 Rectangle {
                     visible: miniNavBar.currentIndex == 1 ? true : false
