@@ -27,13 +27,12 @@ ApplicationWindow {
     Connections {
         target: userAccount
 
-        // void importDarkWalletsSignal(QString type, QString amount, QString notes, QVariantList wallets)
+        // importDarkWalletsSignal(QString type, QString amount, QString notes)
         onImportDarkWalletsSignal: {
             console.log("open import view....")
             darkWalletImport.shortname = type
             darkWalletImport.amount = amount
             darkWalletImport.notes = notes
-            darkWalletImport.wallets = wallets
             darkWalletImport.setText()
             ourStackView.push(darkWalletImport)
         }

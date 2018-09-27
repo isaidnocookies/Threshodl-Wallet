@@ -58,6 +58,7 @@ public:
     Q_INVOKABLE QVariantList    getDarkWallets(QString iShortname);
 
     Q_INVOKABLE void            handleFileUrlReceived(const QUrl &url);
+    Q_INVOKABLE bool importWallets();
 
     QString     username() { return mUsername; }
     void        setUsername (QString iUsername);
@@ -86,7 +87,7 @@ signals:
     void darkDepositComplete(bool oSuccess, QString oActualAmountWithoutFees, int oBreaks);
     void darkTransactionIsPossible(bool success, int error);
 
-    void importDarkWalletsSignal(QString type, QString amount, QString notes, QVariantList wallets);
+    void importDarkWalletsSignal(QString type, QString amount, QString notes);
 
 public slots:
     void usernameCreated (bool iSuccess, QString iUsername, QString iRecoverySeed, QString iPublicKey, QString iPrivateKey);
@@ -120,6 +121,8 @@ private:
 
     QString mPasscode;
     QString mTempPasscode;
+
+    QByteArray mWalletDataToImport;
 };
 
 #endif // USERACCOUNT_H

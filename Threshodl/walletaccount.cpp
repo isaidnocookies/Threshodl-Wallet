@@ -153,12 +153,17 @@ void WalletAccount::updateBalance(QString iAddress, QString iBalance, QString iU
 
 void WalletAccount::addWallet(CryptoWallet iWallet)
 {
-    // check if wallet already exists...
     for (auto w : mWallets) {
         if (w.address() == iWallet.address()) {
             return;
         }
     }
+
+    mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + iWallet.value()).toString();
+    if (iWallet.isFilled()) {
+        mConfirmedBalance = (QStringMath(mConfirmedBalance) + iWallet.value()).toString();
+    }
+
     mWallets.append(iWallet);
 }
 
@@ -241,7 +246,7 @@ void WalletAccount::setDarkWallets(QList<CryptoWallet> wallets)
     mWallets.clear();
     mUnconfirmedBalance = "0.00";
     for (auto lw : wallets) {
-        setUnconfirmedBalance((QStringMath(mConfirmedBalance) + lw.value()).toString());
+        setUnconfirmedBalance((QStringMath(mUnconfirmedBalance) + lw.value()).toString());
         if (lw.isFilled()) {
             setConfirmedBalance((QStringMath(mConfirmedBalance) + lw.value()).toString());
         }

@@ -13,7 +13,6 @@ Item {
     property string shortname
     property string amount
     property string notes
-    property var wallets
 
     function setText() {
         title.text = "Dark " + shortname + " Import"
@@ -29,8 +28,6 @@ Item {
 
     MessageDialog {
         id: messageDialog
-
-        property bool completed: false;
 
         title: "Dark Wallet Import"
         text: ""
@@ -183,7 +180,16 @@ Item {
         }
 
         onClicked: {
-            console.log("Go forth and import he wallets!")
+            console.log("Go forth and import the wallets!")
+            var importSuccess = userAccount.importWallets()
+            if (importSuccess) {
+                messageDialog.text = "Import Successful!"
+                messageDialog.open()
+            } else {
+                messageDialog.text = "Import Failed! Please try again"
+                messageDialog.open()
+            }
+            ourStackView.pop()
         }
 
         contentItem: Text {

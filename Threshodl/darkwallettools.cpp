@@ -118,13 +118,13 @@ bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString iCryptoSh
             return false;
         }
 
-        lJson.insert("Action", "Dark Transaction");
-        lJson.insert("Amount", lTotalValueOfWallets.toString());
-        lJson.insert("TimeStamp", QString::number(QDateTime::currentMSecsSinceEpoch()));
-        lJson.insert("Notes", QString("Dark %1 Transaction").arg(iCryptoShortname));
-        lJson.insert("Type", iCryptoShortname);
+        lJson.insert("action", "Dark Transaction");
+        lJson.insert("amount", lTotalValueOfWallets.toString());
+        lJson.insert("timeStamp", QString::number(QDateTime::currentMSecsSinceEpoch()));
+        lJson.insert("notes", QString("Dark %1 Transaction").arg(iCryptoShortname));
+        lJson.insert("type", iCryptoShortname);
 
-        lJson.insert("Wallets", lWalletArray);
+        lJson.insert("wallets", lWalletArray);
 
         QJsonDocument lJsonDoc (lJson);
         lAttachment = lJsonDoc.toJson();
@@ -136,6 +136,8 @@ bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString iCryptoSh
 
 bool DarkWalletTools::sendEmail(QByteArray iAttachment, QString iAmount, QString toEmail, QString toUser, QString fromUser, QString iCryptoShortname)
 {
+    Q_UNUSED(fromUser)
+
     SmtpClient lClient ("smtp.gmail.com", 465, SmtpClient::SslConnection);
 
     MimeMessage lMessage;
@@ -147,14 +149,14 @@ bool DarkWalletTools::sendEmail(QByteArray iAttachment, QString iAmount, QString
     MimeHtml lHtmlBody(QString("<html>"
                                "<h3>Threshodl Dark Transaction</h3>"
                                "<br>"
-                               "<p>Hello %1! You have %2%3 from %4! Open up the attached file with your Threshodl to import your coins into your Dark Wallet."
+                               "<p>Hello %1! You have %2%3! Open up the attached file with your Threshodl to import your coins into your Dark Wallet."
                                "Once this package is imported, you will not be able to import it again. Thank you!</p>"
                                "<br><br>"
-                               "Sent at %5 on %6"
+                               "Sent at %4 on %5"
                                "<br><br>"
                                "For more information, please visit www.threshodl.com or contact us at support@threshodl.com"
                                "<br><br>"
-                               "</html>").arg(toUser).arg(iAmount).arg(iCryptoShortname).arg(fromUser).arg(QTime::currentTime().toString()).arg(QDate::currentDate().toString(AppInfo::myDateFormat())));
+                               "</html>").arg(toUser).arg(iAmount).arg(iCryptoShortname).arg(QTime::currentTime().toString()).arg(QDate::currentDate().toString(AppInfo::myDateFormat())));
 
     lMessage.setSubject(QString("Threshodl - You have incoming %1!").arg(iCryptoShortname));
     lMessage.addRecipient(&lToEmail);

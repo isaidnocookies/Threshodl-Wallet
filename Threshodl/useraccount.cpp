@@ -505,13 +505,13 @@ void UserAccount::handleFileUrlReceived(const QUrl &url)
 
             qDebug() << lPackageArray;
 
-            if (lObject["Action"].toString() == "Dark Transaction") {
+            if (lObject["action"].toString() == "Dark Transaction") {
                 QJsonArray lArray = lObject["wallets"].toArray();
 
-                QString amount = lObject["Amount"].toString();
-                QString notes = lObject["Notes"].toString();
-                QString type = lObject["Type"].toString();
-                QJsonArray lWallets = lObject["Wallets"].toArray();
+                QString amount = lObject["amount"].toString();
+                QString notes = lObject["notes"].toString();
+                QString type = lObject["type"].toString();
+                QJsonArray lWallets = lObject["wallets"].toArray();
                 QVariantList lWalletsToImport;
 
                 for (auto lw : lWallets) {
@@ -519,13 +519,60 @@ void UserAccount::handleFileUrlReceived(const QUrl &url)
                 }
 
                 qDebug() << "Emitting signal...";
-                emit importDarkWalletsSignal(type, amount, notes, lWalletsToImport);
+                mWalletDataToImport = lPackageArray;
+                emit importDarkWalletsSignal(type, amount, notes);
             }
         }
 
     } else {
         qDebug() << "setFileUrlReceived: FILE does NOT exist ";
     }
+}
+
+bool UserAccount::importWallets()
+{
+    QJsonDocument lDoc = QJsonDocument::fromJson(mWalletDataToImport);
+    QJsonObject lObject = lDoc.object();
+
+    QString amount = lObject["amount"].toString();
+    QString notes = lObject["notes"].toString();
+    QString type = lObject["type"].toString();
+    QJsonArray lWallets = lObject["wallets"].toArray();
+    QList<CryptoWallet> lWalletsToImport;
+
+    for (auto lw : lWallets) {
+        lWalletsToImport.append(CryptoWallet(lw.toVariant().toByteArray()));
+    }
+
+    if (amount.isEmpty() || type.isEmpty() || lWalletsToImport.isEmpty()) {
+        return false;
+    }
+
+    if (!mDarkWallets.contains(type)) {
+        CryptoNetwork network;
+        QString lLongname = AppWallets::walletNames()[type];
+
+        if (type.contains("t")) {
+            network = CryptoNetwork::TestNet;
+        } else {
+            network = CryptoNetwork::Main;
+        }
+
+        mDarkWallets.insert(type, WalletAccount(type, lLongname, network));
+        mDarkWallets[type].setPublicKey(mPublicKey);
+        mDarkWallets[type].setOwner(mUsername);
+
+        mDataManager->saveWalletAccount(type, lLongname, network);
+    }
+
+    for (auto lw : lWalletsToImport) {
+        mDarkWallets[type].addWallet(lw);
+    }
+
+    emit darkCryptoConfirmedBalanceChanged();
+    emit darkCryptoUnconfirmedBalanceChanged();
+
+    return true;
 }
 
 void UserAccount::publicAndPrivateKeys(QString &oPublicKey, QString &oPrivateKey)
@@ -638,11 +685,6 @@ void UserAccount::loadAccountFromSettings()
                 lConfirmed = lConfirmed + mw.confirmedBalance();
                 lUnconfirmed = lUnconfirmed + mw.value();
             }
-
-//            QString lConfBalance, lUnconfBalance;
-//            mDataManager->getDarkWalletBalance(lDWA.shortName(), lConfBalance, lUnconfBalance);
-//            mDarkWallets[lDWA.shortName()].setConfirmedBalance(lConfBalance);
-//            mDarkWallets[lDWA.shortName()].setUnconfirmedBalance(lUnconfBalance);
 
             mDarkWallets[lDWA.shortName()].setConfirmedBalance(lConfirmed.toString());
             mDarkWallets[lDWA.shortName()].setUnconfirmedBalance(lUnconfirmed.toString());
