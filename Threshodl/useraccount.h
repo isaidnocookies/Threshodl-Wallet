@@ -58,7 +58,7 @@ public:
     Q_INVOKABLE QVariantList    getDarkWallets(QString iShortname);
 
     Q_INVOKABLE void            handleFileUrlReceived(const QUrl &url);
-    Q_INVOKABLE bool importWallets();
+    Q_INVOKABLE bool            importWallets();
 
     QString     username() { return mUsername; }
     void        setUsername (QString iUsername);

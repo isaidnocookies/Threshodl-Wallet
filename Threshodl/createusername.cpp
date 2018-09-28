@@ -18,6 +18,7 @@ void CreateUsername::create(QString iUsername)
     QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
+    QString                 lReturnedUsername;
 
     QString lSeed, lPublic, lPrivate;
     bool lSuccess = false;
@@ -48,6 +49,7 @@ void CreateUsername::create(QString iUsername)
             lSeed = lMyMap["seed"].toString();
             lPublic = lMyMap["publickey"].toString();
             QString lPrivate = lMyMap["privatekey"].toString();
+            lReturnedUsername = lMyMap["username"].toString();
             lSuccess = true;
         } else {
             lSuccess = false;
@@ -62,7 +64,7 @@ void CreateUsername::create(QString iUsername)
         qDebug() << "Error.... Cannot create account...";
     }
 
-    emit usernameCreated(lSuccess, mUsername, lSeed, lPublic, lPrivate);
+    emit usernameCreated(lSuccess, lReturnedUsername, lSeed, lPublic, lPrivate);
 }
 
 void CreateUsername::recoverAccount(QString iSeed)

@@ -38,7 +38,7 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
 
     loadAccountFromSettings();
 
-    mMyDownloaderThread->start();
+//    mMyDownloaderThread->start();
 }
 
 UserAccount::~UserAccount()
@@ -541,7 +541,8 @@ bool UserAccount::importWallets()
     QList<CryptoWallet> lWalletsToImport;
 
     for (auto lw : lWallets) {
-        lWalletsToImport.append(CryptoWallet(lw.toVariant().toByteArray()));
+        CryptoWallet newWallet(lw.toVariant().toByteArray());
+        lWalletsToImport.append(newWallet);
     }
 
     if (amount.isEmpty() || type.isEmpty() || lWalletsToImport.isEmpty()) {

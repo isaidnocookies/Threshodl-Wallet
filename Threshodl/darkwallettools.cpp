@@ -75,13 +75,16 @@ bool DarkWalletTools::sendWallets(QVariantList iWallets, QString fromUser, QStri
     QByteArray lAttachment;
 
     if (iWallets.size() > 0) {
-        if (getAttachmentFile(iWallets, iCryptoType, lAmount, lAttachment)) {
+        if (getAttachmentFile(iWallets, toUser, iCryptoType, lAmount, lAttachment)) {
             if (sendEmail(lAttachment, lAmount, toEmailAddress, toUser, fromUser, iCryptoType)) {
                 if (transferDarkWallets(iWallets, fromUser, mPublicKey, mPrivateKey, toUser, mPublicKey)) {
                     oError = ErrorCodes::DarkErrors::None;
                     return true;
                 } else {
                     oError = ErrorCodes::DarkErrors::TransferFailed;
+                    if (sendFailureEmail(toEmailAddress, toUser, fromUser, iCryptoType)) {
+                        qDebug() << "Failed to send failure email";
+                    }
                 }
             } else {
                 oError = ErrorCodes::DarkErrors::EmailFailed;
@@ -96,7 +99,7 @@ bool DarkWalletTools::sendWallets(QVariantList iWallets, QString fromUser, QStri
     return false;
 }
 
-bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment)
+bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString toUser, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment)
 {
         QByteArray      lAttachment;
         QJsonObject     lJson;
@@ -108,6 +111,8 @@ bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString iCryptoSh
         if (iWallets.size() > 0) {
             for (auto lW : iWallets) {
                 auto lNewWallet = CryptoWallet(lW.toByteArray());
+                lNewWallet.setOwner(toUser);
+                qDebug() << lNewWallet.toData();
                 lWalletsToSend.append(lNewWallet);
                 lTotalValueOfWallets = lTotalValueOfWallets + lNewWallet.value();
                 lWalletArray.push_back(QString(lNewWallet.toData()));
@@ -184,6 +189,53 @@ bool DarkWalletTools::sendEmail(QByteArray iAttachment, QString iAmount, QString
     return false;
 }
 
+bool DarkWalletTools::sendFailureEmail(QString toEmail, QString toUser, QString fromUser, QString iCryptoShortname)
+{
+    Q_UNUSED(fromUser)
+
+    SmtpClient lClient ("smtp.gmail.com", 465, SmtpClient::SslConnection);
+
+    MimeMessage lMessage;
+    EmailAddress lFromEmail("admin@threebx.com", "admin@threebx.com");
+    EmailAddress lToEmail(toEmail, toEmail);
+
+    MimeHtml lHtmlBody(QString("<html>"
+                               "<h3>Threshodl Dark Transaction Failed</h3>"
+                               "<br>"
+                               "<p>Hello %1! There was a problem with the transfer of the previous %2 wallets. Please disregard the previous email "
+                               "and contact the sender to check on the status of the transaction. Apologies for any issues that this delay may have caused.</p>"
+                               "<br><br>"
+                               "Sent at %3 on %4"
+                               "<br><br>"
+                               "For more information, please visit www.threshodl.com or contact us at support@threshodl.com"
+                               "<br><br>"
+                               "</html>").arg(toUser).arg(iCryptoShortname).arg(QTime::currentTime().toString()).arg(QDate::currentDate().toString(AppInfo::myDateFormat())));
+
+    lMessage.setSubject(QString("Threshodl - Error with previous %1 transaction!").arg(iCryptoShortname));
+    lMessage.addRecipient(&lToEmail);
+    lMessage.setSender(&lFromEmail);
+
+    lMessage.addPart(&lHtmlBody);
+
+    if(lClient.connectToHost()) {
+        if (lClient.login("admin@threebx.com", "H0lyP33rP@1d", SmtpClient::AuthLogin)) {
+            if (lClient.sendMail(lMessage)) {
+                //success
+                qDebug() << "Success";
+                return true;
+            } else {
+                //failure
+                qDebug() << "Failure";
+            }
+        } else {
+            qDebug() << "AUTH failed for smtp client";
+        }
+    } else {
+        qDebug() << "Failed to connect to smtp host";
+    }
+    return false;
+}
+
 bool DarkWalletTools::transferDarkWallets(QVariantList iWallets, QString iFromUser, QString iPublicKey, QString iPrivateKey, QString toUser, QString iAuthMessage)
 {
     Q_UNUSED(iPrivateKey) Q_UNUSED(iAuthMessage) Q_UNUSED(iFromUser)
@@ -198,7 +250,7 @@ bool DarkWalletTools::transferDarkWallets(QVariantList iWallets, QString iFromUs
     QJsonArray lWalletUidArray;
 
     for (auto lWallet : iWallets) {
-        lWalletUidArray.append(QString(CryptoWallet(lWallet.toByteArray()).address()));
+        lWalletUidArray.append(QString(CryptoWallet(lWallet.toByteArray()).uid()));
     }
 
     QJsonObject jsonData;

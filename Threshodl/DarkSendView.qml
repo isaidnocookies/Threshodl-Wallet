@@ -91,7 +91,7 @@ Item {
         property string fee;
 
         function getConfirmationMessage() {
-            return "\n\n Amount: " + sendAmountTextField.text + " " + walletShortName + " \n\nTo: \n" + addressTextField.text + " @ " + emailAddressTextField.text + "\n\nFee:\n" + fee + " THDL" + "\n\nConfirm Transaction?"
+            return "\n\n Amount: " + sendAmountTextField.text + " " + walletShortName + " \n\nTo: \n" + addressTextField.text + " @ " + emailAddressTextField.text + "\n\nFee:\n" + "0" + " THDL" + "\n\nConfirm Transaction?"
         }
 
         title: "Confirm Transaction"

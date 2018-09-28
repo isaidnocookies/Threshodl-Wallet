@@ -587,8 +587,10 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 QString lAddress = lCoinWallet[key].toMap()["address"].toString();
                 QString lPrivateKey = lCoinWallet[key].toMap()["privateKey"].toString();
                 QString lValue = lCoinWallet[key].toMap()["value"].toString();
+                QString lUID = lCoinWallet[key].toMap()["uniqueid"].toString();
 
                 CryptoWallet lNewMicroWallet(mShortName, mLongName, lAddress, lPrivateKey, lNetwork);
+                lNewMicroWallet.setUid(lUID);
                 lNewMicroWallet.setOwner(mOwner);
                 lNewMicroWallet.setValue(lValue);
                 lNewMicroWallet.setFilled(false);

@@ -22,8 +22,9 @@ signals:
 public slots:
 
 private:
-    bool getAttachmentFile(QVariantList iWallets, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment);
+    bool getAttachmentFile(QVariantList iWallets, QString toUser, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment);
     bool sendEmail(QByteArray iAttachment, QString iAmount, QString toEmail, QString toUser, QString fromUser, QString iCryptoShortname);
+    bool sendFailureEmail(QString toEmail, QString toUser, QString fromUser, QString iCryptoShortname);
     bool transferDarkWallets(QVariantList iWallets, QString iFromUser, QString iPublicKey, QString iPrivateKey, QString toUser, QString iAuthMessage);
 
     QString mPrivateKey;
