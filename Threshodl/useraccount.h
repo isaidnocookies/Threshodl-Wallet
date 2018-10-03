@@ -52,6 +52,8 @@ public:
 
     Q_INVOKABLE void            startDarkDeposit(QString iShortname, QString iAmount);
     Q_INVOKABLE void            depositDarkCoin(QString iShortname, QString iAmount);
+    Q_INVOKABLE void            withdrawDarkCoin(QString iShortname, QString iAmount);
+    Q_INVOKABLE void            estimateDarkWithdrawal(QString iShortname, QString iAmount);
     Q_INVOKABLE void            estimateDarkTransaction(QString iShortname, QString toAmount);
     Q_INVOKABLE void            checkIfDarkTransactionIsPossible(QString iShortname, QString sendAmount);
     Q_INVOKABLE void            sendDarkTransaction(QString iAmount, QString iShortname, QString toAddress, QString toEmail);
@@ -82,6 +84,8 @@ signals:
     void rawTransactionSent(bool success, QString lTxid);
 
     void darkTransactionEstimated(bool success, QString fee);
+    void darkWithdrawalEstimated(bool success, QString fee);
+    void darkWithdrawComplete(bool success, int error);
     void darkTransactionSent(bool success, int error);
     void darkDepositConfirmation(bool oSuccess, QString oFee, QString oActualAmountWithoutFee, QString oShortname);
     void darkDepositComplete(bool oSuccess, QString oActualAmountWithoutFees, int oBreaks);

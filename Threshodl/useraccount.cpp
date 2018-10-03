@@ -350,6 +350,83 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
     }
 }
 
+void UserAccount::withdrawDarkCoin(QString iShortname, QString iAmount)
+{
+    DarkWalletTools lDarkTools;
+    ErrorCodes::DarkErrors lError = ErrorCodes::DarkErrors::None;
+    bool lSuccess = true;
+    QStringMath lTotal;
+    QList<CryptoWallet> lWalletsToSave;
+    QList<CryptoWallet> lWalletsToSend;
+    QString lBrightShortname;
+
+    if (iShortname.contains("d")) {
+        lBrightShortname = iShortname.remove("d");
+    }
+
+    lDarkTools.setUserDetails(mUsername, mPublicKey, mPrivateKey);
+
+    mDarkWallets[iShortname].sortDarkWallets();
+    auto darkWallets = mDarkWallets[iShortname].getWallets();
+
+    for (auto ldw : darkWallets) {
+        if (QStringMath((lTotal + ldw.value()).toString()) <= iAmount) {
+            lWalletsToSend.append(ldw);
+            lTotal = lTotal + ldw.value();
+        } else {
+            lWalletsToSave.append(ldw);
+        }
+    }
+
+    // CHANGE WITH THE ADD BLOCKCHAIN SUPPORT STUFF
+    for (auto lw : lWalletsToSend) {
+        mBrightWallets[lBrightShortname].addWallet(lw);
+        mBrightWallets[lBrightShortname].setConfirmedBalance((QStringMath(mBrightWallets[lBrightShortname].getBalance(true)) + lw.value()).toString());
+        mBrightWallets[lBrightShortname].setConfirmedBalance((QStringMath(mBrightWallets[lBrightShortname].getBalance(false)) + lw.value()).toString());
+        mDarkWallets[iShortname].setConfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(true)) - lw.value()).toString());
+        //mDarkWallets[iShortname].setConfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(false)) - lw.value()).toString());
+    }
+
+    emit walletBalanceUpdateComplete(lBrightShortname);
+    emit darkCryptoConfirmedBalanceChanged();
+    emit darkCryptoUnconfirmedBalanceChanged();
+    emit darkWithdrawComplete(lSuccess, lError);
+}
+
+void UserAccount::estimateDarkWithdrawal(QString iShortname, QString iAmount)
+{
+    DarkWalletTools lDarkTool;
+    QStringMath lTotal;
+    int walletCounter = 0;
+    QString fee;
+    bool success = true;
+
+    lDarkTool.setUserDetails(mUsername, mPublicKey, mPrivateKey);
+
+    auto wallets = mDarkWallets[iShortname].getWallets();
+    for (auto w : wallets) {
+        if (QStringMath(lTotal + w.value()) > iAmount) {
+            lTotal = lTotal + w.value();
+            walletCounter++;
+            break;
+        } else {
+            lTotal = lTotal + w.value();
+            walletCounter++;
+        }
+    }
+
+    if (lTotal < iAmount) {
+        success = false;
+    } else {
+        fee = lDarkTool.estimateFeesForWithdrawal(walletCounter, iShortname);
+        if (fee == "-1") {
+            success = false;
+        }
+    }
+
+    emit darkWithdrawalEstimated(success, fee);
+}
+
 void UserAccount::estimateDarkTransaction(QString iShortname, QString toAmount)
 {
     qDebug() << "Estimating dark transaction fees for ... " + iShortname;

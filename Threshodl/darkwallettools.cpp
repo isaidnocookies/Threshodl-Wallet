@@ -29,6 +29,51 @@ void DarkWalletTools::setUserDetails(QString iUsername, QString iPublicKey, QStr
     mPrivateKey = iPrivateKey;
 }
 
+QString DarkWalletTools::estimateFeesForWithdrawal(int iNumWallets, QString iShortname)
+{
+    QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QString                 lFee = "-1";
+    QString                 lShortname = iShortname;
+
+    if (lShortname.contains("d")) {
+        iShortname = lShortname.remove("d");
+    }
+
+    connect(lNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    jsonData.insert("coin", lShortname);
+    jsonData.insert("inputs", iNumWallets);
+    jsonData.insert("outputs", 1);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/txFee/"));
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = lNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        if (lMyMap["success"].toBool()) {
+            lFee = lMyMap["fee"].toString();
+        }
+    } else {
+        qDebug() << lReply->errorString();
+    }
+    return lFee;
+}
+
 QString DarkWalletTools::estimateFeesForDark(QString iAmount, QString iShortname)
 {
     QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();

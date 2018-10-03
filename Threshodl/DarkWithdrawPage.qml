@@ -63,6 +63,74 @@ Item {
         mWaitingLayer.visible = false
     }
 
+    Connections {
+        target: userAccount
+
+        // darkWithdrawalEstimated(bool success, QString fee);
+        onDarkWithdrawalEstimated : {
+            withdrawConfirmation.setForEstimate(success, fee);
+            withdrawConfirmation.open();
+        }
+
+        // darkWithdrawComplete(bool success, int error);
+        onDarkWithdrawComplete : {
+            withdrawConfirmation.setForCompletion(success);
+            withdrawConfirmation.open();
+        }
+    }
+
+    MessageDialog {
+        id: withdrawConfirmation
+
+        property bool forEstimate
+
+        function setForEstimate(success, fee){
+            withdrawConfirmation.title = "Dark Withdraw Confirmation"
+            withdrawConfirmation.standardButtons = StandardButton.No | StandardButton.Yes
+            forEstimate = true;
+            if (success) {
+                withdrawConfirmation.text = "Are you sure you would like to withdraw " + walletShortName + " from your dark wallet and into your normal 'Bright' wallet? \n\n Fee: " + fee + " " + walletShortName;
+            } else {
+                withdrawConfirmation.text = "Fee estimation failed. Please try again";
+            }
+        }
+
+        function setForCompletion(success) {
+            withdrawConfirmation.title = "Dark Withdraw"
+            withdrawConfirmation.standardButtons = StandardButton.Ok
+            forEstimate = false;
+            if (success) {
+                withdrawConfirmation.text = "Dark withdraw has been completed! Your balance should be reflected in your normal 'bright' wallet shortly"
+            }
+        }
+
+        title: ""
+        text: ""
+
+        onAccepted: {
+            if (forEstimate) {
+                //start withdrawal process
+                userAccount.withdrawDarkCoin(walletShortName, amountTextField.text);
+            } else {
+                console.log("Transaction confirmation accepted")
+                withdrawConfirmation.close();
+                stopBusyIndicatorAndEnable();
+            }
+        }
+
+        onRejected: {
+            stopBusyIndicatorAndEnable();
+            warningLabel.text = "Withdrawal Canceled!"
+            console.log("No withdraw for you.")
+        }
+
+        onNo: {
+            stopBusyIndicatorAndEnable();
+            warningLabel.text = "Withdrawal Canceled!"
+            console.log("No withdraw for you.")
+        }
+    }
+
     Item {
         id: mWaitingLayer
 
@@ -231,6 +299,31 @@ Item {
         }
     }
 
+    Text {
+        id: warningLabel
+        y: sendButton.y - 20 - height
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "red"
+        text: ""
+
+        onTextChanged: {
+            console.log("Warning label text changed")
+            warningLabelTimer.start()
+        }
+    }
+
+    Timer {
+        id: warningLabelTimer
+        repeat: false
+        running: false
+        interval: 5000
+
+        onTriggered: {
+            warningLabel.text = ""
+            console.log("Warning text reset")
+        }
+    }
+
     Button {
         id: withdrawButton
         text: "Withdraw"
@@ -249,6 +342,8 @@ Item {
 
         onClicked: {
             console.log("Start withdraw from Dark...");
+            startBusyIndicatorAndDisable();
+            userAccount.estimateDarkWithdrawal(walletShortName, amountTextField.text);
         }
 
         contentItem: Text {

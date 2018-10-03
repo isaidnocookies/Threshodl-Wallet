@@ -12,6 +12,7 @@ public:
 
     void setUserDetails(QString iUsername, QString iPublicKey, QString iPrivateKey);
 
+    QString estimateFeesForWithdrawal (int iNumWallets, QString iShortname);
     QString estimateFeesForDark(QString iAmount, QString iShortname);
     bool sendWallets(QVariantList iWallets, QString fromUser, QString iCryptoType, QString toEmailAddress, QString toUser, ErrorCodes::DarkErrors &oError);
     bool completeWallets(QVariantList lWallets);
