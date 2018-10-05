@@ -1,0 +1,1 @@
+Development for the Threshodl Wallet Client. Written using Qt for cross-platform deployments.
