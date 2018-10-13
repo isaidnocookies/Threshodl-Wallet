@@ -224,33 +224,7 @@ Item {
     }
 
     function getButtonColor(index) {
-
         return "white"
-
-//        switch(index) {
-//        case 1:
-//            return "#01cff5";
-//        case 2:
-//            return "#0ac9f6";
-//        case 3:
-//            return "#21bdf8";
-//        case 4:
-//            return "#2eb5f9";
-//        case 5:
-//            return "#3dadfb";
-//        case 6:
-//            return "#46a8fc";
-//        case 7:
-//            return "#4ea4fd";
-//        case 8:
-//            return "#54a0fd";
-//        case 9:
-//            return "#599efe";
-//        case 10:
-//            return "#5e9bfe";
-//        default:
-//            return "#6796ff";
-//        }
     }
 
     function getDigitValue(index) {

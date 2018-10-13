@@ -118,6 +118,52 @@ void CreateUsername::recoverAccount(QString iSeed)
     emit usernameCreated(lSuccess, lUsername, iSeed, lPublic, lPrivate);
 }
 
+bool CreateUsername::changeUsername(QString iNewUsername)
+{
+    QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QString                 lReturnedUsername;
+
+    QString lSeed, lPublic, lPrivate;
+    bool lSuccess = false;
+
+    connect(lNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    jsonData.insert("username", iUsername);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/create/"));
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = lNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        if (lMyMap["success"].toBool()) {
+            lSeed = lMyMap["seed"].toString();
+            lPublic = lMyMap["publickey"].toString();
+            QString lPrivate = lMyMap["privatekey"].toString();
+            lReturnedUsername = lMyMap["username"].toString();
+            lSuccess = true;
+        } else {
+            lSuccess = false;
+        }
+    }
+
+    return lSuccess;
+}
+
 void CreateUsername::requestComplete(QNetworkReply *reply)
 {
     QByteArray lReplyText = reply->readAll();

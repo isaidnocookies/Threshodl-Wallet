@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QObject>
 #include <QDesktopServices>
+#include <QCryptographicHash>
 
 UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
@@ -71,9 +72,15 @@ QString UserAccount::getRecoverySeed()
     return mRecoverySeed;
 }
 
+void UserAccount::changeUsername(QString iUsername)
+{
+    //if iUsername is valid...
+
+}
+
 bool UserAccount::checkPasscode(QString iPass)
 {
-    if (iPass == mPasscode) {
+    if (this->hashValue(iPass) == mPasscode) {
         return true;
     }
     return false;
@@ -81,7 +88,7 @@ bool UserAccount::checkPasscode(QString iPass)
 
 void UserAccount::changePasscode(QString iNewPass)
 {
-    mTempPasscode = iNewPass;
+    mTempPasscode = this->hashValue(iNewPass);
 }
 
 QString UserAccount::getTempPasscode()
@@ -802,4 +809,15 @@ void UserAccount::createCryptoWallets()
             mDataManager->saveWalletAccount(lShortname, lLongname, lNetwork);
         }
     }
+}
+
+QString UserAccount::hashValue(QString iValue)
+{
+    QString returnHash;
+
+    QCryptographicHash lHasher (QCryptographicHash::Md5);
+    lHasher.addData(iValue.toUtf8());
+    returnHash = QString(lHasher.result().toHex());
+
+    return returnHash;
 }

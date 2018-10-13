@@ -8,6 +8,14 @@ import QtQuick.Dialogs 1.2
 Item {
     id: sendTab
 
+    function stopBusyIndicatorAndEnable() {
+        mWaitingLayer.visible = false;
+    }
+
+    function startBusyIndicatorAndDisable() {
+        mWaitingLayer.visible = true;
+    }
+
     Connections {
         target: userAccount
 
@@ -43,6 +51,31 @@ Item {
                 alertDialog.text = "The transaction has failed to send. Please try again"
                 alertDialog.open()
             }
+        }
+    }
+
+    Item {
+        id: mWaitingLayer
+
+        visible: false
+        anchors.fill: parent
+        z:100
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.centerIn: parent
+
+            color: Qt.rgba(0,0,0,0.5)
+        }
+
+        BusyIndicator {
+            z:101
+            running: mWaitingLayer.visible
+            anchors.centerIn: parent
+        }
+
+        MouseArea {
+            anchors.fill: parent
         }
     }
 

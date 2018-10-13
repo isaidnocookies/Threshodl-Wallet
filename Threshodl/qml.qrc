@@ -11,7 +11,7 @@
         <file>QrScannerView.qml</file>
         <file>settingsPage.qml</file>
         <file>LockScreen.qml</file>
-	  <file>DarkWalletImportPage.qml</file>
+        <file>DarkWalletImportPage.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>assets/threshodlLogo_landing.png</file>
@@ -59,6 +59,7 @@
     </qresource>
     <qresource prefix="/settings">
         <file>ViewPrivateKeysPage.qml</file>
+        <file>ChangeUsernamePage.qml</file>
     </qresource>
     <qresource prefix="/onboarding">
         <file>newRecoveryPhrasePage.qml</file>

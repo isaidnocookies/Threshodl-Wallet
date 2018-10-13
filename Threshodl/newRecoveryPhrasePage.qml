@@ -157,31 +157,76 @@ Item {
         width: parent.width
     }
 
-    BusyIndicator {
-        id: mBusyIndicator
-        running: false
-        anchors.centerIn: parent
+    Item {
+        id: mWaitingLayer
+
+        visible: false
+        anchors.fill: parent
+        z:100
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.centerIn: parent
+
+            color: Qt.rgba(0,0,0,0.5)
+        }
+
+        BusyIndicator {
+            z:101
+            running: mWaitingLayer.visible
+            anchors.centerIn: parent
+        }
     }
 
-    CheckBox {
-        id: confirmRecoverySeed
-        text: qsTr("I have copied down the recovery words!")
-        checked: false
-
-        width: parent.width * 0.75
+    Rectangle {
+        id: checkboxRow
+        width: parent.width
         anchors.horizontalCenter: parent.horizontalCenter
-        y: continueButton.y - height - 20
+        anchors.bottom: continueButton.top
+        anchors.bottomMargin: 10
 
-        onCheckedChanged: {
-            if (confirmRecoverySeed.checked) {
-                continueButton.enabled = true
-                continueButton.opacity = 1
-            } else {
-                continueButton.enabled = false
-                continueButton.opacity = 0.5
+        height: 50
+
+        CheckBox {
+            id: confirmRecoverySeed
+            checked: false
+
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+            anchors.top: parent.top
+
+            onCheckedChanged: {
+                if (confirmRecoverySeed.checked) {
+                    continueButton.enabled = true
+                    continueButton.opacity = 1
+                } else {
+                    continueButton.enabled = false
+                    continueButton.opacity = 0.5
+                }
+            }
+        }
+
+        Text {
+            id: confirmRecoverySeedCheckLabel
+            y: confirmRecoverySeed.y + (confirmRecoverySeed.height/2) - (height/2)
+
+            anchors.left: confirmRecoverySeed.right
+            anchors.leftMargin: 10
+            anchors.right: parent.right;
+            anchors.rightMargin: 30;
+
+            text: qsTr("I have copied down the recovery words!")
+            wrapMode: Text.WordWrap
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    confirmRecoverySeed.checked = !confirmRecoverySeed.checked
+                }
             }
         }
     }
+
 
     LockScreen {
         id: passcodeScreen
@@ -192,7 +237,7 @@ Item {
 
         onPasscodeComplete: {
             if (isPasscodeConfirmed) {
-                if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
+                if (userAccount.hashValue(passcodeScreen.passcode) === userAccount.getTempPasscode()) {
                     userAccount.confirmPasscodeChange()
                     passcodeScreen.passcode = ""
                     ourStackView.replace(Qt.resolvedUrl("qrc:/DashboardPage.qml"))
@@ -267,12 +312,12 @@ Item {
     function startBusyIndicatorAndDisable() {
         backButton.enabled = false
         continueButton.enabled = false
-        mBusyIndicator.running = true
+        mWaitingLayer.visible = true
     }
 
     function stopBusyIndicatorAndEnable() {
         backButton.enabled = true
         continueButton.enabled = true
-        mBusyIndicator.running = false
+        mWaitingLayer.visible = false
     }
 }

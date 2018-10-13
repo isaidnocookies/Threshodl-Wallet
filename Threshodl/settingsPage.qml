@@ -111,7 +111,7 @@ Item {
                 ourStackView.replace(passcodeScreen)
             } else {
                 if (isPasscodeConfirmed) {
-                    if (passcodeScreen.passcode === userAccount.getTempPasscode()) {
+                    if (userAccount.hashValue(passcodeScreen.passcode) === userAccount.getTempPasscode()) {
                         userAccount.confirmPasscodeChange()
                         passcodeScreen.passcode = ""
                         ourStackView.pop()
@@ -151,9 +151,36 @@ Item {
             anchors.fill: parent
             spacing: 5
 
-//            Row { height: 1; width: parent.width; leftPadding: (width * 0.15)/2;
-//                Rectangle { height: parent.height; width: parent.width * 0.85; color: "lightgray"; }
-//            }
+            Row {
+                height: 60
+                width: parent.width
+
+                Button {
+                    id: changeUsername
+
+                    width: parent.width
+                    height: parent.height
+
+                    text: "Change Username"
+                    font.bold: true
+                    font.pointSize: 14
+
+                    background: Rectangle {
+                        color: "transparent"
+                        anchors.fill: parent
+                    }
+
+                    onClicked: {
+                        console.log("Let's reset the passcode...")
+                        passcodeScreen.visible = true
+                        ourStackView.push(passcodeScreen)
+                    }
+                }
+            }
+
+            Row { height: 1; width: parent.width; leftPadding: (width * 0.15)/2;
+                Rectangle { height: parent.height; width: parent.width * 0.85; color: "lightgray"; }
+            }
 
             Row {
                 height: 60

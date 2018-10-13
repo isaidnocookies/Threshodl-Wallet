@@ -26,11 +26,13 @@ public:
     Q_INVOKABLE void            createNewAccount(QString iUsername);
     Q_INVOKABLE void            recoverAccount(QString iSeed);
     Q_INVOKABLE QString         getRecoverySeed();
+    Q_INVOKABLE void            changeUsername(QString iUsername);
 
     Q_INVOKABLE bool            checkPasscode(QString iPass);
     Q_INVOKABLE void            changePasscode(QString iNewPass);
     Q_INVOKABLE QString         getTempPasscode();
     Q_INVOKABLE void            confirmPasscodeChange();
+    Q_INVOKABLE QString         hashValue(QString iValue);
 
     Q_INVOKABLE QString         getTotalBalance(QString iCurrency = "USD");
     Q_INVOKABLE QString         getBalance(QString iShortName, bool iConfirmed = true);
@@ -73,6 +75,7 @@ public:
 
 signals:
     void usernameChanged();
+    void usernameChangeSuccess(bool success);
     void recoverySeedChanged();
     void marketValueChanged(QString shortname);
     void walletBalanceUpdateComplete(QString shortname);

@@ -50,7 +50,7 @@ Item {
         id: bottomBackground
         width: parent.width
         radius: 25
-        color: white
+        color: "white"
         anchors.bottom: parent.bottom
         anchors.top: titleSpacer.bottom
         anchors.topMargin: 20
