@@ -171,9 +171,9 @@ Item {
                     }
 
                     onClicked: {
-                        console.log("Let's reset the passcode...")
+                        console.log("Let's change the username...")
                         passcodeScreen.visible = true
-                        ourStackView.push(passcodeScreen)
+                        ourStackView.push(Qt.resolvedUrl("qrc:/settings/ChangeUsernamePage.qml"));
                     }
                 }
             }

@@ -118,27 +118,26 @@ void CreateUsername::recoverAccount(QString iSeed)
     emit usernameCreated(lSuccess, lUsername, iSeed, lPublic, lPrivate);
 }
 
-bool CreateUsername::changeUsername(QString iNewUsername)
+QString CreateUsername::changeUsername(QString iNewUsername)
 {
     QNetworkAccessManager   *lNetworkManager = new QNetworkAccessManager();
     QEventLoop              lMyEventLoop;
     QNetworkReply           *lReply;
     QString                 lReturnedUsername;
 
-    QString lSeed, lPublic, lPrivate;
     bool lSuccess = false;
 
     connect(lNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
     QJsonObject jsonData;
-    jsonData.insert("username", iUsername);
+    jsonData.insert("username", iNewUsername);
 
     QJsonDocument jsonDataDocument;
     jsonDataDocument.setObject(jsonData);
 
     QByteArray request_body = jsonDataDocument.toJson();
 
-    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/create/"));
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/userAccount/changeUsername/"));
     QNetworkRequest lRequest;
     lRequest.setUrl(lRequestURL);
     lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -151,9 +150,6 @@ bool CreateUsername::changeUsername(QString iNewUsername)
         auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
 
         if (lMyMap["success"].toBool()) {
-            lSeed = lMyMap["seed"].toString();
-            lPublic = lMyMap["publickey"].toString();
-            QString lPrivate = lMyMap["privatekey"].toString();
             lReturnedUsername = lMyMap["username"].toString();
             lSuccess = true;
         } else {
@@ -161,7 +157,11 @@ bool CreateUsername::changeUsername(QString iNewUsername)
         }
     }
 
-    return lSuccess;
+    if (!lSuccess) {
+        lReturnedUsername = "";
+    }
+
+    return lReturnedUsername;
 }
 
 void CreateUsername::requestComplete(QNetworkReply *reply)

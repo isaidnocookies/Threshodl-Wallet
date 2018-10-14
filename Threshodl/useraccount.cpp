@@ -16,6 +16,7 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
 {
     qDebug() << "UserAccount created";
     mDataManager = new MyQSettingsManager;
+    mCreateUsername = nullptr;
 
     QDesktopServices::setUrlHandler("file", this, "handleFileUrlReceived");
 
@@ -54,7 +55,10 @@ bool UserAccount::exists()
 
 void UserAccount::createNewAccount(QString iUsername)
 {
-    mCreateUsername = new CreateUsername;
+    if (mCreateUsername == nullptr) {
+        mCreateUsername = new CreateUsername;
+    }
+
     connect (mCreateUsername, &CreateUsername::usernameCreated, this, &UserAccount::usernameCreated);
     mCreateUsername->create(iUsername);
 }
@@ -62,7 +66,11 @@ void UserAccount::createNewAccount(QString iUsername)
 void UserAccount::recoverAccount(QString iSeed)
 {
     setRecoverySeed(iSeed);
-    mCreateUsername = new CreateUsername;
+
+    if (mCreateUsername == nullptr) {
+        mCreateUsername = new CreateUsername;
+    }
+
     connect (mCreateUsername, &CreateUsername::usernameCreated, this, &UserAccount::usernameCreated);
     mCreateUsername->recoverAccount(iSeed);
 }
@@ -74,8 +82,26 @@ QString UserAccount::getRecoverySeed()
 
 void UserAccount::changeUsername(QString iUsername)
 {
-    //if iUsername is valid...
+    bool lSuccess = false;
 
+    if (iUsername.length() < 0) {
+        emit usernameChangeSuccess(false);
+        return;
+    }
+
+    if (mCreateUsername == nullptr) {
+        mCreateUsername = new CreateUsername;
+    }
+
+    QString newUsername = mCreateUsername->changeUsername(iUsername);
+    if (newUsername == "") {
+        lSuccess = false;
+    } else {
+        lSuccess = true;
+        setUsername(newUsername);
+    }
+
+    emit usernameChangeSuccess(lSuccess);
 }
 
 bool UserAccount::checkPasscode(QString iPass)

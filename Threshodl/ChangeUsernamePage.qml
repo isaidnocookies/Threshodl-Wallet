@@ -58,11 +58,12 @@ Item {
 
     MessageDialog {
         id: usernameChangeConfirmation
+
         function setMessage(success) {
             if (success) {
-                usernameChangeConfirmation.text = "Dark transaction successful!"
+                usernameChangeConfirmation.text = "Username was successfully changed!!"
             } else {
-                usernameChangeConfirmation.text = "Dark transaction failed! Please try again. For help, please contact support@threshodl.com"
+                usernameChangeConfirmation.text = "Request to change username failed! For help, please contact support@threshodl.com"
             }
         }
         title: "Change Username"
@@ -71,7 +72,7 @@ Item {
         standardButtons: StandardButton.Ok
         onAccepted: {
             console.log("Username confirmation accepted")
-
+            ourStackView.pop();
         }
     }
 
