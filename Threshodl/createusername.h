@@ -14,7 +14,7 @@ public:
     explicit CreateUsername(QObject *parent = nullptr);
     void create(QString iUsername);
     void recoverAccount(QString iSeed);
-    bool changeUsername(QString iNewUsername);
+    QString changeUsername(QString iNewUsername);
 
 signals:
     void usernameCreated(bool oSuccess, QString oUsername, QString oSeed, QString oPublicKey, QString oPrivateKey);
