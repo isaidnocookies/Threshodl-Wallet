@@ -37,12 +37,40 @@ Rectangle {
         return editedShortname
     }
 
+    function getConfirmationText (iShortname, walletType) {
+        if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
+            return "(Confirmed)"
+        } else {
+            var lValue
+            if (walletType === "Dark") {
+                lValue = userAccount.getBalance(iShortname, false)
+            } else {
+                lValue = userAccount.getBalance(iShortname, false)
+            }
+            return "(" + lValue + " " + iShortname + " Pending)"
+        }
+    }
+
     Connections {
         target: userAccount
 
         onMarketValueChanged: {
             if (shortname === expandedShortName || shortname === getBaseShortname(expandedShortName)) {
                 currencyValueOfTotalCryptoLabelExpanded.text = getCurrencySymbol("USD") + threshodlTools.formatMarketValueString(userAccount.getBalanceValue(expandedShortName));
+            }
+        }
+
+        onWalletBalanceUpdateComplete: {
+            if (shortname === expandedShortName) {
+                console.log("Balances updated")
+                totalCryptoTextExpanded.text = getTotalConfirmedCryptoValue(shortname) + " " + shortname
+
+                confirmedCrytoStatusExpanded.text = getConfirmationText(shortname, isDark() ? "Dark" : "Bright");
+                if (userAccount.isWalletConfirmed(shortname, isDark() ? "Dark" : "Bright")) {
+                    confirmedCrytoStatusExpanded.color = "#116F00"
+                } else {
+                    confirmedCrytoStatusExpanded.color = "red"
+                }
             }
         }
     }
@@ -86,8 +114,8 @@ Rectangle {
             font.pointSize: 16
             font.weight: Font.Thin
 
-            y: nameText.y - 12
-            x: parent.width - width - 20 //parent.width / 2 + parent.width * 0.1
+            y: nameText.y - 20
+            x: parent.width - width - 20
         }
 
         Text {
@@ -97,7 +125,7 @@ Rectangle {
             font.pointSize: 12
             font.bold: true
 
-            x: parent.width - width - 20 //totalCryptoTextExpanded.x
+            x: parent.width - width - 20
             y: totalCryptoTextExpanded.y + totalCryptoTextExpanded.height + 5
         }
 
@@ -106,13 +134,13 @@ Rectangle {
 
             text: getConfirmationText(shortName, "Both");
             color: {
-                if (confirmedCrytoStatus.text === "(Confirmed)") {
+                if (confirmedCrytoStatusExpanded.text === "(Confirmed)") {
                     return "#116F00"
                 } else {
                     return "red"
                 }
             }
-            x: parent.width - width - 20 //totalCryptoTextExpanded.x
+            x: parent.width - width - 20
             y: currencyValueOfTotalCryptoLabelExpanded.y + currencyValueOfTotalCryptoLabelExpanded.height + 5
 
             font.weight: Font.Thin

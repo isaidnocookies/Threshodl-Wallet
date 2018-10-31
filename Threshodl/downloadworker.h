@@ -41,6 +41,7 @@ private:
 
     void downloadBitcoinBalances(QStringList iAddresses);
     void downloadGenericInsightBalances(QString iShortname, QStringList iAddresses);
+    void downloadSoChainBalances(QString iShortname, QStringList iAddresses);
 
 };
 

@@ -40,7 +40,10 @@ UserAccount::UserAccount(QObject *parent) : QObject(parent)
 
     loadAccountFromSettings();
 
-//    mMyDownloaderThread->start();
+#if !TURN_OFF_POLLING
+    mMyDownloaderThread->start();
+#endif
+
 }
 
 UserAccount::~UserAccount()
@@ -92,6 +95,7 @@ void UserAccount::changeUsername(QString iUsername)
     if (mCreateUsername == nullptr) {
         mCreateUsername = new CreateUsername;
     }
+    mCreateUsername->setUserData(mPrivateKey, mPublicKey, mUsername);
 
     QString newUsername = mCreateUsername->changeUsername(iUsername);
     if (newUsername == "") {
@@ -196,6 +200,7 @@ void UserAccount::setUsername(QString iUsername)
     if (iUsername == mUsername) { return; }
 
     mUsername = iUsername;
+    mDataManager->saveUsername(iUsername);
     emit usernameChanged();
 }
 

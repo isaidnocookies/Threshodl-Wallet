@@ -172,7 +172,6 @@ Item {
 
                     onClicked: {
                         console.log("Let's change the username...")
-                        passcodeScreen.visible = true
                         ourStackView.push(Qt.resolvedUrl("qrc:/settings/ChangeUsernamePage.qml"));
                     }
                 }

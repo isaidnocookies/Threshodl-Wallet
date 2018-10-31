@@ -9,10 +9,11 @@
 #define USE_BLOCKCHAIN true
 
 #define MY_WALLET_SERVER_ADDRESS "http://10.10.0.14:3333"
-//#define MY_WALLET_SERVER_ADDRESS "http://13.57.145.171:3333"
+//#define MY_WALLET_SERVER_ADDRESS "https://app.threshodl.com:3333"
 #define TASK_SERVER_URL "https://pyts.threebx.com"
 #define POLLING_INTERVAL 60
 #define THRESHODL_PASSWORD "threshodlpassword"
+#define TURN_OFF_POLLING 0
 
 namespace AppWallets {
 
@@ -27,7 +28,7 @@ namespace AppWallets {
                                                                 {"tLTC",    "Testnet Litecoin"},
                                                                 {"ZEC",     "ZCash"}
 //                                                                {"tZEC",    "Testnet ZCash"},
-//                                                                {"BCH",     "Bitcoin Cash"}//,
+//                                                                {"BCH",     "Bitcoin Cash"},
 //                                                                {"tBCH",    "Testnet Bitcoin Cash"},
 //                                                                {"DOGE",    "Dogecoin"},
 //                                                                {"tDOGE",   "Testnet Dogecoin"},
@@ -37,6 +38,7 @@ namespace AppWallets {
                                                         }
 }
 
+//https://chain.so/api
 namespace EndpointUrls {
     inline QMap<QString, QString> insightUrls()         { return QMap<QString, QString> {
                                                                 {"BTC",     "https://insight.bitpay.com/api"},
@@ -44,7 +46,8 @@ namespace EndpointUrls {
                                                                 {"DASH",    "https://insight.dash.org/insight-api"},
                                                                 {"tDASH",   "https://test.insight.dash.siampm.com/api"},
                                                                 {"LTC",     "https://insight.litecore.io/api"},
-                                                                {"tLTC",    "https://testnet.litecore.io/api"},
+                                                                {"tLTC",    "https://chain.so/api/v2"},
+                                                                //{"tLTC",    "https://testnet.litecore.io/api"},
                                                                 {"ZEC",     "https://zcashnetwork.info/api"},
                                                                 {"tZEC",    "https://explorer.testnet.z.cash/api"},
                                                                 {"BCH",     "https://bch-insight.bitpay.com/api"},

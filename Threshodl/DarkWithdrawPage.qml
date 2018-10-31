@@ -301,7 +301,7 @@ Item {
 
     Text {
         id: warningLabel
-        y: sendButton.y - 20 - height
+        y: withdrawButton.y - 20 - height
         anchors.horizontalCenter: parent.horizontalCenter
         color: "red"
         text: ""

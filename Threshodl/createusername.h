@@ -16,6 +16,8 @@ public:
     void recoverAccount(QString iSeed);
     QString changeUsername(QString iNewUsername);
 
+    void setUserData(QString iPrivateKey, QString iPublicKey, QString iUsername);
+
 signals:
     void usernameCreated(bool oSuccess, QString oUsername, QString oSeed, QString oPublicKey, QString oPrivateKey);
 
@@ -25,8 +27,8 @@ private slots:
 private:
     QNetworkAccessManager *mNetworkManager;
 
-    QByteArray mPrivateKey;
-    QByteArray mPublicKey;
+    QString mPrivateKey;
+    QString mPublicKey;
     QString mUsername;
 
     QString mTransactionId;

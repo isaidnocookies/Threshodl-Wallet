@@ -64,9 +64,9 @@ Component {
             id: longNameText
             text: name
             font.bold: true
-            font.pointSize: 15
+            font.pointSize: 13
 
-            y: iconImage.y + 8
+            y: totalCryptoText.y - (height/2) - 12
             x: iconImage.x + iconImage.width + 10
             z:10
         }
@@ -74,17 +74,18 @@ Component {
         Text {
             id: marketValueText
             text: ""
-            font.pointSize: 12
-            font.weight: Font.Thin
+            font.pointSize: 13
+            //font.weight: Font.Bold
+            font.bold: true
 
-            x: longNameText.x
-            y: longNameText.y + longNameText.height + 10
+            x: parent.width - width - 20
+            anchors.verticalCenter: totalCryptoText.verticalCenter
             z: 10
 
             Connections {
                 target: userAccount
                 onMarketValueChanged: {
-                    marketValueText.text = "$" + threshodlTools.formatMarketValueString(getMarketValue(shortName))
+                    marketValueText.text = "($" + threshodlTools.formatMarketValueString(getMarketValue(shortName)) + ")"
                 }
             }
         }
@@ -95,8 +96,8 @@ Component {
             font.pointSize: 16
             font.weight: Font.Thin
 
-            y: longNameText.y - 8
-            x: parent.width - 20 - width //parent.width / 2 + parent.width * 0.1
+            y: iconImage.y + (iconImage.height/2) - (height/2)
+            x: longNameText.x
             z: 10
 
             Connections {
@@ -126,8 +127,8 @@ Component {
             font.pointSize: 12
             font.bold: true
 
-            x: parent.width - 20 - width //totalCryptoText.x
-            y: totalCryptoText.y + totalCryptoText.height + 5
+            x: totalCryptoText.x
+            y: totalCryptoText.y + totalCryptoText.height + 3
 
             Component.onCompleted: formatValueText()
 
@@ -173,8 +174,8 @@ Component {
                     confirmedCrytoStatus.color = "red"
                 }
             }
-            x: parent.width - 20 - width //totalCryptoText.x
-            y: currencyValueOfTotalCryptoLabel.y + currencyValueOfTotalCryptoLabel.height + 5
+            x: currencyValueOfTotalCryptoLabel.x + currencyValueOfTotalCryptoLabel.width + 10 // parent.width - 20 - width //totalCryptoText.x
+            y: currencyValueOfTotalCryptoLabel.y + (currencyValueOfTotalCryptoLabel.height/2) - (confirmedCrytoStatus.height/2) //currencyValueOfTotalCryptoLabel.y + currencyValueOfTotalCryptoLabel.height + 5
 
             font.weight: Font.Thin
             font.pointSize: 11
@@ -198,7 +199,7 @@ Component {
             }
 
             x: (parent.width / 2) - (width / 2)
-            y: marketValueText.y + marketValueText.height + 5
+            y: currencyValueOfTotalCryptoLabel.y + currencyValueOfTotalCryptoLabel.height + 2
 
             Image {
                 id: expandCellButtonImage

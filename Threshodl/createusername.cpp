@@ -131,6 +131,7 @@ QString CreateUsername::changeUsername(QString iNewUsername)
 
     QJsonObject jsonData;
     jsonData.insert("username", iNewUsername);
+    jsonData.insert("publickey", QString(mPublicKey));
 
     QJsonDocument jsonDataDocument;
     jsonDataDocument.setObject(jsonData);
@@ -161,7 +162,16 @@ QString CreateUsername::changeUsername(QString iNewUsername)
         lReturnedUsername = "";
     }
 
+    mUsername = lReturnedUsername;
+
     return lReturnedUsername;
+}
+
+void CreateUsername::setUserData(QString iPrivateKey, QString iPublicKey, QString iUsername)
+{
+    mPublicKey = iPublicKey;
+    mPrivateKey = iPrivateKey;
+    mUsername = iUsername;
 }
 
 void CreateUsername::requestComplete(QNetworkReply *reply)
@@ -175,6 +185,7 @@ void CreateUsername::requestComplete(QNetworkReply *reply)
         QString lSeed = lMyMap["seed"].toString();
         QString lPublic = lMyMap["publickey"].toString();
         QString lPrivate = lMyMap["privatekey"].toString();
+        setUserData(mPrivateKey, mPublicKey, mUsername);
         emit usernameCreated(true, mUsername, lSeed, lPublic, lPrivate);
     } else {
         qDebug() << reply->errorString();

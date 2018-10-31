@@ -10,6 +10,7 @@ Item {
     function changeUsername(newUsername) {
         console.log("Changing username....")
         startBusyIndicatorAndDisable();
+        userAccount.changeUsername(newUsername);
     }
 
     function startBusyIndicatorAndDisable() {
@@ -111,7 +112,7 @@ Item {
         id: bottomBackground
         width: parent.width
         radius: 25
-        color: white
+        color: "white"
         anchors.bottom: parent.bottom
         anchors.top: titleSpacer.bottom
         anchors.topMargin: 20
@@ -160,13 +161,22 @@ Item {
         onClicked: ourStackView.pop()
     }
 
-    //Stuffs...
     Text {
-        id: descriptionLabel
-        text: "Current username: " + userAccount.username;
+        id: descriptionLabelHeader
+        text: "Current username:";
         anchors.top: bottomBackground.top;
         anchors.topMargin: 50;
-        width: parent.width
+        x: (parent.width / 2) - (width / 2)
+    }
+
+    Text {
+        id: descriptionLabel
+        text:userAccount.username;
+        anchors.top: descriptionLabelHeader.top;
+        anchors.topMargin: 20;
+        x: (parent.width / 2) - (width / 2)
+        font.bold: true;
+        font.pointSize: descriptionLabelHeader.font.pointSize + 2;
     }
 
     TextField {
@@ -199,7 +209,7 @@ Item {
                 warningLabel.text = "Please complete fields"
             } else {
                 startBusyIndicatorAndDisable();
-                changeUsername(newUsername);
+                changeUsername(newUsernameField.text);
             }
         }
 
@@ -207,7 +217,7 @@ Item {
             color: "black"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: sendButton.text
+            text: changeButton.text
             font.bold: true
             font.pointSize: buttonFontSize
         }
