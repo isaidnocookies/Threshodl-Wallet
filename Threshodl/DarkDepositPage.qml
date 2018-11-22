@@ -77,7 +77,7 @@ Item {
                 messageDialog.standardButtons = StandardButton.Cancel | StandardButton.Yes;
                 messageDialog.open()
             } else {
-                console.log("Stupid fucking deposit thing");
+                console.log("Stupid fucking deposit thing brokeded");
             }
         }
 

@@ -42,7 +42,7 @@ namespace AppWallets {
 namespace EndpointUrls {
     inline QMap<QString, QString> insightUrls()         { return QMap<QString, QString> {
                                                                 {"BTC",     "https://insight.bitpay.com/api"},
-                                                                {"tBTC",    "https://testnet.blockexplorer.com/api"},
+                                                                {"tBTC",    "https://test-insight.bitpay.com/api"},
                                                                 {"DASH",    "https://insight.dash.org/insight-api"},
                                                                 {"tDASH",   "https://test.insight.dash.siampm.com/api"},
                                                                 {"LTC",     "https://insight.litecore.io/api"},

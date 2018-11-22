@@ -53,9 +53,8 @@ public:
 
     void createNewBrightWallet(QString iSeed);
 
-    bool createRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee);
+    bool createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee);
     bool sendRawTransaction(QString iRawTransaction, QString &oTxid);
-    QString sendBrightTransaction(QString iToAddress, QString iToAmount);
 
     bool estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError);
     bool createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString iPublicKey, QString &oError);

@@ -39,10 +39,7 @@ private:
     void downloadMarketValues();
     void downloadBalances();
 
-    void downloadBitcoinBalances(QStringList iAddresses);
-    void downloadGenericInsightBalances(QString iShortname, QStringList iAddresses);
-    void downloadSoChainBalances(QString iShortname, QStringList iAddresses);
-
+    void downloadBalances(QString iShortname, QStringList iAddresses);
 };
 
 #endif // DOWNLOADWORKER_H

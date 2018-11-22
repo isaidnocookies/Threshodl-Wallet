@@ -265,7 +265,7 @@ void WalletAccount::createNewBrightWallet(QString iSeed)
     mAccountData->saveWallet(lNewCryptoWallet.toData(), mShortName, false);
 }
 
-bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
+bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
 {
     QString lCoinName = mShortName;
     auto lCurrentWallet = mWallets[0];
@@ -282,17 +282,22 @@ bool WalletAccount::createRawTransaction(QString iToAddress, QString iToAmount, 
     QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
 
     QJsonObject jsonData;
+    QJsonArray fromAddresses;
+    QJsonArray fromPrivateKeys;
     QJsonArray toAddresses;
     QJsonArray toAmounts;
 
     toAddresses.append(iToAddress);
     toAmounts.append(iToAmount);
+    fromAddresses.append(lFromAddress);
+    fromPrivateKeys.append(lFromPrivateKey);
 
     jsonData.insert("coin", lCoinName);
-    jsonData.insert("fromAddress", lFromAddress);
-    jsonData.insert("fromPrivateKey", lFromPrivateKey);
+    jsonData.insert("fromAddresses", fromAddresses);
+    jsonData.insert("fromPrivateKeys", fromPrivateKeys);
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
+    jsonData.insert("returnAddress", lFromAddress);
 
     QJsonDocument jsonDataDocument;
     jsonDataDocument.setObject(jsonData);
@@ -396,69 +401,6 @@ bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
     oTxid = lReturnTxid;
 
     return lSuccess;
-}
-
-QString WalletAccount::sendBrightTransaction(QString iToAddress, QString iToAmount)
-{
-    QString lCoinName = mShortName;
-    auto lCurrentWallet = mWallets[0];
-    QString lFromAddress = lCurrentWallet.address();
-    QString lFromPrivateKey = lCurrentWallet.privateKey();
-
-    QString lReturnTxid;
-
-    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
-    QEventLoop              lMyEventLoop;
-    QNetworkReply           *lReply;
-    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
-
-    QJsonObject jsonData;
-    QJsonArray toAddresses;
-    QJsonArray toAmounts;
-
-    toAddresses.append(iToAddress);
-    toAmounts.append(iToAmount);
-
-    jsonData.insert("coin", lCoinName);
-    jsonData.insert("fromAddress", lFromAddress);
-    jsonData.insert("fromPrivateKey", lFromPrivateKey);
-    jsonData.insert("toAddresses", toAddresses);
-    jsonData.insert("toAmounts", toAmounts);
-
-    QJsonDocument jsonDataDocument;
-    jsonDataDocument.setObject(jsonData);
-
-    QByteArray request_body = jsonDataDocument.toJson();
-    QString lRequestData = request_body;
-    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/send/"));
-    qDebug() << lRequestURL;
-    qDebug().noquote() << request_body;
-
-    QNetworkRequest lRequest;
-    lRequest.setUrl(lRequestURL);
-    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    lReply = mNetworkManager->post(lRequest, request_body);
-    lMyEventLoop.exec();
-
-    if (lReply->error() == QNetworkReply::NoError) {
-        QByteArray      lReplyText = lReply->readAll();
-        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
-
-        qDebug() << lReplyText;
-
-        if (lMyMap["success"].toBool()) {
-            lReturnTxid = lMyMap["txid"].toString();
-        } else {
-            qDebug() << "Error(1).... Failed to send transaction";
-            lReturnTxid = "";
-        }
-    } else {
-        qDebug() << "Error(2).... Failed to send transaction" << lReply->errorString();
-        lReturnTxid = "";
-    }
-
-    return lReturnTxid;
 }
 
 bool WalletAccount::estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError)

@@ -261,7 +261,7 @@ QString UserAccount::getTotalWalletBalanceValue(QString iShortname, bool iConfir
 void UserAccount::createRawTransaction(QString iShortname, QString toAddress, QString toAmount)
 {
     QString lTxHex, lFee;
-    bool lSuccess = mBrightWallets[iShortname].createRawTransaction(toAddress, toAmount, lTxHex, lFee);
+    bool lSuccess = mBrightWallets[iShortname].createBrightRawTransaction(toAddress, toAmount, lTxHex, lFee);
     emit rawTransactionCreated(lSuccess, lTxHex, lFee);
 }
 
@@ -270,11 +270,6 @@ void UserAccount::sendRawTransaction(QString iShortname, QString iRawTransaction
     QString lTxid;
     bool lSuccess = mBrightWallets[iShortname].sendRawTransaction(iRawTransaction, lTxid);
     emit rawTransactionSent(lSuccess, lTxid);
-}
-
-QString UserAccount::sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount)
-{
-    return mBrightWallets[iShortname].sendBrightTransaction(toAddress, toAmount);
 }
 
 QString UserAccount::createBrightWallet(QString iShortname)

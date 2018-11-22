@@ -48,7 +48,6 @@ public:
 
     Q_INVOKABLE void            createRawTransaction(QString iShortname, QString toAddress, QString toAmount);
     Q_INVOKABLE void            sendRawTransaction(QString iShortname, QString iRawTransaction);
-    Q_INVOKABLE QString         sendBrightTransaction(QString iShortname, QString toAddress, QString toAmount);
     Q_INVOKABLE QString         createBrightWallet(QString iShortname);
     Q_INVOKABLE QVariantList    getAllWallets();
 

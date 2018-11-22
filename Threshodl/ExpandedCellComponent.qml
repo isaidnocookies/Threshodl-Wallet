@@ -63,7 +63,7 @@ Rectangle {
         onWalletBalanceUpdateComplete: {
             if (shortname === expandedShortName) {
                 console.log("Balances updated")
-                totalCryptoTextExpanded.text = getTotalConfirmedCryptoValue(shortname) + " " + shortname
+                totalCryptoTextExpanded.text = getBalances(shortname, true) + " " + shortname
 
                 confirmedCrytoStatusExpanded.text = getConfirmationText(shortname, isDark() ? "Dark" : "Bright");
                 if (userAccount.isWalletConfirmed(shortname, isDark() ? "Dark" : "Bright")) {

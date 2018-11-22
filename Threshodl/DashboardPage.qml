@@ -15,17 +15,6 @@ Item {
             anchors.centerIn: parent
             height: parent.height
         }
-
-//        gradient: Gradient {
-//            GradientStop {
-//                position: 1
-//                color: "#000000"
-//            }
-//            GradientStop {
-//                position: 0
-//                color: "#333"
-//            }
-//        }
     }
 
     function getCurrencySymbol(iCurrency) {
