@@ -539,8 +539,12 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 lNewMicroWallet.setIsMicroWallet(true);
 
                 mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + lValue).toString();
-                mWallets.append(lNewMicroWallet);
-                mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
+
+//                mWallets.append(lNewMicroWallet);
+                mPendingWallets.append(lNewMicroWallet);
+
+                mAccountData->savePendingMicroWallet(lNewMicroWallet.toData(), mShortName);
+//                mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
             }
 
             oBreaks = breaks;

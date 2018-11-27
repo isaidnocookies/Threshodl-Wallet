@@ -77,6 +77,7 @@ private:
     QString                 mExchangeCurrency;
 
     QList<CryptoWallet>     mWallets;
+    QList<CryptoWallet>     mPendingWallets;
     MyQSettingsManager      *mAccountData;
 };
 

@@ -44,6 +44,8 @@
         <file>assets/appBackgroundForDashboard.jpg</file>
         <file>assets/dotdotdotIcon.png</file>
         <file>assets/cryptoWalletIcon.png</file>
+        <file>assets/darkLitecoinIcon.png</file>
+        <file>assets/brightLitecoinIcon.png</file>
     </qresource>
     <qresource prefix="/brightWalletView">
         <file>SendConfirmationDialog.qml</file>

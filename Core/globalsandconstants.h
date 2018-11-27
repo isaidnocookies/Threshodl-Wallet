@@ -22,11 +22,12 @@ namespace AppWallets {
                                                                 {"tBTC",    "Testnet Bitcoin"},
 //                                                                {"dBTC",    "Dark Bitcoin"},
                                                                 {"dtBTC",   "Dark Testnet Bitcoin"},
-                                                                {"DASH",    "Dash"},
+//                                                                {"DASH",    "Dash"},
 //                                                                {"tDASH",   "Testnet Dash"},
                                                                 {"LTC",     "Litecoin"},
                                                                 {"tLTC",    "Testnet Litecoin"},
-                                                                {"ZEC",     "ZCash"}
+                                                                {"dtLTC", "Dark Testnet Litecoin"}
+//                                                                {"ZEC",     "ZCash"}
 //                                                                {"tZEC",    "Testnet ZCash"},
 //                                                                {"BCH",     "Bitcoin Cash"},
 //                                                                {"tBCH",    "Testnet Bitcoin Cash"},
@@ -40,24 +41,25 @@ namespace AppWallets {
 
 //https://chain.so/api
 namespace EndpointUrls {
-    inline QMap<QString, QString> insightUrls()         { return QMap<QString, QString> {
-                                                                {"BTC",     "https://insight.bitpay.com/api"},
-                                                                {"tBTC",    "https://test-insight.bitpay.com/api"},
-                                                                {"DASH",    "https://insight.dash.org/insight-api"},
-                                                                {"tDASH",   "https://test.insight.dash.siampm.com/api"},
-                                                                {"LTC",     "https://insight.litecore.io/api"},
-                                                                {"tLTC",    "https://chain.so/api/v2"},
-                                                                //{"tLTC",    "https://testnet.litecore.io/api"},
-                                                                {"ZEC",     "https://zcashnetwork.info/api"},
-                                                                {"tZEC",    "https://explorer.testnet.z.cash/api"},
-                                                                {"BCH",     "https://bch-insight.bitpay.com/api"},
-                                                                {"tBCH",    "https://test-bch-insight.bitpay.com/api"},
-                                                                {"DOGE",    "https://dogechain.info/api/v1"},
-                                                                {"tDOGE",   "https://chain.so/api/v2"},
-                                                                {"ETH",     ""},
-                                                                {"tETH",    ""}
-                                                            };
-                                                        }
+//    inline QMap<QString, QString> insightUrls()         { return QMap<QString, QString> {
+//                                                                {"BTC",     "https://insight.bitpay.com/api"},
+//                                                                {"tBTC",    "https://test-insight.bitpay.com/api"},
+//                                                                {"DASH",    "https://insight.dash.org/insight-api"},
+//                                                                {"tDASH",   "https://test.insight.dash.siampm.com/api"},
+//                                                                {"LTC",     "https://insight.litecore.io/api"},
+//                                                                {"tLTC",    "https://chain.so/api/v2"},
+//                                                                {"tLTC",    "https://testnet.litecore.io/api"},
+//                                                                {"ZEC",     "https://zcashnetwork.info/api"},
+//                                                                {"tZEC",    "https://explorer.testnet.z.cash/api"},
+//                                                                {"BCH",     "https://bch-insight.bitpay.com/api"},
+//                                                                {"tBCH",    "https://test-bch-insight.bitpay.com/api"},
+//                                                                {"DOGE",    "https://dogechain.info/api/v1"},
+//                                                                {"tDOGE",   "https://chain.so/api/v2"},
+//                                                                {"ETH",     ""},
+//                                                                {"tETH",    ""}
+//                                                            };
+//                                                        }
+
     inline QMap<QString, QString> cryptoNodes()         { return QMap<QString, QString> {
                                                                 {"BTC",     ""},
                                                                 {"tBTC",    "http://threshodl:h0lyThr35h0dLb%407m%40n13@btcnode-test3.threebx.com:8332"},

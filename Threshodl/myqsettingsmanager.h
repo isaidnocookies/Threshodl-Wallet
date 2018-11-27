@@ -5,6 +5,7 @@
 #include <QSettings>
 
 #include "core.h"
+#include "cryptowallet.h"
 
 class WalletAccount;
 
@@ -22,6 +23,8 @@ public:
     void saveWallet(QByteArray iWalletData, QString iShortname, bool isDark);
     void saveWallets(QList<QByteArray> iWallets, QString iShortname, bool isDark);
     void saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType);
+
+    void savePendingMicroWallet(QByteArray iWalletData, QString iShortname);
 
     void savePasscode(QString iPasscode);
     QString getPasscode();
@@ -41,6 +44,9 @@ public:
     void getWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed);
     void getDarkWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed);
     void saveWalletBalance(QString iShortname, QString iConfirmedBalance, QString iUnconfirmedBalance);
+
+    void getPendingMicroWallets(QString iShortname, QList<CryptoWallet> &oPendingWallets);
+    void clearPendingMicroWallet(QString iShortname, QStringList iAddresses);
 
 protected:
     QSettings *mAccountData;

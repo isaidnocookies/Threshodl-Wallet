@@ -126,6 +126,18 @@ void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName
     mAccountData->sync();
 }
 
+void MyQSettingsManager::savePendingMicroWallet(QByteArray iWalletData, QString iShortname)
+{
+    mAccountData->beginGroup("Pending_" + iShortname);
+
+    QList<QVariant> lWallets = mAccountData->value(DataKeys::darkWalletDataKey()).toList();
+    lWallets.append(iWalletData);
+    mAccountData->setValue(DataKeys::darkWalletDataKey(), lWallets);
+
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
 void MyQSettingsManager::savePasscode(QString iPasscode)
 {
     mAccountData->setValue(DataKeys::passcodeDataKey(), iPasscode);
@@ -219,6 +231,48 @@ void MyQSettingsManager::getDarkWalletAccounts(QList<WalletAccount> &oDarkWallet
             mAccountData->endGroup();
         }
     }
+}
+
+void MyQSettingsManager::getPendingMicroWallets(QString iShortname, QList<CryptoWallet> &oPendingWallets)
+{
+    QList<CryptoWallet> pendingMicroWallets;
+    mAccountData->beginGroup("Pending_" + iShortname);
+
+    if (mAccountData->contains(DataKeys::darkWalletDataKey())) {
+        QList<QVariant> lWallets = mAccountData->value(DataKeys::darkWalletDataKey()).toList();
+        for(auto wallet : lWallets) {
+            oPendingWallets.append(CryptoWallet(wallet.toByteArray()));
+        }
+    }
+
+    mAccountData->endGroup();
+}
+
+void MyQSettingsManager::clearPendingMicroWallet(QString iShortname, QStringList iAddresses)
+{
+    QVariantList lPendingWalletsToSave;
+    mAccountData->beginGroup("Pending_" + iShortname);
+
+    if (mAccountData->contains(DataKeys::darkWalletDataKey())) {
+        QList<QVariant> lWallets = mAccountData->value(DataKeys::darkWalletDataKey()).toList();
+        for (int i = 0; i < lWallets.size(); i++) {
+            CryptoWallet temp = CryptoWallet(lWallets.at(i).toByteArray());
+            bool foundAddress = false;
+            for (int x = 0; x < iAddresses.size(); x++) {
+                if (temp.address() == iAddresses.at(x)) {
+                    foundAddress = true;
+                    break;
+                }
+            }
+            if (!foundAddress) {
+                lPendingWalletsToSave.append(lWallets.at(i));
+            }
+            foundAddress = false;
+        }
+        mAccountData->setValue(DataKeys::darkWalletDataKey(), lPendingWalletsToSave);
+        mAccountData->sync();
+    }
+    mAccountData->endGroup();
 }
 
 void MyQSettingsManager::getWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed)

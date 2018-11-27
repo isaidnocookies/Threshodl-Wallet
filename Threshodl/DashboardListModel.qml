@@ -13,24 +13,24 @@ ListModel {
         cellExpanded: false
     }
     ListElement {
+        name: "Testnet Litecoin"
+        shortName: "tLTC"
+
+        imageName: "images/assets/testnetLitecoinIcon.png"
+
+        brightIconName: "images/assets/brightLitecoinIcon.png"
+        darkIconName: "images/assets/darkLitecoinIcon.png"
+
+        hasDarkWallet: true
+        cellExpanded: false
+    }
+    ListElement {
         name: "Bitcoin"
         shortName: "BTC"
 
         imageName: "images/assets/bitcoinIcon.png"
         brightIconName: "" // "images/assets/brightBitcoinIcon.png"
         darkIconName: "" // "images/assets/darkBitcoinIcon.png"
-
-        hasDarkWallet: false
-        cellExpanded: false
-    }
-    ListElement {
-        name: "Testnet Litecoin"
-        shortName: "tLTC"
-
-        imageName: "images/assets/testnetLitecoinIcon.png"
-
-        brightIconName: "images/assets/brightBitcoinIcon.png"
-        darkIconName: "images/assets/darkBitcoinIcon.png"
 
         hasDarkWallet: false
         cellExpanded: false
@@ -46,28 +46,28 @@ ListModel {
         hasDarkWallet: false
         cellExpanded: false
     }
-    ListElement {
-        name: "Dash"
-        shortName: "DASH"
+//    ListElement {
+//        name: "Dash"
+//        shortName: "DASH"
 
-        imageName: "images/assets/dashIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+//        imageName: "images/assets/dashIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
 
-        hasDarkWallet: false
-        cellExpanded: false
-    }
-    ListElement {
-        name: "ZCash"
-        shortName: "ZEC"
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
+//    ListElement {
+//        name: "ZCash"
+//        shortName: "ZEC"
 
-        imageName: "images/assets/zcashIcon.png"
-        brightIconName: ""
-        darkIconName: ""
+//        imageName: "images/assets/zcashIcon.png"
+//        brightIconName: ""
+//        darkIconName: ""
 
-        hasDarkWallet: false
-        cellExpanded: false
-    }
+//        hasDarkWallet: false
+//        cellExpanded: false
+//    }
 //    ListElement {
 //        name: "Bitcoin Cash"
 //        shortName: "BCH"
