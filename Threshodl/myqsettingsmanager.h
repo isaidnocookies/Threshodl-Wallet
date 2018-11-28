@@ -47,6 +47,7 @@ public:
 
     void getPendingMicroWallets(QString iShortname, QList<CryptoWallet> &oPendingWallets);
     void clearPendingMicroWallet(QString iShortname, QStringList iAddresses);
+    void clearAllPendingMicroWallets(QString iShortname);
 
 protected:
     QSettings *mAccountData;

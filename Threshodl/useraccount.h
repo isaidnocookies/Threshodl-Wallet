@@ -52,7 +52,7 @@ public:
     Q_INVOKABLE QVariantList    getAllWallets();
 
     Q_INVOKABLE void            startDarkDeposit(QString iShortname, QString iAmount);
-    Q_INVOKABLE void            depositDarkCoin(QString iShortname, QString iAmount);
+    Q_INVOKABLE void            depositDarkCoin(QString iShortname, QString iAmount, QString iFee);
     Q_INVOKABLE void            withdrawDarkCoin(QString iShortname, QString iAmount);
     Q_INVOKABLE void            estimateDarkWithdrawal(QString iShortname, QString iAmount);
     Q_INVOKABLE void            estimateDarkTransaction(QString iShortname, QString toAmount);

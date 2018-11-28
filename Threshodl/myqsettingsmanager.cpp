@@ -275,6 +275,14 @@ void MyQSettingsManager::clearPendingMicroWallet(QString iShortname, QStringList
     mAccountData->endGroup();
 }
 
+void MyQSettingsManager::clearAllPendingMicroWallets(QString iShortname)
+{
+    mAccountData->beginGroup("Pending_" + iShortname);
+    mAccountData->setValue(DataKeys::darkWalletDataKey(), QVariantList());
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
 void MyQSettingsManager::getWalletBalance(QString iShortname, QString &oConfirmed, QString &oUnconfirmed)
 {
     QString lBalance;

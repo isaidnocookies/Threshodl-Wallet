@@ -352,8 +352,16 @@ void UserAccount::startDarkDeposit(QString iShortname, QString iAmount)
     emit darkDepositConfirmation(true, oFee, oAmountWithoutFee, iShortname);
 }
 
-void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
+void UserAccount::depositDarkCoin(QString iShortname, QString iAmount, QString iFee)
 {
+    QString lBaseShortname;
+
+    if (iShortname.contains("d")) {
+        lBaseShortname = iShortname.remove("d");
+    } else {
+        lBaseShortname = iShortname;
+    }
+
     if (!mDarkWallets.contains(iShortname)) {
         CryptoNetwork network;
         QString lLongname = AppWallets::walletNames()[iShortname];
@@ -376,11 +384,48 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount)
     QString lError;
     QString lFinalAmount;
     int lBreaks;
+    bool lSuccess = true;
+
     if (mDarkWallets[iShortname].createMicroWallets(iAmount, lBreaks, lFinalAmount, mPublicKey, lError)) {
-        emit darkDepositComplete(true, lFinalAmount, lBreaks);
+        QStringList lPendingAddresses;
+        QStringList lPendingAmounts;
+        QString lTransactionHex;
+        QString lFee = iFee;
+
+        if (mDarkWallets[iShortname].getPendingWalletAddrAndAmounts(lPendingAddresses, lPendingAmounts)) {
+            // fill wallets
+            if (mBrightWallets[lBaseShortname].createBrightRawTransaction(lPendingAddresses, lPendingAmounts, lTransactionHex, lFee)) {
+                QString lTxid;
+                if (mBrightWallets[lBaseShortname].sendRawTransaction(lTransactionHex, lTxid)) {
+                    qDebug() << "Bright to Dark Transaction Hex: " << lTransactionHex;
+                    qDebug() << "Bright to Dark Txid: " << lTxid;
+
+                    // Add micro wallets to dark wallet
+                    if (mDarkWallets[iShortname].movePendingToDarkWallet()) {
+                        emit walletBalanceUpdateComplete(iShortname);
+                        emit darkDepositComplete(true, lFinalAmount, lBreaks);
+                        lSuccess = true;
+                    } else {
+                        lSuccess = false;
+                    }
+                } else {
+                    lSuccess = false;
+                }
+            } else {
+                lSuccess = false;
+            }
+        } else {
+            lSuccess = false;
+        }
     } else {
+        lSuccess = false;
+    }
+
+    if (!lSuccess) {
         emit darkDepositComplete(false, "", 0);
     }
+
+    mDarkWallets[iShortname].clearPendingWallets();
 }
 
 void UserAccount::withdrawDarkCoin(QString iShortname, QString iAmount)

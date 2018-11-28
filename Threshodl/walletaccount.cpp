@@ -265,7 +265,7 @@ void WalletAccount::createNewBrightWallet(QString iSeed)
     mAccountData->saveWallet(lNewCryptoWallet.toData(), mShortName, false);
 }
 
-bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
+bool WalletAccount::createBrightRawTransaction(QStringList iToAddresses, QStringList iToAmounts, QString &oTxHex, QString &oFee)
 {
     QString lCoinName = mShortName;
     auto lCurrentWallet = mWallets[0];
@@ -287,8 +287,18 @@ bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAm
     QJsonArray toAddresses;
     QJsonArray toAmounts;
 
-    toAddresses.append(iToAddress);
-    toAmounts.append(iToAmount);
+    if (iToAmounts.size() != iToAddresses.size()) {
+        qDebug() << "Amounts and sizes dont align... create raw transaction failed...";
+        lReturnTxHex = "";
+        lReturnFee = "";
+        return false;
+    }
+
+    for (int i = 0; i < iToAddresses.size(); i++) {
+        toAddresses.append(iToAddresses.at(i));
+        toAmounts.append(iToAmounts.at(i));
+    }
+
     fromAddresses.append(lFromAddress);
     fromPrivateKeys.append(lFromPrivateKey);
 
@@ -298,6 +308,10 @@ bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAm
     jsonData.insert("toAddresses", toAddresses);
     jsonData.insert("toAmounts", toAmounts);
     jsonData.insert("returnAddress", lFromAddress);
+
+    if (oFee != "-1") {
+        jsonData.insert("fee", oFee);
+    }
 
     QJsonDocument jsonDataDocument;
     jsonDataDocument.setObject(jsonData);
@@ -342,6 +356,11 @@ bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAm
     oFee = lReturnFee;
 
     return lSuccess;
+}
+
+bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
+{
+    return createBrightRawTransaction(QStringList() << iToAddress, QStringList() << iToAmount, oTxHex, oFee);
 }
 
 bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
@@ -510,6 +529,12 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
     lReply = mNetworkManager->post(lRequest, request_body);
     lMyEventLoop.exec();
 
+    //check and make sure pending wallets are cleared...
+    if (!mPendingWallets.isEmpty()) {
+        mPendingWallets.clear();
+        mAccountData->clearAllPendingMicroWallets(mShortName);
+    }
+
     if (lReply->error() == QNetworkReply::NoError) {
         QByteArray      lReplyText = lReply->readAll();
         auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
@@ -518,8 +543,6 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
 
         if (lMyMap["success"].toBool()) {
             CryptoNetwork lNetwork = (mShortName.contains("t") ? CryptoNetwork::TestNet : CryptoNetwork::Main);
-
-            qDebug() << "Coin from response: " << lMyMap["coin"].toString() << "    Shortname from object" << mShortName;
 
             finalAmount = (QStringMath(iAmount) - lMyMap["fee"].toString()).toString();
             auto lCoinWallet = lMyMap["wallets"].toMap();
@@ -542,9 +565,8 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
 
 //                mWallets.append(lNewMicroWallet);
                 mPendingWallets.append(lNewMicroWallet);
-
-                mAccountData->savePendingMicroWallet(lNewMicroWallet.toData(), mShortName);
 //                mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
+                mAccountData->savePendingMicroWallet(lNewMicroWallet.toData(), mShortName);
             }
 
             oBreaks = breaks;
@@ -563,6 +585,41 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
         lSuccess = false;
     }
     return lSuccess;
+}
+
+bool WalletAccount::getPendingWalletAddrAndAmounts(QStringList &oAddresses, QStringList &oAmounts)
+{
+    if (mPendingWallets.isEmpty()) {
+        return false;
+    }
+
+    for (auto wallet : mPendingWallets) {
+        oAddresses.append(wallet.address());
+        oAmounts.append(wallet.value());
+    }
+
+    return true;
+}
+
+void WalletAccount::clearPendingWallets()
+{
+    mPendingWallets.clear();
+    mAccountData->clearAllPendingMicroWallets(mShortName);
+}
+
+bool WalletAccount::movePendingToDarkWallet()
+{
+    if (mPendingWallets.isEmpty()) {
+        return false;
+    }
+
+    for (auto wallet : mPendingWallets) {
+        mWallets.append(wallet);
+        mConfirmedBalance = (QStringMath(wallet.value() + mConfirmedBalance)).toString();
+    }
+
+    clearPendingWallets();
+    return true;
 }
 
 const QByteArray WalletAccount::toData()

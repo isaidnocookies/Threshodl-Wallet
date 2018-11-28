@@ -131,7 +131,7 @@ Item {
 
             if (!completed) {
                 startBusyIndicatorAndDisable();
-                userAccount.depositDarkCoin(walletShortName, amountTextField.text);
+                userAccount.depositDarkCoin(walletShortName, amountTextField.text, fee);
             } else {
                 warningLabel.text = "Deposit Completed";
             }
