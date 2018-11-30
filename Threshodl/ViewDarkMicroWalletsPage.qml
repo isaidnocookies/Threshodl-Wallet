@@ -158,14 +158,13 @@ Item {
             MessageDialog {
                 id: copyAlert
                 title: "Copied"
-                detailedText: "The wallet details have been copied to your clipboard"
+                detailedText: "The wallet address has been copied to your clipboard"
             }
 
             MouseArea {
                 anchors.fill: parent
 
                 onClicked: {
-                    console.log("Clicked row")
                     copyAlert.open()
                     threshodlTools.copyToClipboard(address)
                 }

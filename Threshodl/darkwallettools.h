@@ -15,7 +15,7 @@ public:
     QString estimateFeesForWithdrawal (int iNumWallets, QString iShortname);
     QString estimateFeesForDark(QString iAmount, QString iShortname);
     bool sendWallets(QVariantList iWallets, QString fromUser, QString iCryptoType, QString toEmailAddress, QString toUser, ErrorCodes::DarkErrors &oError);
-    bool completeWallets(QVariantList lWallets);
+    bool completeWallets(QVariantList lWallets, QVariantList &oCompleteWallets);
 //    bool breakdownWallets(...)
 
 signals:

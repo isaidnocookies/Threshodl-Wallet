@@ -26,7 +26,7 @@ namespace AppWallets {
 //                                                                {"tDASH",   "Testnet Dash"},
                                                                 {"LTC",     "Litecoin"},
                                                                 {"tLTC",    "Testnet Litecoin"},
-                                                                {"dtLTC", "Dark Testnet Litecoin"}
+                                                                {"dtLTC",   "Dark Testnet Litecoin"}
 //                                                                {"ZEC",     "ZCash"}
 //                                                                {"tZEC",    "Testnet ZCash"},
 //                                                                {"BCH",     "Bitcoin Cash"},

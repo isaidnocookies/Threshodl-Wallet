@@ -609,14 +609,14 @@ void WalletAccount::clearPendingWallets()
 
 bool WalletAccount::movePendingToDarkWallet()
 {
-    if (mPendingWallets.isEmpty()) {
-        return false;
-    }
+    QList<QByteArray> lWalletDatas;
 
     for (auto wallet : mPendingWallets) {
         mWallets.append(wallet);
         mConfirmedBalance = (QStringMath(wallet.value() + mConfirmedBalance)).toString();
+        lWalletDatas.append(wallet.toData());
     }
+    mAccountData->saveWallets(lWalletDatas, mShortName, true);
 
     clearPendingWallets();
     return true;

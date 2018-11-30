@@ -144,6 +144,13 @@ bool DarkWalletTools::sendWallets(QVariantList iWallets, QString fromUser, QStri
     return false;
 }
 
+bool DarkWalletTools::completeWallets(QVariantList lWallets, QVariantList &oCompleteWallets)
+{
+    QVariantList lCompleteWallets;
+
+    return false;
+}
+
 bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString toUser, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment)
 {
         QByteArray      lAttachment;

@@ -204,7 +204,7 @@ Item {
 
         font.weight: Font.ExtraLight
 
-        text: totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
+        text: totalCurrencyForWallet.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
         y: topBarIcon.y + topBarIcon.height + 20
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -213,13 +213,13 @@ Item {
 
             onMarketValueChanged: {
                 if (shortname === walletShortName || shortname === getBaseShortname(walletShortName)) {
-                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
+                    totalCurrencyForWallet.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
                 }
             }
 
             onWalletBalanceUpdateComplete: {
                 if (shortname == walletShortName) {
-                    totalCurrencyLabel.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
+                    totalCurrencyForWallet.text = getCurrencySymbol("USD") + userAccount.getBalanceValue(walletShortName)
                 }
             }
         }

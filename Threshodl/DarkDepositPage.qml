@@ -91,6 +91,7 @@ Item {
                 messageDialog.standardButtons = StandardButton.Ok;
                 messageDialog.open();
             } else {
+                // trigger a confirmation of FUCKING FAILURE
                 console.log("Stupid fucking deposit confirmation");
             }
         }
@@ -112,6 +113,7 @@ Item {
 
         function getConfirmationMessage() {
             completed = false;
+            console.log("The wallet shortname is... " + walletShortName);
             return "\n\n Amount: " + amountTextField.text + " " + getBaseShortname(walletShortName) + "\n\nFee:\n" + fee + " " + getBaseShortname(walletShortName) + "\n\nTotal Amount to turn dark:\n" + amountWithoutFee + " " + getBaseShortname(walletShortName) + "\n\nConfirm Transaction?"
         }
 

@@ -13,6 +13,8 @@ Item {
     property string walletShortName
     property string walletIconPath
 
+    property string feeEstimate
+
     function getConfirmationText (iShortname, walletType) {
         if (userAccount.isWalletConfirmed(iShortname, walletType) === true) {
             return "(Confirmed)"
@@ -68,6 +70,7 @@ Item {
 
         // darkWithdrawalEstimated(bool success, QString fee);
         onDarkWithdrawalEstimated : {
+            feeEstimate = fee;
             withdrawConfirmation.setForEstimate(success, fee);
             withdrawConfirmation.open();
         }
@@ -110,7 +113,7 @@ Item {
         onAccepted: {
             if (forEstimate) {
                 //start withdrawal process
-                userAccount.withdrawDarkCoin(walletShortName, amountTextField.text);
+                userAccount.withdrawDarkCoin(walletShortName, amountTextField.text, feeEstimate);
             } else {
                 console.log("Transaction confirmation accepted")
                 withdrawConfirmation.close();

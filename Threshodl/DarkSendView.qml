@@ -132,7 +132,7 @@ Item {
             border.width: 0.5
         }
 
-        text: "0.0001"
+        //text: "0.0001"
     }
 
     TextField {
@@ -150,7 +150,7 @@ Item {
             border.width: 0.5
         }
 
-        text: "test2"
+        //text: "test2"
     }
 
     TextField {
@@ -168,7 +168,7 @@ Item {
             border.width: 0.5
         }
 
-        text: "isaidnocookies@gmail.com"
+        //text: "isaidnocookies@gmail.com"
     }
 
     Button {
