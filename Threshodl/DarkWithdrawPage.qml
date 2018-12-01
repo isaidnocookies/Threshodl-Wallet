@@ -89,7 +89,7 @@ Item {
 
         function setForEstimate(success, fee){
             withdrawConfirmation.title = "Dark Withdraw Confirmation"
-            withdrawConfirmation.standardButtons = StandardButton.No | StandardButton.Yes
+            withdrawConfirmation.standardButtons = StandardButton.Yes | StandardButton.No
             forEstimate = true;
             if (success) {
                 withdrawConfirmation.text = "Are you sure you would like to withdraw " + walletShortName + " from your dark wallet and into your normal 'Bright' wallet? \n\n Fee: " + fee + " " + walletShortName;
@@ -110,27 +110,33 @@ Item {
         title: ""
         text: ""
 
-        onAccepted: {
+        onYes: {
             if (forEstimate) {
                 //start withdrawal process
+                console.log("Confirmation accepted. Start withdrawal");
                 userAccount.withdrawDarkCoin(walletShortName, amountTextField.text, feeEstimate);
             } else {
-                console.log("Transaction confirmation accepted")
+                console.log("Transaction confirmation accepted!")
                 withdrawConfirmation.close();
                 stopBusyIndicatorAndEnable();
             }
         }
 
+        onAccepted: {
+            stopBusyIndicatorAndEnable();
+            console.log("Confirmation after transaction ok'ed");
+        }
+
         onRejected: {
             stopBusyIndicatorAndEnable();
             warningLabel.text = "Withdrawal Canceled!"
-            console.log("No withdraw for you.")
+            console.log("No withdraw for you!")
         }
 
         onNo: {
             stopBusyIndicatorAndEnable();
             warningLabel.text = "Withdrawal Canceled!"
-            console.log("No withdraw for you.")
+            console.log("No withdraw for you...")
         }
     }
 

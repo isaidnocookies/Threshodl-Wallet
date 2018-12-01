@@ -70,6 +70,7 @@ QString DarkWalletTools::estimateFeesForWithdrawal(int iNumWallets, QString iSho
         }
     } else {
         qDebug() << lReply->errorString();
+        lFee = "-1";
     }
     return lFee;
 }
@@ -147,8 +148,76 @@ bool DarkWalletTools::sendWallets(QVariantList iWallets, QString fromUser, QStri
 bool DarkWalletTools::completeWallets(QVariantList lWallets, QVariantList &oCompleteWallets)
 {
     QVariantList lCompleteWallets;
+    QList<CryptoWallet> lTheWallets;
 
-    return false;
+    QNetworkAccessManager *lNetworkManager = new QNetworkAccessManager();
+    QEventLoop lMyEventLoop;
+    QNetworkReply *lReply;
+    connect(lNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray lUIDs;
+
+    for (auto lW : lWallets) {
+        CryptoWallet lCryptoWallet (lW.toByteArray());
+        lUIDs.append(lCryptoWallet.uid());
+        lTheWallets.append(lCryptoWallet);
+    }
+
+    jsonData.insert("ownerId", mPublicKey);
+    jsonData.insert("uid", lUIDs);
+    jsonData.insert("message", mPublicKey);
+    jsonData.insert("password", THRESHODL_PASSWORD);
+
+    QJsonDocument jsonDataDocument;
+    jsonDataDocument.setObject(jsonData);
+
+    QByteArray request_body = jsonDataDocument.toJson();
+
+    QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/dark/completeWallets/"));
+    QNetworkRequest lRequest;
+    lRequest.setUrl(lRequestURL);
+    lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    lReply = lNetworkManager->post(lRequest, request_body);
+    lMyEventLoop.exec();
+
+    if (lReply->error() == QNetworkReply::NoError) {
+        QByteArray      lReplyText = lReply->readAll();
+        auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+        if (lMyMap["success"].toBool()) {
+            auto walletReturn = lMyMap["wallets"].toMap();
+            for (auto rWallet : walletReturn.keys()) {
+                auto lrw = walletReturn[rWallet].toMap();
+                QString lWalletUID = lrw["uid"].toString();
+                QString lWalletPK = lrw["privatekey"].toString();
+
+                for (int i = 0; i < lTheWallets.size(); i++) {
+                    if (lTheWallets.at(i).uid() == lWalletUID) {
+                        QString userPk = lTheWallets.at(i).privateKey();
+                        QString serverPk = lWalletPK;
+                        QString lPrivateKey = combinePrivateKeyParts(userPk, serverPk);
+                        lTheWallets[i].setPrivateKey(lPrivateKey);
+                        qDebug() << "Set private key...  " << lPrivateKey;
+                        if (lPrivateKey != "") {
+                            oCompleteWallets.append(lTheWallets.at(i).toData());
+                        } else {
+                            qDebug() << "ERRORORROOROROROR combining private keys....";
+                        }
+                    }
+                }
+            }
+        } else {
+            qDebug() << lReplyText;
+            return false;
+        }
+    } else {
+        qDebug() << lReply->errorString();
+        return false;
+    }
+
+    return true;
 }
 
 bool DarkWalletTools::getAttachmentFile(QVariantList iWallets, QString toUser, QString iCryptoShortname, QString &oAmount, QByteArray &oAttachment)
@@ -341,4 +410,22 @@ bool DarkWalletTools::transferDarkWallets(QVariantList iWallets, QString iFromUs
 
     }
     return lSuccess;
+}
+
+QString DarkWalletTools::combinePrivateKeyParts(QString iPartOne, QString iPartTwo)
+{
+    QString fullKey = "";
+
+    if (iPartOne.isEmpty() || iPartTwo.isEmpty()) {
+        return fullKey;
+    }
+
+    for (int i = 0; i < iPartOne.size(); i++) {
+        fullKey = fullKey.append(iPartOne.at(i));
+        if (i < iPartTwo.size()) {
+            fullKey = fullKey.append(iPartTwo.at(i));
+        }
+    }
+
+    return fullKey;
 }

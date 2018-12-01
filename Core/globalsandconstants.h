@@ -94,7 +94,9 @@ namespace ErrorCodes {
         TransferFailed = 3,
         EmailFailed = 4,
         AttachmentFailed = 5,
-        InvalidAmount = 6
+        InvalidAmount = 6,
+        FailedToComplete = 7,
+        DarkWalletSweepFailed = 8
     };
 }
 

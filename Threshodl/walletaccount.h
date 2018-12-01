@@ -39,6 +39,8 @@ public:
     void updateBalance(QString iAddress, QString iBalance, QString iUnconfirmedBalance);
 
     void addWallet(CryptoWallet iWallet);
+    void addWalletToSweep(CryptoWallet iWallet);
+    void clearWalletsToSweep();
 
     bool removeWallet(QString iAddress);
     bool getWallet(QByteArray &oWallet, QString iAddress);
@@ -55,10 +57,14 @@ public:
 
     bool createBrightRawTransaction(QStringList iToAddresses, QStringList iToAmounts, QString &oTxHex, QString &oFee);
     bool createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee);
+    bool createSweepRawTransaction(QList<CryptoWallet> inputWallets, QString &oTxHex);
+    bool sweepSweepWallets();
+
     bool sendRawTransaction(QString iRawTransaction, QString &oTxid);
 
     bool estimateMicroWallets(QString iAmount, QString &oAmountWithoutFee, int &oBreaks, QString &oFee, QString &oError);
     bool createMicroWallets(QString iAmount, int &oBreaks, QString &oFinalAmount, QString iPublicKey, QString &oError);
+
     bool getPendingWalletAddrAndAmounts(QStringList &oAddresses, QStringList &oAmounts);
     void clearPendingWallets();
     bool movePendingToDarkWallet();
@@ -82,6 +88,7 @@ private:
 
     QList<CryptoWallet>     mWallets;
     QList<CryptoWallet>     mPendingWallets;
+    QList<CryptoWallet>     mWalletsToSweep;
     MyQSettingsManager      *mAccountData;
 };
 

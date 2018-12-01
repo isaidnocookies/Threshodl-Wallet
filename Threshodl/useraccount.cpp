@@ -429,21 +429,20 @@ void UserAccount::depositDarkCoin(QString iShortname, QString iAmount, QString i
 
 void UserAccount::withdrawDarkCoin(QString iShortname, QString iAmount, QString iFee)
 {
-    Q_UNUSED(iFee)
 
-    qDebug() << "WITHDRAWING DARK COIN!  Fee: " << iFee;
-    return;
+    Q_UNUSED(iFee)
 
     DarkWalletTools lDarkTools;
     ErrorCodes::DarkErrors lError = ErrorCodes::DarkErrors::None;
     bool lSuccess = true;
     QStringMath lTotal;
     QList<CryptoWallet> lWalletsToSave;
-    QList<CryptoWallet> lWalletsToSend;
-    QString lBrightShortname;
+    QList<CryptoWallet> lWalletsToTurnBright;
+    QVariantList        lWalletsToComplete;
+    QString             lBrightShortname = iShortname;
 
     if (iShortname.contains("d")) {
-        lBrightShortname = iShortname.remove("d");
+        lBrightShortname = lBrightShortname.remove("d");
     }
 
     lDarkTools.setUserDetails(mUsername, mPublicKey, mPrivateKey);
@@ -453,7 +452,8 @@ void UserAccount::withdrawDarkCoin(QString iShortname, QString iAmount, QString 
 
     for (auto ldw : darkWallets) {
         if (QStringMath((lTotal + ldw.value()).toString()) <= iAmount) {
-            lWalletsToSend.append(ldw);
+            lWalletsToTurnBright.append(ldw);
+            lWalletsToComplete.append(ldw.toData());
             lTotal = lTotal + ldw.value();
         } else {
             lWalletsToSave.append(ldw);
@@ -467,27 +467,44 @@ void UserAccount::withdrawDarkCoin(QString iShortname, QString iAmount, QString 
         qDebug() << "Exact change is available! Send amounts to bright wallet";
 
         // Complete wallets
-        // Save completed wallets in pending to collect stucture..
-        // Create blockchain transaction to sweep microwallets
-        // Send blockchain transaction
-        // If successful, remove pending to collect wallets
+        QVariantList lCompletedWallets;
+        if (lDarkTools.completeWallets(lWalletsToComplete, lCompletedWallets)) {
+            qDebug() << "Wallets were completed";
 
+            // Save completed wallets in pending to collect stucture in bright wallet..
+            for (QVariant wallet : lCompletedWallets) {
+                CryptoWallet lWallet (wallet.toByteArray());
+                mBrightWallets[lBrightShortname].addWalletToSweep(lWallet);
+                mDarkWallets[iShortname].removeWallet(lWallet.address());
+                mDarkWallets[iShortname].setConfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(true)) - lWallet.value()).toString());
+                //mDarkWallets[iShortname].setUnconfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(false)) - lWallet.value()).toString());
+            }
+
+            qDebug() << "Wallets are about to be swept";
+            // Sweep sweep wallets
+            if (mBrightWallets[lBrightShortname].sweepSweepWallets()) {
+                // If successful, remove pending to collect wallets
+                mBrightWallets[lBrightShortname].clearWalletsToSweep();
+                lSuccess = true;
+                lError = ErrorCodes::None;
+            } else {
+                lSuccess = false;
+                lError = ErrorCodes::DarkWalletSweepFailed;
+                qDebug() << "Wallets were failed to be sweepeepeed";
+            }
+        } else {
+            lSuccess = false;
+            lError = ErrorCodes::FailedToComplete;
+            qDebug() << "Wallets were NOT FUCKING completed";
+        }
     }
 
-    // CHANGE WITH THE BLOCKCHAIN SUPPORT STUFF ---- OLD SHIT FOR TESTING...
-    // --------------------------------------------------------------------
-//    for (auto lw : lWalletsToSend) {
-//        mBrightWallets[lBrightShortname].addWallet(lw);
-//        mBrightWallets[lBrightShortname].setConfirmedBalance((QStringMath(mBrightWallets[lBrightShortname].getBalance(true)) + lw.value()).toString());
-//        mBrightWallets[lBrightShortname].setConfirmedBalance((QStringMath(mBrightWallets[lBrightShortname].getBalance(false)) + lw.value()).toString());
-//        mDarkWallets[iShortname].setConfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(true)) - lw.value()).toString());
-//        //mDarkWallets[iShortname].setConfirmedBalance((QStringMath(mDarkWallets[iShortname].getBalance(false)) - lw.value()).toString());
-//    }
-    // --------------------------------------------------------------------
+    if (lSuccess) {
+        emit walletBalanceUpdateComplete(lBrightShortname);
+        emit darkCryptoConfirmedBalanceChanged();
+        emit darkCryptoUnconfirmedBalanceChanged();
+    }
 
-    emit walletBalanceUpdateComplete(lBrightShortname);
-    emit darkCryptoConfirmedBalanceChanged();
-    emit darkCryptoUnconfirmedBalanceChanged();
     emit darkWithdrawComplete(lSuccess, lError);
 }
 
@@ -501,6 +518,7 @@ void UserAccount::estimateDarkWithdrawal(QString iShortname, QString iAmount)
 
     lDarkTool.setUserDetails(mUsername, mPublicKey, mPrivateKey);
 
+    mDarkWallets[iShortname].sortDarkWallets();
     auto wallets = mDarkWallets[iShortname].getWallets();
     for (auto w : wallets) {
         if (QStringMath(lTotal + w.value()) > iAmount) {
@@ -515,13 +533,17 @@ void UserAccount::estimateDarkWithdrawal(QString iShortname, QString iAmount)
 
     if (lTotal < iAmount) {
         success = false;
-    } else {
-        fee = lDarkTool.estimateFeesForWithdrawal(walletCounter, iShortname);
-        if (fee == "-1") {
-            success = false;
-        }
+        qDebug() << "There are change problems... Need exact change...";
+        // TODO : add logic here potentially to handle this now before the transaction has started...
     }
 
+    fee = lDarkTool.estimateFeesForWithdrawal(walletCounter, iShortname);
+    if (fee == "-1") {
+        qDebug() << "Fee failed to return on dark estimation... " << iShortname;
+        success = false;
+    }
+
+    qDebug() << "Fee for " << iShortname << " Dark to Bright estimation is... : " << fee;
     emit darkWithdrawalEstimated(success, fee);
 }
 

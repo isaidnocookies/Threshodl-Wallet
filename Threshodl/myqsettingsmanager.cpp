@@ -114,6 +114,33 @@ void MyQSettingsManager::saveWallets(QList<QByteArray> iWallets, QString iShortn
     mAccountData->sync();
 }
 
+void MyQSettingsManager::removeWallet(QString iShortname, QString iAddress, bool isDark)
+{
+    mAccountData->beginGroup(iShortname);
+    QVariantList lNewWalletsToSave;
+    QVariantList lWallets;
+     if (isDark) {
+         mAccountData->value(DataKeys::darkWalletDataKey()).toList();
+     } else {
+         mAccountData->value(DataKeys::walletsDataKey()).toList();
+     }
+
+    for (auto lw : lWallets) {
+        if (CryptoWallet(lw.toByteArray()).address() != iAddress) {
+            lNewWalletsToSave.append(lw);
+        }
+    }
+
+    if (isDark) {
+        mAccountData->setValue(DataKeys::darkWalletDataKey(), lNewWalletsToSave);
+    } else {
+        mAccountData->setValue(DataKeys::walletsDataKey(), lNewWalletsToSave);
+    }
+
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
 void MyQSettingsManager::saveWalletAccount(QString iShortName, QString iLongName, CryptoNetwork iChainType)
 {
     mAccountData->beginGroup(iShortName);
@@ -134,6 +161,41 @@ void MyQSettingsManager::savePendingMicroWallet(QByteArray iWalletData, QString 
     lWallets.append(iWalletData);
     mAccountData->setValue(DataKeys::darkWalletDataKey(), lWallets);
 
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
+void MyQSettingsManager::saveWalletToSweep(QByteArray iWalletData, QString iShortname)
+{
+    mAccountData->beginGroup("Sweep_" + iShortname);
+
+    QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
+    lWallets.append(iWalletData);
+    mAccountData->setValue(DataKeys::walletsDataKey(), lWallets);
+
+    mAccountData->endGroup();
+    mAccountData->sync();
+}
+
+void MyQSettingsManager::getWalletsToSweep(QString iShortname, QList<CryptoWallet> oWalletsToSweep)
+{
+    QList<CryptoWallet> pendingMicroWallets;
+    mAccountData->beginGroup("Sweep_" + iShortname);
+
+    if (mAccountData->contains(DataKeys::walletsDataKey())) {
+        QList<QVariant> lWallets = mAccountData->value(DataKeys::walletsDataKey()).toList();
+        for(auto wallet : lWallets) {
+            oWalletsToSweep.append(CryptoWallet(wallet.toByteArray()));
+        }
+    }
+
+    mAccountData->endGroup();
+}
+
+void MyQSettingsManager::clearWalletsToSweep(QString iShortname)
+{
+    mAccountData->beginGroup("Sweep_" + iShortname);
+    mAccountData->setValue(DataKeys::walletsDataKey(), QVariantList());
     mAccountData->endGroup();
     mAccountData->sync();
 }

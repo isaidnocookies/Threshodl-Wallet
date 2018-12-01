@@ -1,5 +1,6 @@
 #include "walletaccount.h"
 #include "core.h"
+#include "darkwallettools.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -167,11 +168,24 @@ void WalletAccount::addWallet(CryptoWallet iWallet)
     mWallets.append(iWallet);
 }
 
+void WalletAccount::addWalletToSweep(CryptoWallet iWallet)
+{
+    mWalletsToSweep.append(iWallet);
+    mAccountData->saveWalletToSweep(iWallet.toData(), mShortName);
+}
+
+void WalletAccount::clearWalletsToSweep()
+{
+    mWalletsToSweep.clear();
+    mAccountData->clearWalletsToSweep(mShortName);
+}
+
 bool WalletAccount::removeWallet(QString iAddress)
 {
     for (int i = 0; i < mWallets.size(); i++) {
         if (mWallets.at(i).address() == iAddress) {
             mWallets.removeAt(i);
+            mAccountData->removeWallet(mShortName, iAddress, mIsDark);
             return true;
         }
     }
@@ -361,6 +375,95 @@ bool WalletAccount::createBrightRawTransaction(QStringList iToAddresses, QString
 bool WalletAccount::createBrightRawTransaction(QString iToAddress, QString iToAmount, QString &oTxHex, QString &oFee)
 {
     return createBrightRawTransaction(QStringList() << iToAddress, QStringList() << iToAmount, oTxHex, oFee);
+}
+
+bool WalletAccount::createSweepRawTransaction(QList<CryptoWallet> inputWallets, QString &oTxHex)
+{
+    QString lReturnTxHex;
+    QString lReturnFee;
+    bool lSuccess = false;
+    QStringMath lOutputTotal;
+    DarkWalletTools lDarkTools;
+
+
+    QNetworkAccessManager   *mNetworkManager = new QNetworkAccessManager();
+    QEventLoop              lMyEventLoop;
+    QNetworkReply           *lReply;
+    QObject::connect(mNetworkManager, SIGNAL(finished(QNetworkReply*)), &lMyEventLoop, SLOT(quit()));
+
+    QJsonObject jsonData;
+    QJsonArray fromAddresses, fromPrivateKeys, toAddresses, toAmounts;
+
+    if (inputWallets.isEmpty()) {
+        qDebug() << "No input wallets... create raw transaction failed...";
+        lReturnTxHex = "";
+        lReturnFee = "";
+        return false;
+    }
+
+    for (CryptoWallet lW : inputWallets) {
+        fromAddresses.append(lW.address());
+        fromPrivateKeys.append(lW.privateKey());
+        lOutputTotal = lOutputTotal + lW.value();
+    }
+
+    QString lTransactionFee = lDarkTools.estimateFeesForWithdrawal(inputWallets.size(), mShortName);
+    if (lTransactionFee != "-1") {
+        lOutputTotal = lOutputTotal - lTransactionFee;
+        toAddresses.append(mWallets[0].address()); //current bright wallet
+        toAmounts.append(lOutputTotal.toString());
+
+        jsonData.insert("coin", mShortName);
+        jsonData.insert("fromAddresses", fromAddresses);
+        jsonData.insert("fromPrivateKeys", fromPrivateKeys);
+        jsonData.insert("toAddresses", toAddresses);
+        jsonData.insert("toAmounts", toAmounts);
+        jsonData.insert("returnAddress", mWallets[0].address());
+        jsonData.insert("fee", lTransactionFee);
+
+        QJsonDocument jsonDataDocument;
+        jsonDataDocument.setObject(jsonData);
+
+        QByteArray request_body = jsonDataDocument.toJson();
+        QString lRequestData = request_body;
+        QUrl lRequestURL = QUrl::fromUserInput(QString(MY_WALLET_SERVER_ADDRESS).append("/wallets/createTransaction/"));
+
+        QNetworkRequest lRequest;
+        lRequest.setUrl(lRequestURL);
+        lRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+        lReply = mNetworkManager->post(lRequest, request_body);
+        lMyEventLoop.exec();
+
+        if (lReply->error() == QNetworkReply::NoError) {
+            QByteArray      lReplyText = lReply->readAll();
+            auto            lMyMap = QJsonDocument::fromJson(lReplyText).toVariant().toMap();
+
+            qDebug() << lReplyText;
+
+            if (lMyMap["success"].toBool()) {
+                lReturnTxHex = lMyMap["message"].toMap()["txHex"].toString();
+                lReturnFee = lMyMap["message"].toMap()["fee"].toString();
+                lSuccess = true;
+            } else {
+                qDebug() << "Error(1).... Failed to send transaction";
+                lReturnTxHex = "";
+                lReturnFee = "";
+                lSuccess = false;
+            }
+        } else {
+            qDebug() << "Error(2).... Failed to send transaction" << lReply->errorString();
+            lReturnTxHex = "";
+            lReturnFee = "";
+            lSuccess = false;
+        }
+
+        oTxHex = lReturnTxHex;
+    } else {
+        lSuccess = false;
+    }
+
+    return lSuccess;
 }
 
 bool WalletAccount::sendRawTransaction(QString iRawTransaction, QString &oTxid)
@@ -562,10 +665,7 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
                 lNewMicroWallet.setIsMicroWallet(true);
 
                 mUnconfirmedBalance = (QStringMath(mUnconfirmedBalance) + lValue).toString();
-
-//                mWallets.append(lNewMicroWallet);
                 mPendingWallets.append(lNewMicroWallet);
-//                mAccountData->saveWallet(lNewMicroWallet.toData(), mShortName, true);
                 mAccountData->savePendingMicroWallet(lNewMicroWallet.toData(), mShortName);
             }
 
@@ -584,6 +684,36 @@ bool WalletAccount::createMicroWallets(QString iAmount, int &oBreaks, QString &o
         oError = error;
         lSuccess = false;
     }
+    return lSuccess;
+}
+
+bool WalletAccount::sweepSweepWallets()
+{
+    bool lSuccess = false;
+    QString lTxHex;
+    QString lTxid;
+
+    if (mWalletsToSweep.isEmpty()) {
+        lSuccess = true;
+    } else {
+        //Create raw transaction
+        if (createSweepRawTransaction(mWalletsToSweep, lTxHex)) {
+            //Submit raw transaction
+            if (sendRawTransaction(lTxHex, lTxid)) {
+                qDebug() << "Wallets were sweeeped";
+                lSuccess = true;
+            } else {
+                // failed to send transaction
+                qDebug() << "Wallets failed to sweep";
+                lSuccess = false;
+            }
+        } else {
+            // failed to create sweep transaction
+            qDebug() << "Sweep transaction failed to be created";
+            lSuccess = false;
+        }
+    }
+
     return lSuccess;
 }
 

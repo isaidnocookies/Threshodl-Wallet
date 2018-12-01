@@ -28,6 +28,8 @@ private:
     bool sendFailureEmail(QString toEmail, QString toUser, QString fromUser, QString iCryptoShortname);
     bool transferDarkWallets(QVariantList iWallets, QString iFromUser, QString iPublicKey, QString iPrivateKey, QString toUser, QString iAuthMessage);
 
+    QString combinePrivateKeyParts(QString iPartOne, QString iPartTwo);
+
     QString mPrivateKey;
     QString mPublicKey;
     QString mUsername;
